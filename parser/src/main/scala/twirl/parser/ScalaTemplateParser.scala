@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2009-2014 Typesafe Inc. <http://www.typesafe.com>
  */
-package play.templates
+package twirl.parser
 
 import scala.collection.mutable.ArrayBuffer
 import scala.util.parsing.input.OffsetPosition
@@ -94,7 +94,7 @@ import scala.annotation.elidable._
 
 class ScalaTemplateParser(val shouldParseInclusiveDot: Boolean) {
 
-  import play.templates.TreeNodes._
+  import twirl.parser.TreeNodes._
   import scala.util.parsing.input.Positional
 
   sealed abstract class ParseResult

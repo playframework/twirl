@@ -1,11 +1,10 @@
 /*
  * Copyright (C) 2009-2014 Typesafe Inc. <http://www.typesafe.com>
  */
-package play.templates.test
+package twirl.parser
+package test
 
 import org.specs2.mutable._
-
-import play.templates._
 
 object TemplateParserSpec extends Specification {
 
