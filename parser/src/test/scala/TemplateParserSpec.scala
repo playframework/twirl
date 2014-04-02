@@ -13,7 +13,7 @@ object TemplateParserSpec extends Specification {
     val parser = new ScalaTemplateParser(false)
 
     def get(templateName: String) = {
-      val source = scala.io.Source.fromFile("src/test/templates/" + templateName)
+      val source = scala.io.Source.fromFile("parser/src/test/templates/" + templateName)
       val contents = source.mkString
       source.close()
       contents
