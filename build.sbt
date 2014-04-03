@@ -24,5 +24,6 @@ lazy val parser = project
 lazy val commonSettings = Seq(
   scalaVersion := "2.10.4",
   crossScalaVersions := Seq("2.9.3", "2.10.4"),
-  scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
+  scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8"),
+  unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
 )

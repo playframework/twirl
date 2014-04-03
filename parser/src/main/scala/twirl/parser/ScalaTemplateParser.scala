@@ -303,7 +303,8 @@ class ScalaTemplateParser(val shouldParseInclusiveDot: Boolean) {
 
   /** Match zero or more `parser` */
   def several[T, BufferType <: Buffer[T]](parser: () => T, provided: BufferType = null)(implicit manifest: Manifest[BufferType]): BufferType = {
-    val ab = if (provided != null) provided else manifest.erasure.newInstance().asInstanceOf[BufferType]
+    import twirl.api.ScalaCompat._ // for Manifest.runtimeClass
+    val ab = if (provided != null) provided else manifest.runtimeClass.newInstance().asInstanceOf[BufferType]
     var parsed = parser()
     while (parsed != null) {
       ab += parsed
