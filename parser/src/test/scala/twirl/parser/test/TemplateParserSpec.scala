@@ -12,7 +12,7 @@ object TemplateParserSpec extends Specification {
 
     import scala.util.parsing.input.CharSequenceReader
 
-    val parser = new ScalaTemplateParser(false)
+    val parser = new ScalaTemplateParser(shouldParseInclusiveDot = false)
 
     def get(templateName: String) = {
       val source = scala.io.Source.fromFile("parser/src/test/templates/" + templateName)
@@ -22,7 +22,7 @@ object TemplateParserSpec extends Specification {
     }
 
     def parse(templateName: String) = {
-      (new ScalaTemplateParser(false)).parse(get(templateName))
+      (new ScalaTemplateParser(shouldParseInclusiveDot = false)).parse(get(templateName))
     }
 
     def failAt(message: String, line: Int, column: Int): PartialFunction[parser.ParseResult, Boolean] = {
