@@ -10,8 +10,6 @@ object TemplateParserSpec extends Specification {
 
   "The template parser" should {
 
-    import scala.util.parsing.input.CharSequenceReader
-
     val parser = new ScalaTemplateParser(shouldParseInclusiveDot = false)
 
     def get(templateName: String) = {

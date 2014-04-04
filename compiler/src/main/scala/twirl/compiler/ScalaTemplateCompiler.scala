@@ -8,7 +8,7 @@ import scala.annotation.tailrec
 import scala.io.Codec
 import scala.reflect.internal.Flags
 import scalax.file._
-import twirl.parser.ScalaTemplateParser
+import twirl.parser.{ PlayScalaTemplateParser, ScalaTemplateParser }
 
 object Hash {
 
@@ -177,6 +177,28 @@ object ScalaTemplateCompiler {
   }
 
   def parseAndGenerateCode(templateName: Array[String], content: Array[Byte], absolutePath: String, resultType: String, formatterType: String, additionalImports: String) = {
+    val templateParser = new PlayScalaTemplateParser
+    templateParser.parse(new String(content, UTF8.charSet)) match {
+      case templateParser.Success(parsed: Template, rest) if rest.atEnd => {
+        generateFinalTemplate(absolutePath,
+          content,
+          templateName.dropRight(1).mkString("."),
+          templateName.takeRight(1).mkString,
+          parsed,
+          resultType,
+          formatterType,
+          additionalImports)
+      }
+      case templateParser.Success(_, rest) => {
+        throw new TemplateCompilationError(new File(absolutePath), "Not parsed?", rest.pos.line, rest.pos.column)
+      }
+      case templateParser.NoSuccess(message, input) => {
+        throw new TemplateCompilationError(new File(absolutePath), message, input.pos.line, input.pos.column)
+      }
+    }
+  }
+
+  def parseAndGenerateCodeOptimisedParser(templateName: Array[String], content: Array[Byte], absolutePath: String, resultType: String, formatterType: String, additionalImports: String) = {
     val templateParser = new ScalaTemplateParser(shouldParseInclusiveDot = false)
     templateParser.parse(new String(content, UTF8.charSet)) match {
       case templateParser.Success(parsed: Template, rest) if rest.atEnd => {
