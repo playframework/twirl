@@ -14,7 +14,8 @@ lazy val parser = project
   .in(file("parser"))
   .settings(commonSettings: _*)
   .settings(
-    libraryDependencies += specs2(scalaBinaryVersion.value)
+    libraryDependencies += specs2(scalaBinaryVersion.value),
+    libraryDependencies += scalaIO(scalaBinaryVersion.value) % "test"
   )
 
 lazy val compiler = project

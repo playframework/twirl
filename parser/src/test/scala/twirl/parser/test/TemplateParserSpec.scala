@@ -5,6 +5,7 @@ package twirl.parser
 package test
 
 import org.specs2.mutable._
+import scalax.io.Resource
 
 object TemplateParserSpec extends Specification {
 
@@ -12,11 +13,8 @@ object TemplateParserSpec extends Specification {
 
     val parser = new ScalaTemplateParser(shouldParseInclusiveDot = false)
 
-    def get(templateName: String) = {
-      val source = scala.io.Source.fromFile("parser/src/test/templates/" + templateName)
-      val contents = source.mkString
-      source.close()
-      contents
+    def get(templateName: String): String = {
+      Resource.fromClasspath(templateName, this.getClass).string
     }
 
     def parse(templateName: String) = {
