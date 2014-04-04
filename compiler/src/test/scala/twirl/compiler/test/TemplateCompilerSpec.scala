@@ -20,7 +20,8 @@ object TemplateCompilerSpec extends Specification {
   scalax.file.Path(generatedClasses).createDirectory()
 
   "The template compiler" should {
-    "compile successfully" in {
+
+    "compile successfully (real)" in {
       val helper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
       helper.compile[((String, List[String]) => (Int) => Html)]("real.scala.html", "html.real")("World", List("A", "B"))(4).toString.trim must beLike {
         case html =>
@@ -31,11 +32,17 @@ object TemplateCompilerSpec extends Specification {
               html.contains("EB")) ok else ko
           }
       }
+    }
 
+    "compile successfully (static)" in {
+      val helper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
       helper.compile[(() => Html)]("static.scala.html", "html.static")().toString.trim must be_==(
         "<h1>It works</h1>")
+    }
 
+    "compile successfully (patternMatching)" in {
       val testParam = "12345"
+      val helper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
       helper.compile[((String) => Html)]("patternMatching.scala.html", "html.patternMatching")(testParam).toString.trim must be_==(
         """@test
 @test.length
@@ -47,15 +54,20 @@ object TemplateCompilerSpec extends Specification {
 @(test.+(3))
 
 5 match @test.length""")
-
-      val hello = helper.compile[((String) => Html)]("hello.scala.html", "html.hello")("World").toString.trim
-
-      hello must be_==(
-        "<h1>Hello World!</h1><h1>xml</h1>")
-
-      helper.compile[((collection.immutable.Set[String]) => Html)]("set.scala.html", "html.set")(Set("first","second","third")).toString.trim.replace("\n","").replaceAll("\\s+", "") must be_==("firstsecondthird")
-
     }
+
+    "compile successfully (hello)" in {
+      val helper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
+      val hello = helper.compile[((String) => Html)]("hello.scala.html", "html.hello")("World").toString.trim
+      hello must be_==("<h1>Hello World!</h1><h1>xml</h1>")
+    }
+
+    "compile successfully (set)" in {
+      val helper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
+      val set = helper.compile[((collection.immutable.Set[String]) => Html)]("set.scala.html", "html.set")(Set("first","second","third")).toString.trim.replace("\n","").replaceAll("\\s+", "")
+      set must be_==("firstsecondthird")
+    }
+
     "fail compilation for error.scala.html" in {
       val helper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
       helper.compile[(() => Html)]("error.scala.html", "html.error") must throwA[CompilationError].like {
