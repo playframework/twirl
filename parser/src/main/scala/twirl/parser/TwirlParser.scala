@@ -470,6 +470,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       accept("}")
       // TODO - not use flatten here (if it's a performance problem)
       result = position(Block(ws, blkArgs, mixeds.flatten), p)
+    } else {
+      input.regressTo(p)
     }
 
     result
@@ -519,6 +521,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
         } else {
           error("expected block after match")
         }
+      } else {
+        input.regressTo(mpos)
       }
     }
 
@@ -607,8 +611,11 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     }
 
     def wsThenScalaBlockChained() = {
-      whitespaceNoBreak()
-      scalaBlockChained()
+      val reset = input.offset
+      val ws = whitespaceNoBreak()
+      val chained = scalaBlockChained()
+      if (chained eq null) input.regressTo(reset)
+      chained
     }
 
     chainedMethods() match {
@@ -707,12 +714,16 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   def elseCall(): Simple = {
+    val reset = input.offset
     whitespaceNoBreak()
     val p = input.offset
     if (check("else")) {
       whitespaceNoBreak()
       position(Simple("else"), p)
-    } else null
+    } else {
+      input.regressTo(reset)
+      null
+    }
   }
 
   def template(): Template = {
