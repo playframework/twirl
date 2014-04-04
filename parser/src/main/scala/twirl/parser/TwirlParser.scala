@@ -519,7 +519,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
           exprs.append(m)
           exprs.append(blk)
         } else {
-          error("expected block after match")
+          // error("expected block after match")
+          input.regressTo(mpos)
         }
       } else {
         input.regressTo(mpos)
