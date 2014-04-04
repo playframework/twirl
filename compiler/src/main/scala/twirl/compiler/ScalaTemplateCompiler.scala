@@ -469,16 +469,8 @@ object """ :+ name :+ """ extends BaseScalaTemplate[""" :+ resultType :+ """,For
 
       def treeFrom(file: SourceFile): global.Tree = {
         import tools.nsc.interactive.Response
-
-        type Scala29Compiler = {
-          def askParsedEntered(file: SourceFile, keepLoaded: Boolean, response: Response[global.Tree]): Unit
-          def askType(file: SourceFile, forceReload: Boolean, respone: Response[global.Tree]): Unit
-        }
-
-        val newCompiler = global.asInstanceOf[Scala29Compiler]
-
         val r1 = new Response[global.Tree]
-        newCompiler.askParsedEntered(file, true, r1)
+        global.askParsedEntered(file, true, r1)
         r1.get.left.toOption.getOrElse(throw r1.get.right.get)
       }
 

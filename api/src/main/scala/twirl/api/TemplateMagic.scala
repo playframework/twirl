@@ -3,6 +3,8 @@
  */
 package twirl.api
 
+import scala.language.implicitConversions
+
 object TemplateMagic {
 
   // --- UTILS

@@ -3,10 +3,11 @@
  */
 package twirl.parser
 
-import scala.util.parsing.input.OffsetPosition
-import scala.util.parsing.input.CharSequenceReader
-import scala.util.parsing.combinator.JavaTokenParsers
 import scala.annotation.tailrec
+import scala.language.postfixOps
+import scala.util.parsing.combinator.JavaTokenParsers
+import scala.util.parsing.input.CharSequenceReader
+import scala.util.parsing.input.OffsetPosition
 import twirl.parser.TreeNodes._
 
 class PlayScalaTemplateParser extends JavaTokenParsers {
