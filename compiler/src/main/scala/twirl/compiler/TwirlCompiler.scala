@@ -176,7 +176,7 @@ object TwirlCompiler {
     generatedSource
   }
 
-  def parseAndGenerateCode(templateName: Array[String], content: Array[Byte], absolutePath: String, resultType: String, formatterType: String, additionalImports: String) = {
+  def parseAndGenerateCodeOldParser(templateName: Array[String], content: Array[Byte], absolutePath: String, resultType: String, formatterType: String, additionalImports: String) = {
     val templateParser = new PlayTwirlParser
     templateParser.parse(new String(content, UTF8.charSet)) match {
       case templateParser.Success(parsed: Template, rest) if rest.atEnd => {
@@ -198,7 +198,7 @@ object TwirlCompiler {
     }
   }
 
-  def parseAndGenerateCodeOptimisedParser(templateName: Array[String], content: Array[Byte], absolutePath: String, resultType: String, formatterType: String, additionalImports: String) = {
+  def parseAndGenerateCode(templateName: Array[String], content: Array[Byte], absolutePath: String, resultType: String, formatterType: String, additionalImports: String) = {
     val templateParser = new TwirlParser(shouldParseInclusiveDot = false)
     templateParser.parse(new String(content, UTF8.charSet)) match {
       case templateParser.Success(parsed: Template, rest) if rest.atEnd => {
