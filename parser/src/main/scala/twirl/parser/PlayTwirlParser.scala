@@ -10,7 +10,7 @@ import scala.util.parsing.input.CharSequenceReader
 import scala.util.parsing.input.OffsetPosition
 import twirl.parser.TreeNodes._
 
-class PlayScalaTemplateParser extends JavaTokenParsers {
+class PlayTwirlParser extends JavaTokenParsers {
 
   def as[T](parser: Parser[T], error: String) = {
     Parser(in => parser(in) match {

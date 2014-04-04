@@ -7,18 +7,18 @@ package test
 import org.specs2.mutable._
 import scalax.io.Resource
 
-object TemplateParserSpec extends Specification {
+object ParserSpec extends Specification {
 
-  "The template parser" should {
+  "The twirl parser" should {
 
-    val parser = new ScalaTemplateParser(shouldParseInclusiveDot = false)
+    val parser = new TwirlParser(shouldParseInclusiveDot = false)
 
     def get(templateName: String): String = {
       Resource.fromClasspath(templateName, this.getClass).string
     }
 
     def parse(templateName: String) = {
-      (new ScalaTemplateParser(shouldParseInclusiveDot = false)).parse(get(templateName))
+      (new TwirlParser(shouldParseInclusiveDot = false)).parse(get(templateName))
     }
 
     def failAt(message: String, line: Int, column: Int): PartialFunction[parser.ParseResult, Boolean] = {

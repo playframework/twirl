@@ -14,8 +14,8 @@ import scala.annotation.elidable
 import scala.annotation.elidable._
 
 /**
- * ScalaTemplateParser is a recursive descent parser for a modified grammar of the Play2 template language as loosely defined [[http://www.playframework.com/documentation/2.1.x/ here]] and more rigorously defined by the original template parser, [[play.templates.ScalaTemplateCompiler.TemplateParser]].
- * ScalaTemplateParser is meant to be a near drop in replacement for [[play.templates.ScalaTemplateCompiler.TemplateParser]].
+ * TwirlParser is a recursive descent parser for a modified grammar of the Play2 template language as loosely defined [[http://www.playframework.com/documentation/2.1.x/ here]] and more rigorously defined by the original template parser, [[play.templates.ScalaTemplateCompiler.TemplateParser]].
+ * TwirlParser is meant to be a near drop in replacement for [[play.templates.ScalaTemplateCompiler.TemplateParser]].
  *
  * The original grammar, as reversed-engineered from [[play.templates.ScalaTemplateCompiler.TemplateParser]], is defined as follows:
  * {{{
@@ -51,7 +51,7 @@ import scala.annotation.elidable._
  *   identifier : javaIdentStart javaIdentPart* // see java docs for what these two rules mean
  * }}}
  *
- * ScalaTemplateParser implements a slightly modified version of the above grammar that removes some back-tracking within the 'mixed' non-terminal. It is defined as follows:
+ * TwirlParser implements a slightly modified version of the above grammar that removes some back-tracking within the 'mixed' non-terminal. It is defined as follows:
  * {{{
  *   parser : comment? whitespace? ('@' parentheses+)? templateContent
  *   templateContent : (importExpression | localDef | template | mixed)*
@@ -85,14 +85,14 @@ import scala.annotation.elidable._
  *   identifier : javaIdentStart javaIdentPart* // see java docs for what these two rules mean
  * }}}
  *
- * ScalaTemplateParser can detect several type of parse errors and provides line information. In all cases, the parser will continue parsing the best it can after encountering an error. The following errors are what can be detected:
+ * TwirlParser can detect several type of parse errors and provides line information. In all cases, the parser will continue parsing the best it can after encountering an error. The following errors are what can be detected:
  *   - EOF found when more input was expected.
  *   - Unmatched curly braces
  *   - Missing blocks after case and match statements
  *   - Invalid ("alone") '@' symbols.
  */
 
-class ScalaTemplateParser(val shouldParseInclusiveDot: Boolean) {
+class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
   import twirl.parser.TreeNodes._
   import scala.util.parsing.input.Positional

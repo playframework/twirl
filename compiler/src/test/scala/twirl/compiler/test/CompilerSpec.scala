@@ -8,7 +8,7 @@ import java.io._
 import org.specs2.mutable._
 import twirl.api.Html
 
-object TemplateCompilerSpec extends Specification {
+object CompilerSpec extends Specification {
 
   import Helper._
 
@@ -19,7 +19,7 @@ object TemplateCompilerSpec extends Specification {
   scalax.file.Path(generatedClasses).deleteRecursively()
   scalax.file.Path(generatedClasses).createDirectory()
 
-  "The template compiler" should {
+  "The twirl compiler" should {
 
     "compile successfully (real)" in {
       val helper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
@@ -117,9 +117,9 @@ object Helper {
 
     import java.net._
 
-    val templateCompiler = ScalaTemplateCompiler
+    val twirlCompiler = TwirlCompiler
 
-    val classloader = new URLClassLoader(Array(generatedClasses.toURI.toURL), Class.forName("twirl.compiler.ScalaTemplateCompiler").getClassLoader)
+    val classloader = new URLClassLoader(Array(generatedClasses.toURI.toURL), Class.forName("twirl.compiler.TwirlCompiler").getClassLoader)
 
     // A list of the compile errors from the most recent compiler run
     val compileErrors = new mutable.ListBuffer[CompilationError]
@@ -127,7 +127,7 @@ object Helper {
     val compiler = {
 
       def additionalClassPathEntry: Option[String] = Some(
-        Class.forName("twirl.compiler.ScalaTemplateCompiler").getClassLoader.asInstanceOf[URLClassLoader].getURLs.map(_.getFile).mkString(":"))
+        Class.forName("twirl.compiler.TwirlCompiler").getClassLoader.asInstanceOf[URLClassLoader].getURLs.map(_.getFile).mkString(":"))
 
       val settings = new Settings
       val scalaObjectSource = Class.forName("scala.ScalaObject").getProtectionDomain.getCodeSource
@@ -155,7 +155,7 @@ object Helper {
 
     def compile[T](templateName: String, className: String): T = {
       val templateFile = new File(sourceDir, templateName)
-      val Some(generated) = templateCompiler.compile(templateFile, sourceDir, generatedDir, "twirl.api.HtmlFormat")
+      val Some(generated) = twirlCompiler.compile(templateFile, sourceDir, generatedDir, "twirl.api.HtmlFormat")
 
       val mapper = GeneratedSource(generated)
 

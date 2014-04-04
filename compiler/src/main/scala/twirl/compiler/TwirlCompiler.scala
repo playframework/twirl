@@ -8,7 +8,7 @@ import scala.annotation.tailrec
 import scala.io.Codec
 import scala.reflect.internal.Flags
 import scalax.file._
-import twirl.parser.{ PlayScalaTemplateParser, ScalaTemplateParser }
+import twirl.parser.{ PlayTwirlParser, TwirlParser }
 
 object Hash {
 
@@ -150,7 +150,7 @@ case class GeneratedSourceVirtual(path: String) extends AbstractGeneratedSource 
   def content = _content
 }
 
-object ScalaTemplateCompiler {
+object TwirlCompiler {
   import twirl.parser.TreeNodes._
 
   val UTF8 = Codec("UTF-8")
@@ -177,7 +177,7 @@ object ScalaTemplateCompiler {
   }
 
   def parseAndGenerateCode(templateName: Array[String], content: Array[Byte], absolutePath: String, resultType: String, formatterType: String, additionalImports: String) = {
-    val templateParser = new PlayScalaTemplateParser
+    val templateParser = new PlayTwirlParser
     templateParser.parse(new String(content, UTF8.charSet)) match {
       case templateParser.Success(parsed: Template, rest) if rest.atEnd => {
         generateFinalTemplate(absolutePath,
@@ -199,7 +199,7 @@ object ScalaTemplateCompiler {
   }
 
   def parseAndGenerateCodeOptimisedParser(templateName: Array[String], content: Array[Byte], absolutePath: String, resultType: String, formatterType: String, additionalImports: String) = {
-    val templateParser = new ScalaTemplateParser(shouldParseInclusiveDot = false)
+    val templateParser = new TwirlParser(shouldParseInclusiveDot = false)
     templateParser.parse(new String(content, UTF8.charSet)) match {
       case templateParser.Success(parsed: Template, rest) if rest.atEnd => {
         generateFinalTemplate(absolutePath,
