@@ -41,7 +41,7 @@ object SbtTwirl extends AutoPlugin {
   )
 
   def dependencySettings: Seq[Setting[_]] = Seq(
-    twirlVersion := "1.0-SNAPSHOT", // TODO: read from properties file
+    twirlVersion := readResourceProperty("twirl.version.properties", "twirl.api.version"),
     libraryDependencies += "com.typesafe.twirl" %% "twirl-api" % twirlVersion.value
   )
 
@@ -60,5 +60,14 @@ object SbtTwirl extends AutoPlugin {
       templateImports.value,
       (excludeFilter in compileTemplates).value
     )
+  }
+
+  def readResourceProperty(resource: String, property: String): String = {
+    val props = new java.util.Properties
+    val stream = getClass.getClassLoader.getResourceAsStream(resource)
+    try { props.load(stream) }
+    catch { case e: Exception => }
+    finally { if (stream ne null) stream.close }
+    props.getProperty(property)
   }
 }

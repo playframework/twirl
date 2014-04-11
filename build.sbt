@@ -44,7 +44,8 @@ lazy val plugin = project
     name := "sbt-twirl",
     organization := "com.typesafe.sbt",
     sbtPlugin := true,
-    scriptedLaunchOpts += ("-Dproject.version=" + version.value)
+    scriptedLaunchOpts += ("-Dproject.version=" + version.value),
+    resourceGenerators in Compile <+= generateVersionFile
   )
 
 // Shared settings
@@ -65,6 +66,16 @@ def noPublish = Seq(
   publish := {},
   publishLocal := {}
 )
+
+// Version file
+
+def generateVersionFile = Def.task {
+  val version = (Keys.version in api).value
+  val file = (resourceManaged in Compile).value / "twirl.version.properties"
+  val content = s"twirl.api.version=$version"
+  IO.write(file, content)
+  Seq(file)
+}
 
 // Dependencies
 
