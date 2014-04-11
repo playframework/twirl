@@ -39,10 +39,12 @@ lazy val plugin = project
   .in(file("sbt-twirl"))
   .dependsOn(compiler)
   .settings(common: _*)
+  .settings(scriptedSettings: _*)
   .settings(
     name := "sbt-twirl",
     organization := "com.typesafe.sbt",
-    sbtPlugin := true
+    sbtPlugin := true,
+    scriptedLaunchOpts += ("-Dproject.version=" + version.value)
   )
 
 // Shared settings
