@@ -1,19 +1,25 @@
 lazy val twirl = project
   .in(file("."))
   .aggregate(api, parser, compiler)
-  .settings(commonSettings: _*)
+  .settings(common: _*)
+  .settings(crossScala: _*)
+  .settings(noPublish: _*)
 
 lazy val api = project
   .in(file("api"))
-  .settings(commonSettings: _*)
+  .settings(common: _*)
+  .settings(crossScala: _*)
   .settings(
+    name := "twirl-api",
     libraryDependencies += commonsLang
   )
 
 lazy val parser = project
   .in(file("parser"))
-  .settings(commonSettings: _*)
+  .settings(common: _*)
+  .settings(crossScala: _*)
   .settings(
+    name := "twirl-parser",
     libraryDependencies += specs2(scalaBinaryVersion.value),
     libraryDependencies += scalaIO(scalaBinaryVersion.value) % "test"
   )
@@ -21,19 +27,41 @@ lazy val parser = project
 lazy val compiler = project
   .in(file("compiler"))
   .dependsOn(api, parser % "compile;test->test")
-  .settings(commonSettings: _*)
+  .settings(common: _*)
+  .settings(crossScala: _*)
   .settings(
+    name := "twirl-compiler",
     libraryDependencies += scalaCompiler(scalaVersion.value),
     libraryDependencies += scalaIO(scalaBinaryVersion.value)
   )
 
+lazy val plugin = project
+  .in(file("sbt-twirl"))
+  .dependsOn(compiler)
+  .settings(common: _*)
+  .settings(
+    name := "sbt-twirl",
+    organization := "com.typesafe.sbt",
+    sbtPlugin := true
+  )
+
 // Shared settings
 
-lazy val commonSettings = Seq(
+def common = Seq(
+  organization := "com.typesafe.twirl",
+  version := "1.0-SNAPSHOT",
   scalaVersion := "2.10.4",
+  scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
+)
+
+def crossScala = Seq(
   crossScalaVersions := Seq("2.9.3", "2.10.4"),
-  scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8"),
   unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
+)
+
+def noPublish = Seq(
+  publish := {},
+  publishLocal := {}
 )
 
 // Dependencies
