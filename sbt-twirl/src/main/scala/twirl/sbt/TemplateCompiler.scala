@@ -8,10 +8,10 @@ import sbt._
 import twirl.compiler._
 
 object TemplateCompiler {
-  def compile(sourceDirectories: Seq[File], targetDirectory: File, templateFormats: Map[String, String], templateImports: Seq[String], excludeFilter: FileFilter) = {
+  def compile(sourceDirectories: Seq[File], targetDirectory: File, templateFormats: Map[String, String], templateImports: Seq[String], includeFilter: FileFilter, excludeFilter: FileFilter) = {
     try {
       syncGenerated(targetDirectory)
-      val templates = collectTemplates(sourceDirectories, templateFormats, excludeFilter)
+      val templates = collectTemplates(sourceDirectories, templateFormats, includeFilter, excludeFilter)
       for ((template, sourceDirectory, extension, format) <- templates) {
         val imports = formatImports(templateImports, extension)
         TwirlCompiler.compile(template, sourceDirectory, targetDirectory, format, imports)
@@ -28,9 +28,9 @@ object TemplateCompiler {
     generatedFiles(targetDirectory).map(GeneratedSource).foreach(_.sync)
   }
 
-  def collectTemplates(sourceDirectories: Seq[File], templateFormats: Map[String, String], excludeFilter: FileFilter): Seq[(File, File, String, String)] = {
+  def collectTemplates(sourceDirectories: Seq[File], templateFormats: Map[String, String], includeFilter: FileFilter, excludeFilter: FileFilter): Seq[(File, File, String, String)] = {
     sourceDirectories flatMap { sourceDirectory =>
-      (sourceDirectory ** "*.scala.*").get flatMap { file =>
+      (sourceDirectory ** includeFilter).get flatMap { file =>
         val ext = file.name.split('.').last
         if (!excludeFilter.accept(file) && templateFormats.contains(ext))
           Some((file, sourceDirectory, ext, templateFormats(ext)))
