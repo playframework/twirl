@@ -45,6 +45,7 @@ lazy val plugin = project
     organization := "com.typesafe.sbt",
     sbtPlugin := true,
     scriptedLaunchOpts += ("-Dproject.version=" + version.value),
+    scriptedLaunchOpts += "-XX:MaxPermSize=256m",
     resourceGenerators in Compile <+= generateVersionFile
   )
 
