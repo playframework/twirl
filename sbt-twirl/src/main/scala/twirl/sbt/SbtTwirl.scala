@@ -55,7 +55,7 @@ object SbtTwirl extends AutoPlugin {
   )
 
   def positionSettings: Seq[Setting[_]] = Seq(
-    sourcePositionMappers += PositionMapper.templates
+    sourcePositionMappers += TemplateProblem.positionMapper
   )
 
   def dependencySettings: Seq[Setting[_]] = Seq(

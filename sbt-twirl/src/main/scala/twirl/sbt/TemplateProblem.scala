@@ -4,12 +4,19 @@
 package twirl.sbt
 
 import sbt._
+import twirl.compiler.{ GeneratedSource, MaybeGeneratedSource }
 import xsbti.{ CompileFailed, Maybe, Position, Problem, Severity }
 
 object TemplateProblem {
 
+  val positionMapper: Position => Option[Position] = position => {
+    position.sourceFile collect {
+      case MaybeGeneratedSource(generated) => TemplatePosition(generated, position)
+    }
+  }
+
   def exception(source: File, message: String, line: Int, column: Int) = {
-    new ProblemException(TemplateProblem(message, new TemplatePosition(source, line, column)))
+    new ProblemException(TemplateProblem(message, TemplatePosition(source, line, column)))
   }
 
   class ProblemException(issues: Problem*) extends CompileFailed with FeedbackProvidedException {
@@ -23,29 +30,49 @@ object TemplateProblem {
     def severity: Severity = Severity.Error
   }
 
-  class TemplatePosition(source: File, lineNo: Int, column: Int) extends Position {
-    lazy val line: Maybe[Integer] = Maybe.just(lineNo)
-
-    lazy val lineContent: String = {
-      line flatMap { ln => sourceLines.lift(ln - 1) } getOrElse ""
+  object TemplatePosition {
+    def apply(source: File, line: Int, column: Int): TemplatePosition = {
+      val lines = IO.readLines(source)
+      val offset = offsetBefore(lines, line) + column
+      val mapping = TemplateMapping(line, column, offset, lines(line - 1))
+      new TemplatePosition(Some(source), mapping)
     }
 
-    val offset: Maybe[Integer] = Maybe.nothing()
-
-    lazy val pointer: Maybe[Integer] = Maybe.just(column)
-
-    lazy val pointerSpace: Maybe[String] = maybe {
-      pointer map { p =>
-        lineContent.take(p) map { case '\t' => '\t'; case _ => ' ' }
-      }
+    def apply(generated: GeneratedSource, position: Position): TemplatePosition = {
+      val line = position.line map { l => generated.mapLine(l) } getOrElse 0
+      val lines = generated.source.toSeq flatMap { file => IO.readLines(file) }
+      val offset = position.offset map { o => generated.mapPosition(o) } getOrElse 0
+      val column = offset - offsetBefore(lines, line)
+      val mapping = TemplateMapping(line, column, offset, lines(line - 1))
+      new TemplatePosition(generated.source, mapping)
     }
 
-    val sourceFile: Maybe[File] = Maybe.just(source)
-
-    val sourcePath: Maybe[String] = Maybe.just(source.getCanonicalPath)
-
-    private lazy val sourceLines: Seq[String] = IO.readLines(source)
+    def offsetBefore(lines: Seq[String], line: Int) = {
+      lines.take(line - 1).map(_.size + 1).sum
+    }
   }
+
+  class TemplatePosition(source: Option[File], mapping: TemplateMapping) extends Position {
+    val line: Maybe[Integer] = Maybe.just(mapping.line)
+
+    val lineContent: String = mapping.content
+
+    val offset: Maybe[Integer] = Maybe.just(mapping.offset)
+
+    val pointer: Maybe[Integer] = Maybe.just(mapping.column)
+
+    val pointerSpace: Maybe[String] = Maybe.just {
+      lineContent.take(mapping.column) map { case '\t' => '\t'; case _ => ' ' }
+    }
+
+    val sourceFile: Maybe[File] = maybe(source)
+
+    val sourcePath: Maybe[String] = maybe {
+      source map (_.getCanonicalPath)
+    }
+  }
+
+  case class TemplateMapping(line: Int, column: Int, offset: Int, content: String)
 
   def maybe[A](o: Option[A]): Maybe[A] = o match {
     case Some(v) => Maybe.just(v)
