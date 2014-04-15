@@ -27,6 +27,7 @@ object SbtTwirl extends AutoPlugin {
   override def projectSettings: Seq[Setting[_]] =
     inConfig(Compile)(twirlSettings) ++
     inConfig(Test)(twirlSettings) ++
+    positionSettings ++
     dependencySettings
 
   def twirlSettings: Seq[Setting[_]] = Seq(
@@ -51,6 +52,10 @@ object SbtTwirl extends AutoPlugin {
 
     sourceGenerators <+= compileTemplates,
     managedSourceDirectories <+= target in compileTemplates
+  )
+
+  def positionSettings: Seq[Setting[_]] = Seq(
+    sourcePositionMappers += PositionMapper.templates
   )
 
   def dependencySettings: Seq[Setting[_]] = Seq(
