@@ -47,7 +47,7 @@ object PositionMapper {
         }
 
         private lazy val sourceLines: Seq[String] = {
-          generatedSource.source.toSeq flatMap { file => IO.read(file).split('\n') }
+          generatedSource.source.toSeq flatMap { file => IO.readLines(file) }
         }
 
       }
