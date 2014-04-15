@@ -8,7 +8,7 @@ import sbt._
 import twirl.compiler._
 
 object TemplateCompiler {
-  def compile(sourceDirectories: Seq[File], targetDirectory: File, templateFormats: Map[String, String], templateImports: Seq[String], includeFilter: FileFilter, excludeFilter: FileFilter) = {
+  def compile(sourceDirectories: Seq[File], targetDirectory: File, templateFormats: Map[String, String], templateImports: Seq[String], includeFilter: FileFilter, excludeFilter: FileFilter, log: Logger) = {
     try {
       syncGenerated(targetDirectory)
       val templates = collectTemplates(sourceDirectories, templateFormats, includeFilter, excludeFilter)
@@ -17,7 +17,7 @@ object TemplateCompiler {
         TwirlCompiler.compile(template, sourceDirectory, targetDirectory, format, imports)
       }
       generatedFiles(targetDirectory).map(_.getAbsoluteFile)
-    } catch handleError
+    } catch handleError(log)
   }
 
   def generatedFiles(targetDirectory: File): Seq[File] = {
@@ -44,9 +44,12 @@ object TemplateCompiler {
     templateImports.map("import " + _.replace("%format%", extension)).mkString("\n")
   }
 
-  val handleError: PartialFunction[Throwable, Nothing] = {
+  def handleError(log: Logger): PartialFunction[Throwable, Nothing] = {
     case TemplateCompilationError(source, message, line, column) =>
-      throw new Exception("TODO: problem reporting")
+      val exception = TemplateProblem.exception(source, message, line, column)
+      val reporter = new LoggerReporter(10, log)
+      exception.problems foreach { p => reporter.display(p.position, p.message, p.severity) }
+      throw exception
     case e => throw e
   }
 }

@@ -77,7 +77,8 @@ object SbtTwirl extends AutoPlugin {
       templateFormats.value,
       templateImports.value,
       (includeFilter in compileTemplates).value,
-      (excludeFilter in compileTemplates).value
+      (excludeFilter in compileTemplates).value,
+      streams.value.log
     )
   }
 
