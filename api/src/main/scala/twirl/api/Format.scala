@@ -3,6 +3,8 @@
  */
 package twirl.api
 
+import scala.collection.immutable
+
 /**
  * A type that works with BaseScalaTemplate
  * This used to support +=, but no longer is required to.
@@ -37,5 +39,5 @@ trait Format[T <: Appendable[T]] {
   /**
    * Fill an appendable with the elements
    */
-  def fill(elements: TraversableOnce[T]): T
+  def fill(elements: immutable.Seq[T]): T
 }

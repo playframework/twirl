@@ -6,6 +6,7 @@ package test
 
 import org.specs2.mutable._
 import twirl.api._
+import scala.collection.immutable
 
 object TemplateUtilsSpec extends Specification {
 
@@ -27,7 +28,7 @@ object TemplateUtilsSpec extends Specification {
           def raw(text: String) = Html(text)
           def escape(text: String) = Html(text.replace("<", "&lt;"))
           def empty = Html("")
-          def fill(elements: TraversableOnce[Html]) = Html("")
+          def fill(elements: immutable.Seq[Html]) = Html("")
         }
 
         val html = HtmlFormat.raw("<h1>").body + HtmlFormat.escape("Hello <world>").body + HtmlFormat.raw("</h1>").body
@@ -45,7 +46,7 @@ object TemplateUtilsSpec extends Specification {
           def raw(text: String) = Text(text)
           def escape(text: String) = Text(text)
           def empty = Text("")
-          def fill(elements: TraversableOnce[Text]) = Text("")
+          def fill(elements: immutable.Seq[Text]) = Text("")
         }
 
         val text = TextFormat.raw("<h1>").body + TextFormat.escape("Hello <world>").body + TextFormat.raw("</h1>").body

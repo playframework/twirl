@@ -83,6 +83,16 @@ object CompilerSpec extends Specification {
       result.length must_== input.length
       result must_== input
     }
+
+    "allow rendering a template twice" in {
+      val helper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
+      val inner = helper.compile[((String, List[String]) => (Int) => Html)]("real.scala.html", "html.real")("World", List("A", "B"))(4)
+
+      val outer = helper.compile[Html => Html]("htmlParam.scala.html", "html.htmlParam")
+
+      outer(inner).body must contain("Hello World")
+      outer(inner).body must contain("Hello World")
+    }
   }
 
   "StringGrouper" should {
@@ -147,8 +157,6 @@ object Helper {
           compileErrors.append(CompilationError(msg, pos.line, pos.point))
         }
       })
-
-      new compiler.Run
 
       compiler
     }
