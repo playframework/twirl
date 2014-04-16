@@ -1,6 +1,6 @@
 package test
 
-import twirl.api._
+import play.twirl.api._
 
 object Test extends App {
   def test(template: HtmlFormat.Appendable, expected: String) = {
