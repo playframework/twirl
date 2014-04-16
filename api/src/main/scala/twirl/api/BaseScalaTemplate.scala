@@ -24,12 +24,20 @@ case class BaseScalaTemplate[T <: Appendable[T], F <: Format[T]](format: F) {
       case Some(v) => _display_(v)
       case xml: scala.xml.NodeSeq => format.raw(xml.toString())
       case escapeds: immutable.Seq[_] => format.fill(escapeds.map(_display_))
-      case escapeds: TraversableOnce[_] => format.fill(escapeds.map(_display_).to[immutable.Seq])
-      case escapeds: Array[_] => format.fill(escapeds.view.map(_display_).to[immutable.Seq])
+      case escapeds: TraversableOnce[_] => format.fill(immutableSeq(escapeds.map(_display_)))
+      case escapeds: Array[_] => format.fill(immutableSeq(escapeds.view.map(_display_)))
       case string: String => format.escape(string)
       case v if v != null => format.escape(v.toString)
       case _ => format.empty
     }
   }
 
+  /**
+   * For scala 2.9 compatibility, which doesn't have `to[immutable.Seq]`.
+   */
+  private def immutableSeq[A](seq: TraversableOnce[A]): immutable.Seq[A] = {
+    val b = Vector.newBuilder[A]
+    b ++= seq
+    b.result
+  }
 }
