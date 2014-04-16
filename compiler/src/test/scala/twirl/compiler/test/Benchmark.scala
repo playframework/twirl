@@ -35,13 +35,13 @@ object Benchmark extends App {
   for (i <- 1 to 100000) {
     template("World", input)(4).body
   }
-  println(s"First run: ${System.currentTimeMillis() - start1}ms")
+  println("First run: " + (System.currentTimeMillis() - start1) + "ms")
 
   println("Starting second run...")
   val start2 = System.currentTimeMillis()
   for (i <- 1 to 100000) {
     template("World", input)(4).body
   }
-  println(s"Second run: ${System.currentTimeMillis() - start2}ms")
+  println("Second run: " + (System.currentTimeMillis() - start2) + "ms")
 
 }
