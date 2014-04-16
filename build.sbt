@@ -32,7 +32,8 @@ lazy val compiler = project
   .settings(
     name := "twirl-compiler",
     libraryDependencies += scalaCompiler(scalaVersion.value),
-    libraryDependencies += scalaIO(scalaBinaryVersion.value)
+    libraryDependencies += scalaIO(scalaBinaryVersion.value),
+    fork in run := true
   )
 
 lazy val plugin = project

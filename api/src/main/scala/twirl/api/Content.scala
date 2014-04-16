@@ -3,6 +3,8 @@
  */
 package twirl.api
 
+import scala.collection.immutable
+
 /**
  * Generic type representing content to be sent over an HTTP response.
  */
@@ -30,7 +32,7 @@ trait Content {
  * @param text Formatted content
  * @tparam A self-type
  */
-abstract class BufferedContent[A <: BufferedContent[A]](protected val elements: TraversableOnce[A], protected val text: String) extends Appendable[A] with Content { this: A =>
+abstract class BufferedContent[A <: BufferedContent[A]](protected val elements: immutable.Seq[A], protected val text: String) extends Appendable[A] with Content { this: A =>
   protected def buildString(builder: StringBuilder) {
     if (!elements.isEmpty) {
       elements.foreach { e =>

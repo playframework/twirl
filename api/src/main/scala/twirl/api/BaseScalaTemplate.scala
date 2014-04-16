@@ -3,6 +3,8 @@
  */
 package twirl.api
 
+import scala.collection.immutable
+
 case class BaseScalaTemplate[T <: Appendable[T], F <: Format[T]](format: F) {
 
   // The overloaded methods are here for speed. The compiled templates
@@ -10,7 +12,7 @@ case class BaseScalaTemplate[T <: Appendable[T], F <: Format[T]](format: F) {
   def _display_(x: AnyVal): T = format.escape(x.toString)
   def _display_(x: String): T = format.escape(x)
   def _display_(x: Unit): T = format.empty
-  def _display_(x: scala.xml.NodeSeq): T = format.raw(x.toString)
+  def _display_(x: scala.xml.NodeSeq): T = format.raw(x.toString())
   def _display_(x: T): T = x
 
   def _display_(o: Any)(implicit m: Manifest[T]): T = {
@@ -20,9 +22,10 @@ case class BaseScalaTemplate[T <: Appendable[T], F <: Format[T]](format: F) {
       case () => format.empty
       case None => format.empty
       case Some(v) => _display_(v)
-      case xml: scala.xml.NodeSeq => format.raw(xml.toString)
-      case escapeds: TraversableOnce[_] => format.fill(escapeds.map(_display_(_)))
-      case escapeds: Array[_] => format.fill(escapeds.toIterator.map(_display_(_)))
+      case xml: scala.xml.NodeSeq => format.raw(xml.toString())
+      case escapeds: immutable.Seq[_] => format.fill(escapeds.map(_display_))
+      case escapeds: TraversableOnce[_] => format.fill(escapeds.map(_display_).to[immutable.Seq])
+      case escapeds: Array[_] => format.fill(escapeds.view.map(_display_).to[immutable.Seq])
       case string: String => format.escape(string)
       case v if v != null => format.escape(v.toString)
       case _ => format.empty

@@ -4,6 +4,7 @@
 package twirl.api
 
 import org.apache.commons.lang3.StringEscapeUtils
+import scala.collection.immutable
 
 object MimeTypes {
   val TEXT       = "text/plain"
@@ -15,9 +16,9 @@ object MimeTypes {
 /**
  * Content type used in default HTML templates.
  */
-class Html private (elements: TraversableOnce[Html], text: String) extends BufferedContent[Html](elements, text) {
+class Html private (elements: immutable.Seq[Html], text: String) extends BufferedContent[Html](elements, text) {
   def this(text: String) = this(Nil, text)
-  def this(elements: TraversableOnce[Html]) = this(elements, "")
+  def this(elements: immutable.Seq[Html]) = this(elements, "")
 
   /**
    * Content type of HTML.
@@ -74,16 +75,16 @@ object HtmlFormat extends Format[Html] {
   /**
    * Create an HTML Fragment that holds other fragments.
    */
-  def fill(elements: TraversableOnce[Html]): Html = new Html(elements)
+  def fill(elements: immutable.Seq[Html]): Html = new Html(elements)
 
 }
 
 /**
  * Content type used in default text templates.
  */
-class Txt private (elements: TraversableOnce[Txt], text: String) extends BufferedContent[Txt](elements, text) {
+class Txt private (elements: immutable.Seq[Txt], text: String) extends BufferedContent[Txt](elements, text) {
   def this(text: String) = this(Nil, text)
-  def this(elements: TraversableOnce[Txt]) = this(elements, "")
+  def this(elements: immutable.Seq[Txt]) = this(elements, "")
 
   /**
    * Content type of text (`text/plain`).
@@ -128,16 +129,16 @@ object TxtFormat extends Format[Txt] {
   /**
    * Create an Txt Fragment that holds other fragments.
    */
-  def fill(elements: TraversableOnce[Txt]): Txt = new Txt(elements)
+  def fill(elements: immutable.Seq[Txt]): Txt = new Txt(elements)
 
 }
 
 /**
  * Content type used in default XML templates.
  */
-class Xml private (elements: TraversableOnce[Xml], text: String) extends BufferedContent[Xml](elements, text) {
+class Xml private (elements: immutable.Seq[Xml], text: String) extends BufferedContent[Xml](elements, text) {
   def this(text: String) = this(Nil, text)
-  def this(elements: TraversableOnce[Xml]) = this(elements, "")
+  def this(elements: immutable.Seq[Xml]) = this(elements, "")
 
   /**
    * Content type of XML (`application/xml`).
@@ -182,16 +183,16 @@ object XmlFormat extends Format[Xml] {
   /**
    * Create an XML Fragment that holds other fragments.
    */
-  def fill(elements: TraversableOnce[Xml]): Xml = new Xml(elements)
+  def fill(elements: immutable.Seq[Xml]): Xml = new Xml(elements)
 
 }
 
 /**
  * Type used in default JavaScript templates.
  */
-class JavaScript private (elements: TraversableOnce[JavaScript], text: String) extends BufferedContent[JavaScript](elements, text) {
+class JavaScript private (elements: immutable.Seq[JavaScript], text: String) extends BufferedContent[JavaScript](elements, text) {
   def this(text: String) = this(Nil, text)
-  def this(elements: TraversableOnce[JavaScript]) = this(elements, "")
+  def this(elements: immutable.Seq[JavaScript]) = this(elements, "")
 
   /**
    * Content type of JavaScript
@@ -235,6 +236,6 @@ object JavaScriptFormat extends Format[JavaScript] {
   /**
    * Create an JavaScript Fragment that holds other fragments.
    */
-  def fill(elements: TraversableOnce[JavaScript]): JavaScript = new JavaScript(elements)
+  def fill(elements: immutable.Seq[JavaScript]): JavaScript = new JavaScript(elements)
 
 }
