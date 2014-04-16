@@ -11,7 +11,8 @@ lazy val api = project
   .settings(crossScala: _*)
   .settings(
     name := "twirl-api",
-    libraryDependencies += commonsLang
+    libraryDependencies += commonsLang,
+    libraryDependencies += specs2(scalaBinaryVersion.value)
   )
 
 lazy val parser = project
