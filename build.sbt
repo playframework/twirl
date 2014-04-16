@@ -53,7 +53,7 @@ lazy val plugin = project
 // Shared settings
 
 def common = Seq(
-  organization := "com.typesafe.twirl",
+  organization := "com.typesafe.play",
   version := "1.0-SNAPSHOT",
   scalaVersion := "2.10.4",
   scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
