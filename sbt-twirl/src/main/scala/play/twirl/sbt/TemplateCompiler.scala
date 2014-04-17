@@ -8,13 +8,22 @@ import sbt._
 import play.twirl.compiler._
 
 object TemplateCompiler {
-  def compile(sourceDirectories: Seq[File], targetDirectory: File, templateFormats: Map[String, String], templateImports: Seq[String], includeFilter: FileFilter, excludeFilter: FileFilter, log: Logger) = {
+  def compile(
+    sourceDirectories: Seq[File],
+    targetDirectory: File,
+    templateFormats: Map[String, String],
+    templateImports: Seq[String],
+    includeFilter: FileFilter,
+    excludeFilter: FileFilter,
+    useOldParser: Boolean,
+    log: Logger) = {
+
     try {
       syncGenerated(targetDirectory)
       val templates = collectTemplates(sourceDirectories, templateFormats, includeFilter, excludeFilter)
       for ((template, sourceDirectory, extension, format) <- templates) {
         val imports = formatImports(templateImports, extension)
-        TwirlCompiler.compile(template, sourceDirectory, targetDirectory, format, imports)
+        TwirlCompiler.compile(template, sourceDirectory, targetDirectory, format, imports, useOldParser)
       }
       generatedFiles(targetDirectory).map(_.getAbsoluteFile)
     } catch handleError(log)

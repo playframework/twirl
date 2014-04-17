@@ -11,6 +11,7 @@ object Import {
     val twirlVersion = SettingKey[String]("twirl-version", "Twirl version used for twirl-api dependency")
     val templateFormats = SettingKey[Map[String, String]]("twirl-template-formats", "Defined twirl template formats")
     val templateImports = SettingKey[Seq[String]]("twirl-template-imports", "Extra imports for twirl templates")
+    val useOldParser = SettingKey[Boolean]("twirl-use-old-parser", "Use the original Play template parser")
     val compileTemplates = TaskKey[Seq[File]]("twirl-compile-templates", "Compile twirl templates into scala source files")
   }
 }
@@ -48,6 +49,8 @@ object SbtTwirl extends AutoPlugin {
 
     target in compileTemplates := crossTarget.value / "twirl" / Defaults.nameForSrc(configuration.value.name),
 
+    useOldParser := false,
+
     compileTemplates := compileTemplatesTask.value,
 
     sourceGenerators <+= compileTemplates,
@@ -78,6 +81,7 @@ object SbtTwirl extends AutoPlugin {
       templateImports.value,
       (includeFilter in compileTemplates).value,
       (excludeFilter in compileTemplates).value,
+      useOldParser.value,
       streams.value.log
     )
   }

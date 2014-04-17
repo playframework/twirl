@@ -155,25 +155,30 @@ object TwirlCompiler {
 
   val UTF8 = Codec("UTF-8")
 
-  def compile(source: File, sourceDirectory: File, generatedDirectory: File, formatterType: String, additionalImports: String = "") = {
+  def compile(source: File, sourceDirectory: File, generatedDirectory: File, formatterType: String, additionalImports: String = "", useOldParser: Boolean = false) = {
     val resultType = formatterType + ".Appendable"
     val (templateName, generatedSource) = generatedFile(source, sourceDirectory, generatedDirectory)
     if (generatedSource.needRecompilation(additionalImports)) {
-      val generated = parseAndGenerateCode(templateName, Path(source).byteArray, source.getAbsolutePath, resultType, formatterType, additionalImports)
-
+      val generated = parseAndGenerateCode(templateName, Path(source).byteArray, source.getAbsolutePath, resultType, formatterType, additionalImports, useOldParser)
       Path(generatedSource.file).write(generated.toString)
-
       Some(generatedSource.file)
     } else {
       None
     }
   }
 
-  def compileVirtual(content: String, source: File, sourceDirectory: File, resultType: String, formatterType: String, additionalImports: String = "") = {
+  def compileVirtual(content: String, source: File, sourceDirectory: File, resultType: String, formatterType: String, additionalImports: String = "", useOldParser: Boolean = false) = {
     val (templateName, generatedSource) = generatedFileVirtual(source, sourceDirectory)
-    val generated = parseAndGenerateCode(templateName, content.getBytes(UTF8.charSet), source.getAbsolutePath, resultType, formatterType, additionalImports)
+    val generated = parseAndGenerateCode(templateName, content.getBytes(UTF8.charSet), source.getAbsolutePath, resultType, formatterType, additionalImports, useOldParser)
     generatedSource.setContent(generated)
     generatedSource
+  }
+
+  def parseAndGenerateCode(templateName: Array[String], content: Array[Byte], absolutePath: String, resultType: String, formatterType: String, additionalImports: String, useOldParser: Boolean) = {
+    if (useOldParser)
+      parseAndGenerateCodeOldParser(templateName, content, absolutePath, resultType, formatterType, additionalImports)
+    else
+      parseAndGenerateCodeNewParser(templateName, content, absolutePath, resultType, formatterType, additionalImports)
   }
 
   def parseAndGenerateCodeOldParser(templateName: Array[String], content: Array[Byte], absolutePath: String, resultType: String, formatterType: String, additionalImports: String) = {
@@ -198,7 +203,7 @@ object TwirlCompiler {
     }
   }
 
-  def parseAndGenerateCode(templateName: Array[String], content: Array[Byte], absolutePath: String, resultType: String, formatterType: String, additionalImports: String) = {
+  def parseAndGenerateCodeNewParser(templateName: Array[String], content: Array[Byte], absolutePath: String, resultType: String, formatterType: String, additionalImports: String) = {
     val templateParser = new TwirlParser(shouldParseInclusiveDot = false)
     templateParser.parse(new String(content, UTF8.charSet)) match {
       case templateParser.Success(parsed: Template, rest) if rest.atEnd => {
