@@ -289,9 +289,10 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       } else if (check(suffix)) {
         stack -= 1
         sb.append(suffix)
-      } else if (input.isEOF())
+      } else if (input.isEOF()) {
+        error("Expected '" + suffix + "', but instead found EOF")
         stack = 0
-      else {
+      } else {
         sb.append(any())
       }
     }

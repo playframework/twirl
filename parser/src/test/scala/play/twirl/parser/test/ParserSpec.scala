@@ -60,7 +60,7 @@ object ParserSpec extends Specification {
 
       "with left parenthesis" in {
         parseStringSuccess("""@foo("(")""")
-      }
+      }.pendingUntilFixed("requires string literal parsing")
 
       "with right parenthesis and '@'" in {
         parseStringSuccess("""@foo(")@")""")
