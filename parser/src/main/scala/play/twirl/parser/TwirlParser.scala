@@ -3,15 +3,13 @@
  */
 package play.twirl.parser
 
-import scala.collection.mutable.ArrayBuffer
-import scala.util.parsing.input.OffsetPosition
-import scala.collection.mutable.ListBuffer
-import scala.util.parsing.input.OffsetPosition
-import scala.collection.mutable.Buffer
-import scala.collection.mutable.BufferLike
-import scala.util.parsing.input.OffsetPosition
 import scala.annotation.elidable
 import scala.annotation.elidable._
+import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.Buffer
+import scala.collection.mutable.BufferLike
+import scala.collection.mutable.ListBuffer
+import scala.util.parsing.input.OffsetPosition
 
 /**
  * TwirlParser is a recursive descent parser for a modified grammar of the Play2 template language as loosely defined [[http://www.playframework.com/documentation/2.1.x/ here]] and more rigorously defined by the original template parser, `play.templates.ScalaTemplateCompiler.TemplateParser`.
@@ -275,28 +273,61 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
    *
    *  Terminates at EOF.
    */
-  def recursiveTag(prefix: String, suffix: String): String = {
-    var stack = 0
-    val sb = new StringBuffer
+  def recursiveTag(prefix: String, suffix: String, allowStringLiterals: Boolean = false): String = {
     if (check(prefix)) {
-      stack += 1
+      var stack = 1
+      val sb = new StringBuffer
       sb.append(prefix)
-    }
-    while (stack > 0) {
-      if (check(prefix)) {
-        stack += 1
-        sb.append(prefix)
-      } else if (check(suffix)) {
-        stack -= 1
-        sb.append(suffix)
-      } else if (input.isEOF())
-        stack = 0
-      else {
-        sb.append(any())
+      while (stack > 0) {
+        if (check(prefix)) {
+          stack += 1
+          sb.append(prefix)
+        } else if (check(suffix)) {
+          stack -= 1
+          sb.append(suffix)
+        } else if (input.isEOF()) {
+          error("Expected '" + suffix + "', but instead found EOF")
+          stack = 0
+        } else if (allowStringLiterals) {
+          stringLiteral() match {
+            case null => sb.append(any())
+            case s => sb.append(s)
+          }
+        } else {
+          sb.append(any())
+        }
       }
-    }
+      sb.toString()
+    } else null
+  }
 
-    if (sb.length() > 0) {
+  /**
+   * Match a string literal, allowing for escaped quotes.
+   * Terminates at EOF.
+   */
+  def stringLiteral(): String = {
+    if (check("\"")) {
+      var within = true
+      val sb = new StringBuffer
+      sb.append("\"")
+      while (within) {
+        if (check("\"")) { // end of string literal
+          sb.append("\"")
+          within = false
+        } else if (check("\\")) {
+          sb.append("\\")
+          if (check("\"")) { // escaped quote
+            sb.append("\"")
+          } else if (check("\\")) { // escaped escape
+            sb.append("\\")
+          }
+        } else if (input.isEOF()) {
+          error("Expected '\"', but instead found EOF")
+          within = false
+        } else {
+          sb.append(any())
+        }
+      }
       sb.toString()
     } else null
   }
@@ -313,7 +344,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     ab
   }
 
-  def parentheses(): String = recursiveTag("(", ")")
+  def parentheses(): String = recursiveTag("(", ")", allowStringLiterals = true)
 
   def squareBrackets(): String = recursiveTag("[", "]")
 

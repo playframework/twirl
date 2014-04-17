@@ -8,21 +8,31 @@ import java.io._
 import org.specs2.mutable._
 import play.twirl.api.Html
 
-object CompilerSpec extends Specification {
+class CompilerSpec extends CompilerTests
+
+class OldParserCompilerSpec extends CompilerTests(oldParser = true)
+
+abstract class CompilerTests(oldParser: Boolean = false) extends Specification {
 
   import Helper._
 
+  val parserName = if (oldParser) "old" else "new"
+  val testName = "Twirl compiler (with " + parserName + " parser)"
+  
+  val dirName = parserName + "-parser"
   val sourceDir = new File("compiler/src/test/resources")
-  val generatedDir = new File("compiler/target/test/generated-templates")
-  val generatedClasses = new File("compiler/target/test/generated-classes")
+  val generatedDir = new File("compiler/target/test/" + dirName + "/generated-templates")
+  val generatedClasses = new File("compiler/target/test/" + dirName + "/generated-classes")
   scalax.file.Path(generatedDir).deleteRecursively()
   scalax.file.Path(generatedClasses).deleteRecursively()
   scalax.file.Path(generatedClasses).createDirectory()
 
-  "The twirl compiler" should {
+  def newCompilerHelper = new CompilerHelper(sourceDir, generatedDir, generatedClasses, oldParser)
+
+  testName should {
 
     "compile successfully (real)" in {
-      val helper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
+      val helper = newCompilerHelper
       helper.compile[((String, List[String]) => (Int) => Html)]("real.scala.html", "html.real")("World", List("A", "B"))(4).toString.trim must beLike {
         case html =>
           {
@@ -35,14 +45,14 @@ object CompilerSpec extends Specification {
     }
 
     "compile successfully (static)" in {
-      val helper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
+      val helper = newCompilerHelper
       helper.compile[(() => Html)]("static.scala.html", "html.static")().toString.trim must be_==(
         "<h1>It works</h1>")
     }
 
     "compile successfully (patternMatching)" in {
       val testParam = "12345"
-      val helper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
+      val helper = newCompilerHelper
       helper.compile[((String) => Html)]("patternMatching.scala.html", "html.patternMatching")(testParam).toString.trim must be_==(
         """@test
 @test.length
@@ -57,19 +67,19 @@ object CompilerSpec extends Specification {
     }
 
     "compile successfully (hello)" in {
-      val helper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
+      val helper = newCompilerHelper
       val hello = helper.compile[((String) => Html)]("hello.scala.html", "html.hello")("World").toString.trim
       hello must be_==("<h1>Hello World!</h1><h1>xml</h1>")
     }
 
     "compile successfully (set)" in {
-      val helper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
+      val helper = newCompilerHelper
       val set = helper.compile[((collection.immutable.Set[String]) => Html)]("set.scala.html", "html.set")(Set("first","second","third")).toString.trim.replace("\n","").replaceAll("\\s+", "")
       set must be_==("firstsecondthird")
     }
 
     "fail compilation for error.scala.html" in {
-      val helper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
+      val helper = newCompilerHelper
       helper.compile[(() => Html)]("error.scala.html", "html.error") must throwA[CompilationError].like {
         case CompilationError(_, 2, 12) => ok
         case _ => ko
@@ -77,7 +87,7 @@ object CompilerSpec extends Specification {
     }
 
     "compile templates that have contiguous strings > than 64k" in {
-      val helper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
+      val helper = newCompilerHelper
       val input = (scalax.file.Path(sourceDir) / "long.scala.html").string
       val result = helper.compile[(() => Html)]("long.scala.html", "html.long")().toString
       result.length must_== input.length
@@ -85,7 +95,7 @@ object CompilerSpec extends Specification {
     }
 
     "allow rendering a template twice" in {
-      val helper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
+      val helper = newCompilerHelper
       val inner = helper.compile[((String, List[String]) => (Int) => Html)]("htmlInner.scala.html", "html.htmlInner")("World", List("A", "B"))(4)
 
       val outer = helper.compile[Html => Html]("htmlParam.scala.html", "html.htmlParam")
@@ -118,7 +128,7 @@ object Helper {
 
   case class CompilationError(message: String, line: Int, column: Int) extends RuntimeException(message)
 
-  class CompilerHelper(sourceDir: File, generatedDir: File, generatedClasses: File) {
+  class CompilerHelper(sourceDir: File, generatedDir: File, generatedClasses: File, useOldParser: Boolean = false) {
     import scala.tools.nsc.Global
     import scala.tools.nsc.Settings
     import scala.tools.nsc.reporters.ConsoleReporter
@@ -163,7 +173,7 @@ object Helper {
 
     def compile[T](templateName: String, className: String): T = {
       val templateFile = new File(sourceDir, templateName)
-      val Some(generated) = twirlCompiler.compile(templateFile, sourceDir, generatedDir, "play.twirl.api.HtmlFormat")
+      val Some(generated) = twirlCompiler.compile(templateFile, sourceDir, generatedDir, "play.twirl.api.HtmlFormat", useOldParser = useOldParser)
 
       val mapper = GeneratedSource(generated)
 
