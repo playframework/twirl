@@ -9,6 +9,7 @@ lazy val api = project
   .in(file("api"))
   .settings(common: _*)
   .settings(crossScala: _*)
+  .settings(publishMaven: _*)
   .settings(
     name := "twirl-api",
     libraryDependencies += commonsLang,
@@ -19,6 +20,7 @@ lazy val parser = project
   .in(file("parser"))
   .settings(common: _*)
   .settings(crossScala: _*)
+  .settings(publishMaven: _*)
   .settings(
     name := "twirl-parser",
     libraryDependencies += specs2(scalaBinaryVersion.value),
@@ -30,6 +32,7 @@ lazy val compiler = project
   .dependsOn(api, parser % "compile;test->test")
   .settings(common: _*)
   .settings(crossScala: _*)
+  .settings(publishMaven: _*)
   .settings(
     name := "twirl-compiler",
     libraryDependencies += scalaCompiler(scalaVersion.value),
@@ -42,6 +45,7 @@ lazy val plugin = project
   .dependsOn(compiler)
   .settings(common: _*)
   .settings(scriptedSettings: _*)
+  .settings(publishSbtPlugin: _*)
   .settings(
     name := "sbt-twirl",
     organization := "com.typesafe.sbt",
@@ -63,6 +67,23 @@ def common = Seq(
 def crossScala = Seq(
   crossScalaVersions := Seq("2.9.3", "2.10.4"),
   unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
+)
+
+def publishMaven = Seq(
+  publishTo := {
+    if (isSnapshot.value) Some(typesafeRepo("snapshots"))
+    else Some(typesafeRepo("releases"))
+  }
+)
+
+def typesafeRepo(repo: String) = s"typesafe $repo" at s"http://private-repo.typesafe.com/typesafe/maven-$repo"
+
+def publishSbtPlugin = Seq(
+  publishMavenStyle := false,
+  publishTo := {
+    if (isSnapshot.value) Some(Classpaths.sbtPluginSnapshots)
+    else Some(Classpaths.sbtPluginReleases)
+  }
 )
 
 def noPublish = Seq(
