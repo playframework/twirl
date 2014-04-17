@@ -276,28 +276,24 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
    *  Terminates at EOF.
    */
   def recursiveTag(prefix: String, suffix: String): String = {
-    var stack = 0
-    val sb = new StringBuffer
     if (check(prefix)) {
-      stack += 1
+      var stack = 1
+      val sb = new StringBuffer
       sb.append(prefix)
-    }
-    while (stack > 0) {
-      if (check(prefix)) {
-        stack += 1
-        sb.append(prefix)
-      } else if (check(suffix)) {
-        stack -= 1
-        sb.append(suffix)
-      } else if (input.isEOF()) {
-        error("Expected '" + suffix + "', but instead found EOF")
-        stack = 0
-      } else {
-        sb.append(any())
+      while (stack > 0) {
+        if (check(prefix)) {
+          stack += 1
+          sb.append(prefix)
+        } else if (check(suffix)) {
+          stack -= 1
+          sb.append(suffix)
+        } else if (input.isEOF()) {
+          error("Expected '" + suffix + "', but instead found EOF")
+          stack = 0
+        } else {
+          sb.append(any())
+        }
       }
-    }
-
-    if (sb.length() > 0) {
       sb.toString()
     } else null
   }
