@@ -16,10 +16,18 @@ object OldParserSpec extends Specification {
   }
 
   def parse(templateName: String) = {
-    parser.parse(get(templateName))
+    parseString(get(templateName))
   }
 
-  def parseSuccess(templateName: String) = parse(templateName) must beLike {
+  def parseString(template: String) = {
+    parser.parse(template)
+  }
+
+  def parseSuccess(templateName: String) = {
+    parseStringSuccess(get(templateName))
+  }
+
+  def parseStringSuccess(template: String) = parseString(template) must beLike {
     case parser.Success(_, rest) if rest.atEnd => ok
   }
 
@@ -43,6 +51,18 @@ object OldParserSpec extends Specification {
 
       "complicated.scala.html" in {
         parseSuccess("complicated.scala.html")
+      }
+
+    }
+
+    "handle parentheses in string literals" in {
+
+      "with left parenthesis" in {
+        parseStringSuccess("""@foo("(")""")
+      }
+
+      "with right parenthesis and '@'" in {
+        parseStringSuccess("""@foo(")@")""")
       }
 
     }
