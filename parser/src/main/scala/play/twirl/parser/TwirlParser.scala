@@ -14,10 +14,10 @@ import scala.annotation.elidable
 import scala.annotation.elidable._
 
 /**
- * TwirlParser is a recursive descent parser for a modified grammar of the Play2 template language as loosely defined [[http://www.playframework.com/documentation/2.1.x/ here]] and more rigorously defined by the original template parser, [[play.templates.ScalaTemplateCompiler.TemplateParser]].
- * TwirlParser is meant to be a near drop in replacement for [[play.templates.ScalaTemplateCompiler.TemplateParser]].
+ * TwirlParser is a recursive descent parser for a modified grammar of the Play2 template language as loosely defined [[http://www.playframework.com/documentation/2.1.x/ here]] and more rigorously defined by the original template parser, `play.templates.ScalaTemplateCompiler.TemplateParser`.
+ * TwirlParser is meant to be a near drop in replacement for `play.templates.ScalaTemplateCompiler.TemplateParser`.
  *
- * The original grammar, as reversed-engineered from [[play.templates.ScalaTemplateCompiler.TemplateParser]], is defined as follows:
+ * The original grammar, as reversed-engineered from `play.templates.ScalaTemplateCompiler.TemplateParser`, is defined as follows:
  * {{{
  *   parser : comment? whitespace? ('@' parentheses+)? templateContent
  *   templateContent : (importExpression | localDef | template | mixed)*
@@ -112,7 +112,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
     /**
      * Peek `length` characters ahead. Does not check for EOF.
-     * @returns string from current offset upto current offset + `length`
+     * @return string from current offset upto current offset + `length`
      */
     def apply(length: Int): String = source_.substring(offset_, (offset_ + length))
 
@@ -192,7 +192,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
    *
    *  Will not advance if at EOF.
    *
-   *  @returns true if advancing, false otherwise.
+   *  @return true if advancing, false otherwise.
    */
   def check(f: Char => Boolean): Boolean = {
     if (!input.isEOF() && f(input())) {
@@ -206,7 +206,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
    *
    *  Will not advance if `str.length` surpasses EOF
    *
-   *  @returns true if advancing, false otherwise.
+   *  @return true if advancing, false otherwise.
    */
   def check(str: String): Boolean = {
     val len = str.length
@@ -238,7 +238,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
    *  Consume characters until input matches `stop`
    *
    *  @param inclusive - should stop be included in the consumed characters?
-   *  @returns the consumed characters
+   *  @return the consumed characters
    */
   def anyUntil(stop: String, inclusive: Boolean): String = {
     var sb = new StringBuilder
@@ -253,7 +253,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
    *  Consume characters until `f` returns false on the peek of input.
    *
    *  @param inclusive - should the stopped character be included in the consumed characters?
-   *  @returns the consumed characters
+   *  @return the consumed characters
    */
   def anyUntil(f: Char => Boolean, inclusive: Boolean): String = {
     var sb = new StringBuilder
