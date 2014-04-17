@@ -7,16 +7,16 @@ package test
 import org.specs2.mutable._
 import scalax.io.Resource
 
-object ParserSpec extends Specification {
+object OldParserSpec extends Specification {
 
-  val parser = new TwirlParser(shouldParseInclusiveDot = false)
+  val parser = new PlayTwirlParser
 
   def get(templateName: String): String = {
     Resource.fromClasspath(templateName, this.getClass).string
   }
 
   def parse(templateName: String) = {
-    (new TwirlParser(shouldParseInclusiveDot = false)).parse(get(templateName))
+    parser.parse(get(templateName))
   }
 
   def parseSuccess(templateName: String) = parse(templateName) must beLike {
@@ -24,13 +24,12 @@ object ParserSpec extends Specification {
   }
 
   def parseFailure(templateName: String, message: String, line: Int, column: Int) = parse(templateName) must beLike {
-    case parser.Error(_, rest, errors) => {
-      val e = errors.head
-      if (e.str == message && e.pos.line == line && e.pos.column == column) ok else ko
+    case parser.NoSuccess(msg, rest) => {
+      if (msg == message && rest.pos.line == line && rest.pos.column == column) ok else ko
     }
   }
 
-  "New twirl parser" should {
+  "Old twirl parser" should {
 
     "succeed for" in {
 
@@ -51,15 +50,15 @@ object ParserSpec extends Specification {
     "fail for" in {
 
       "unclosedBracket.scala.html" in {
-        parseFailure("unclosedBracket.scala.html", "[ERROR] Expected '}' but found: 'EOF'.", 12, 6)
+        parseFailure("unclosedBracket.scala.html", "Unmatched bracket", 8, 12)
       }
 
       "unclosedBracket2.scala.html" in {
-        parseFailure("unclosedBracket2.scala.html", "[ERROR] Expected '}' but found: 'EOF'.", 32, 1)
+        parseFailure("unclosedBracket2.scala.html", "Unmatched bracket", 13, 20)
       }
 
       "invalidAt.scala.html" in {
-        parseFailure("invalidAt.scala.html", "[ERROR] Invalid '@' symbol.", 5, 6)
+        parseFailure("invalidAt.scala.html", "`identifier' expected but `<' found", 5, 6)
       }
 
     }
