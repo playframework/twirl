@@ -13,7 +13,15 @@ lazy val api = project
   .settings(
     name := "twirl-api",
     libraryDependencies += commonsLang,
-    libraryDependencies += specs2(scalaBinaryVersion.value)
+    libraryDependencies += specs2(scalaBinaryVersion.value),
+    libraryDependencies := {
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((2, scalaMajor)) if scalaMajor >= 11 =>
+          libraryDependencies.value :+ "org.scala-lang.modules" %% "scala-xml" % "1.0.1"
+        case _ =>
+          libraryDependencies.value
+      }
+    }
   )
 
 lazy val parser = project
@@ -24,7 +32,14 @@ lazy val parser = project
   .settings(
     name := "twirl-parser",
     libraryDependencies += specs2(scalaBinaryVersion.value),
-    libraryDependencies += scalaIO(scalaBinaryVersion.value) % "test"
+    libraryDependencies := {
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((2, scalaMajor)) if scalaMajor >= 11 =>
+          libraryDependencies.value :+ "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1" % "optional"
+        case _ =>
+          libraryDependencies.value
+      }
+    }
   )
 
 lazy val compiler = project
@@ -36,7 +51,6 @@ lazy val compiler = project
   .settings(
     name := "twirl-compiler",
     libraryDependencies += scalaCompiler(scalaVersion.value),
-    libraryDependencies += scalaIO(scalaBinaryVersion.value),
     fork in run := true
   )
 
@@ -60,12 +74,12 @@ lazy val plugin = project
 def common = Seq(
   organization := "com.typesafe.play",
   version := "1.0-SNAPSHOT",
-  scalaVersion := "2.10.4",
+  scalaVersion := sys.props.get("scala.version").getOrElse("2.10.4"),
   scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 )
 
 def crossScala = Seq(
-  crossScalaVersions := Seq("2.9.3", "2.10.4"),
+  crossScalaVersions := Seq("2.9.3", "2.10.4", "2.11.0"),
   unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
 )
 
@@ -107,12 +121,7 @@ def commonsLang = "org.apache.commons" % "commons-lang3" % "3.1"
 
 def scalaCompiler(version: String) = "org.scala-lang" % "scala-compiler" % version
 
-def scalaIO(scalaVersion: String) = scalaVersion match {
-  case "2.9.3" => "com.github.scala-incubator.io" % "scala-io-file_2.9.2"  % "0.4.1-seq"
-  case "2.10" => "com.github.scala-incubator.io" %% "scala-io-file"  % "0.4.2"
-}
-
 def specs2(scalaBinaryVersion: String) = scalaBinaryVersion match {
   case "2.9.3" => "org.specs2" %% "specs2" % "1.12.4.1" % "test"
-  case "2.10"  => "org.specs2" %% "specs2" % "2.3.10" % "test"
+  case "2.10" | "2.11" => "org.specs2" %% "specs2" % "2.3.11" % "test"
 }

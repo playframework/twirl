@@ -7,8 +7,7 @@ import java.io.File
 import scala.annotation.tailrec
 import scala.io.Codec
 import scala.reflect.internal.Flags
-import scalax.file._
-import play.twirl.parser.{ PlayTwirlParser, TwirlParser }
+import play.twirl.parser.{TwirlIO, PlayTwirlParser, TwirlParser}
 
 object Hash {
 
@@ -107,18 +106,17 @@ sealed trait AbstractGeneratedSource {
 
 case class GeneratedSource(file: File) extends AbstractGeneratedSource {
 
-  def content = Path(file).string
+  def content = TwirlIO.readFileAsString(file)
 
-  def needRecompilation(imports: String): Boolean = (!file.exists ||
+  def needRecompilation(imports: String): Boolean = !file.exists ||
     // A generated source already exist but
     source.isDefined && ((source.get.lastModified > file.lastModified) || // the source has been modified
-      (meta("HASH") != Hash(Path(source.get).byteArray, imports))) // or the hash don't match
-  )
+      (meta("HASH") != Hash(TwirlIO.readFile(source.get), imports))) // or the hash don't match
 
   def toSourcePosition(marker: Int): (Int, Int) = {
     try {
       val targetMarker = mapPosition(marker)
-      val line = Path(source.get).string.substring(0, targetMarker).split('\n').size
+      val line = TwirlIO.readFileAsString(source.get).substring(0, targetMarker).split('\n').size
       (line, targetMarker)
     } catch {
       case _: Exception => (0, 0)
@@ -159,8 +157,8 @@ object TwirlCompiler {
     val resultType = formatterType + ".Appendable"
     val (templateName, generatedSource) = generatedFile(source, sourceDirectory, generatedDirectory)
     if (generatedSource.needRecompilation(additionalImports)) {
-      val generated = parseAndGenerateCode(templateName, Path(source).byteArray, source.getAbsolutePath, resultType, formatterType, additionalImports, useOldParser)
-      Path(generatedSource.file).write(generated.toString)
+      val generated = parseAndGenerateCode(templateName, TwirlIO.readFile(source), source.getAbsolutePath, resultType, formatterType, additionalImports, useOldParser)
+      TwirlIO.writeStringToFile(generatedSource.file, generated.toString)
       Some(generatedSource.file)
     } else {
       None
@@ -336,11 +334,6 @@ object """ :+ name :+ """ extends BaseScalaTemplate[""" :+ resultType :+ """,For
 }"""
     }
     generated
-  }
-
-  @deprecated("use generateFinalTemplate with 8 parameters instead", "Play 2.1")
-  def generateFinalTemplate(template: File, packageName: String, name: String, root: Template, resultType: String, formatterType: String, additionalImports: String): String = {
-    generateFinalTemplate(template.getAbsolutePath, Path(template).byteArray, packageName, name, root, resultType, formatterType, additionalImports)
   }
 
   def generateFinalTemplate(absolutePath: String, contents: Array[Byte], packageName: String, name: String, root: Template, resultType: String, formatterType: String, additionalImports: String): String = {

@@ -3,6 +3,7 @@ package play.twirl.compiler.test
 import java.io.File
 import play.twirl.api.Html
 import play.twirl.compiler.test.Helper.CompilerHelper
+import play.twirl.parser.TwirlIO
 
 /**
  * Easiest way to run this:
@@ -14,9 +15,11 @@ object Benchmark extends App {
   val sourceDir = new File("src/test/resources")
   val generatedDir = new File("target/test/benchmark-templates")
   val generatedClasses = new File("target/test/benchmark-classes")
-  scalax.file.Path(generatedDir).deleteRecursively()
-  scalax.file.Path(generatedClasses).deleteRecursively()
-  scalax.file.Path(generatedClasses).createDirectory()
+
+
+  TwirlIO.deleteRecursively(generatedDir)
+  TwirlIO.deleteRecursively(generatedClasses)
+  generatedClasses.mkdirs()
 
   val helper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
 
