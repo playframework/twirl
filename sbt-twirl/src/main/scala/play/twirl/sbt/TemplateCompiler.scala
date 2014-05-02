@@ -3,7 +3,6 @@
  */
 package play.twirl.sbt
 
-import java.io.File
 import sbt._
 import play.twirl.compiler._
 

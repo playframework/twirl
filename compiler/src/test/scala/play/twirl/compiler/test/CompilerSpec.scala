@@ -7,6 +7,7 @@ package test
 import java.io._
 import org.specs2.mutable._
 import play.twirl.api.Html
+import play.twirl.parser.TwirlIO
 
 class CompilerSpec extends CompilerTests
 
@@ -23,9 +24,9 @@ abstract class CompilerTests(oldParser: Boolean = false) extends Specification {
   val sourceDir = new File("compiler/src/test/resources")
   val generatedDir = new File("compiler/target/test/" + dirName + "/generated-templates")
   val generatedClasses = new File("compiler/target/test/" + dirName + "/generated-classes")
-  scalax.file.Path(generatedDir).deleteRecursively()
-  scalax.file.Path(generatedClasses).deleteRecursively()
-  scalax.file.Path(generatedClasses).createDirectory()
+  TwirlIO.deleteRecursively(generatedDir)
+  TwirlIO.deleteRecursively(generatedClasses)
+  generatedClasses.mkdirs()
 
   def newCompilerHelper = new CompilerHelper(sourceDir, generatedDir, generatedClasses, oldParser)
 
@@ -88,7 +89,7 @@ abstract class CompilerTests(oldParser: Boolean = false) extends Specification {
 
     "compile templates that have contiguous strings > than 64k" in {
       val helper = newCompilerHelper
-      val input = (scalax.file.Path(sourceDir) / "long.scala.html").string
+      val input = TwirlIO.readFileAsString(new File(sourceDir, "long.scala.html"))
       val result = helper.compile[(() => Html)]("long.scala.html", "html.long")().toString
       result.length must_== input.length
       result must_== input
@@ -150,7 +151,7 @@ object Helper {
         Class.forName("play.twirl.compiler.TwirlCompiler").getClassLoader.asInstanceOf[URLClassLoader].getURLs.map(_.getFile).mkString(":"))
 
       val settings = new Settings
-      val scalaObjectSource = Class.forName("scala.ScalaObject").getProtectionDomain.getCodeSource
+      val scalaObjectSource = Class.forName("scala.Option").getProtectionDomain.getCodeSource
 
       // is null in Eclipse/OSGI but luckily we don't need it there
       if (scalaObjectSource != null) {

@@ -5,14 +5,13 @@ package play.twirl.parser
 package test
 
 import org.specs2.mutable._
-import scalax.io.Resource
 
 object ParserSpec extends Specification {
 
   val parser = new TwirlParser(shouldParseInclusiveDot = false)
 
   def get(templateName: String): String = {
-    Resource.fromClasspath(templateName, this.getClass).string
+    TwirlIO.readUrlAsString(this.getClass.getClassLoader.getResource(templateName))
   }
 
   def parse(templateName: String) = {
