@@ -289,7 +289,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
           error("Expected '" + suffix + "', but instead found EOF")
           stack = 0
         } else if (allowStringLiterals) {
-          stringLiteral() match {
+          stringLiteral("\"", "\\") match {
             case null => sb.append(any())
             case s => sb.append(s)
           }
@@ -305,24 +305,24 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
    * Match a string literal, allowing for escaped quotes.
    * Terminates at EOF.
    */
-  def stringLiteral(): String = {
-    if (check("\"")) {
+  def stringLiteral(quote: String, escape: String): String = {
+    if (check(quote)) {
       var within = true
       val sb = new StringBuffer
-      sb.append("\"")
+      sb.append(quote)
       while (within) {
-        if (check("\"")) { // end of string literal
-          sb.append("\"")
+        if (check(quote)) { // end of string literal
+          sb.append(quote)
           within = false
-        } else if (check("\\")) {
-          sb.append("\\")
-          if (check("\"")) { // escaped quote
-            sb.append("\"")
-          } else if (check("\\")) { // escaped escape
-            sb.append("\\")
+        } else if (check(escape)) {
+          sb.append(escape)
+          if (check(quote)) { // escaped quote
+            sb.append(quote)
+          } else if (check(escape)) { // escaped escape
+            sb.append(escape)
           }
         } else if (input.isEOF()) {
-          error("Expected '\"', but instead found EOF")
+          error("Expected '" + quote + "', but instead found EOF")
           within = false
         } else {
           sb.append(any())
