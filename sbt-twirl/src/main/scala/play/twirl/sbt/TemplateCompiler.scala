@@ -22,7 +22,7 @@ object TemplateCompiler {
       val templates = collectTemplates(sourceDirectories, templateFormats, includeFilter, excludeFilter)
       for ((template, sourceDirectory, extension, format) <- templates) {
         val imports = formatImports(templateImports, extension)
-        TwirlCompiler.compile(template, sourceDirectory, targetDirectory, format, imports, useOldParser)
+        TwirlCompiler.compile(template, sourceDirectory, targetDirectory, format, imports, inclusiveDot = false, useOldParser = useOldParser)
       }
       generatedFiles(targetDirectory).map(_.getAbsoluteFile)
     } catch handleError(log)
