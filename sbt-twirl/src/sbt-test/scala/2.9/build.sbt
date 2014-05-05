@@ -1,3 +1,3 @@
-lazy val root = (project in file(".")).addPlugins(SbtTwirl)
+lazy val root = (project in file(".")).enablePlugins(SbtTwirl)
 
 scalaVersion := "2.9.3"

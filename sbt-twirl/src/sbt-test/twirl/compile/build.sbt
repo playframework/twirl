@@ -1,1 +1,1 @@
-lazy val root = (project in file(".")).addPlugins(SbtTwirl)
+lazy val root = (project in file(".")).enablePlugins(SbtTwirl)
