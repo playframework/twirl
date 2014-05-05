@@ -85,12 +85,26 @@ def crossScala = Seq(
 
 def publishMaven = Seq(
   publishTo := {
-    if (isSnapshot.value) Some(typesafeRepo("snapshots"))
-    else Some(typesafeRepo("releases"))
-  }
+    if (isSnapshot.value) Some(Opts.resolver.sonatypeSnapshots)
+    else Some(Opts.resolver.sonatypeStaging)
+  },
+  homepage := Some(url("https://github.com/playframework/twirl")),
+  licenses := Seq("Apache 2" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
+  pomExtra := {
+    <scm>
+      <url>https://github.com/playframework/twirl</url>
+      <connection>scm:git:git@github.com:playframework/twirl.git</connection>
+    </scm>
+    <developers>
+      <developer>
+        <id>playframework</id>
+        <name>Play Framework Team</name>
+        <url>https://github.com/playframework</url>
+      </developer>
+    </developers>
+  },
+  pomIncludeRepository := { _ => false }
 )
-
-def typesafeRepo(repo: String) = s"typesafe $repo" at s"http://private-repo.typesafe.com/typesafe/maven-$repo"
 
 def publishSbtPlugin = Seq(
   publishMavenStyle := false,
@@ -102,7 +116,8 @@ def publishSbtPlugin = Seq(
 
 def noPublish = Seq(
   publish := {},
-  publishLocal := {}
+  publishLocal := {},
+  publishTo := Some(Resolver.file("no-publish", crossTarget.value / "no-publish"))
 )
 
 // Version file
