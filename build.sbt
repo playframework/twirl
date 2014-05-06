@@ -13,15 +13,8 @@ lazy val api = project
   .settings(
     name := "twirl-api",
     libraryDependencies += commonsLang,
-    libraryDependencies += specs2(scalaBinaryVersion.value),
-    libraryDependencies := {
-      CrossVersion.partialVersion(scalaVersion.value) match {
-        case Some((2, scalaMajor)) if scalaMajor >= 11 =>
-          libraryDependencies.value :+ "org.scala-lang.modules" %% "scala-xml" % "1.0.1"
-        case _ =>
-          libraryDependencies.value
-      }
-    }
+    libraryDependencies ++= scalaXml(scalaVersion.value),
+    libraryDependencies += specs2(scalaBinaryVersion.value)
   )
 
 lazy val parser = project
@@ -31,15 +24,8 @@ lazy val parser = project
   .settings(publishMaven: _*)
   .settings(
     name := "twirl-parser",
-    libraryDependencies += specs2(scalaBinaryVersion.value),
-    libraryDependencies := {
-      CrossVersion.partialVersion(scalaVersion.value) match {
-        case Some((2, scalaMajor)) if scalaMajor >= 11 =>
-          libraryDependencies.value :+ "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1" % "optional"
-        case _ =>
-          libraryDependencies.value
-      }
-    }
+    libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
+    libraryDependencies += specs2(scalaBinaryVersion.value)
   )
 
 lazy val compiler = project
@@ -136,7 +122,20 @@ def commonsLang = "org.apache.commons" % "commons-lang3" % "3.1"
 
 def scalaCompiler(version: String) = "org.scala-lang" % "scala-compiler" % version
 
+def scalaParserCombinators(scalaVersion: String) =
+  whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1" % "optional")
+
+def scalaXml(scalaVersion: String) =
+  whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-xml" % "1.0.1")
+
 def specs2(scalaBinaryVersion: String) = scalaBinaryVersion match {
   case "2.9.3" => "org.specs2" %% "specs2" % "1.12.4.1" % "test"
   case "2.10" | "2.11" => "org.specs2" %% "specs2" % "2.3.11" % "test"
+}
+
+def whenAtLeast(version: String, major: Int, minor: Int, module: ModuleID): Seq[ModuleID] = {
+  CrossVersion.partialVersion(version) match {
+    case Some((x, y)) if x > major || (x == major && y >= minor) => Seq(module)
+    case _ => Seq.empty
+  }
 }
