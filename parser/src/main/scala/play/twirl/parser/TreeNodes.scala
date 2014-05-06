@@ -10,7 +10,7 @@ object TreeNodes {
   abstract class ScalaExpPart
 
   case class Params(code: String) extends Positional
-  case class Template(name: PosString, comment: Option[Comment], params: PosString, imports: Seq[Simple], defs: Seq[Def], sub: Seq[Template], content: Seq[TemplateTree]) extends Positional
+  case class Template(name: PosString, comment: Option[Comment], params: PosString, topImports: Seq[Simple], imports: Seq[Simple], defs: Seq[Def], sub: Seq[Template], content: Seq[TemplateTree]) extends Positional
   case class PosString(str: String) extends Positional {
     override def toString = str
   }

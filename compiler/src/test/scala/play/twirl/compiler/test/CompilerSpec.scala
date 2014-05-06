@@ -19,7 +19,7 @@ abstract class CompilerTests(oldParser: Boolean = false) extends Specification {
 
   val parserName = if (oldParser) "old" else "new"
   val testName = "Twirl compiler (with " + parserName + " parser)"
-  
+
   val dirName = parserName + "-parser"
   val sourceDir = new File("compiler/src/test/resources")
   val generatedDir = new File("compiler/target/test/" + dirName + "/generated-templates")
@@ -77,6 +77,12 @@ abstract class CompilerTests(oldParser: Boolean = false) extends Specification {
       val helper = newCompilerHelper
       val set = helper.compile[((collection.immutable.Set[String]) => Html)]("set.scala.html", "html.set")(Set("first","second","third")).toString.trim.replace("\n","").replaceAll("\\s+", "")
       set must be_==("firstsecondthird")
+    }
+
+    "compile successfully (imports)" in {
+      val helper = newCompilerHelper
+      val result = helper.compile[((java.io.File, java.net.URL) => Html)]("imports.scala.html", "html.imports")(new java.io.File("example"), new java.net.URL("http://example.org")).toString.trim
+      result must be_==("<p>file: example, url: http://example.org</p>")
     }
 
     "fail compilation for error.scala.html" in {

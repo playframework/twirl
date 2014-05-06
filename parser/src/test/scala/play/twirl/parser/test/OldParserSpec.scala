@@ -5,6 +5,7 @@ package play.twirl.parser
 package test
 
 import org.specs2.mutable._
+import play.twirl.parser.TreeNodes.{ Simple, Template }
 
 object OldParserSpec extends Specification {
 
@@ -36,6 +37,20 @@ object OldParserSpec extends Specification {
     }
   }
 
+  def parseTemplate(templateName: String): Template = {
+    parseTemplateString(get(templateName))
+  }
+
+  def parseTemplateString(template: String): Template = {
+    parseString(template) match {
+      case parser.Success(template, rest) =>
+        if (!rest.atEnd) sys.error("Template parsed but not at source end")
+        template
+      case parser.NoSuccess(msg, _) =>
+        sys.error("Template failed to parse: " + msg)
+    }
+  }
+
   "Old twirl parser" should {
 
     "succeed for" in {
@@ -50,6 +65,13 @@ object OldParserSpec extends Specification {
 
       "complicated.scala.html" in {
         parseSuccess("complicated.scala.html")
+      }
+
+      "imports.scala.html" in {
+        parseTemplate("imports.scala.html").topImports must be_== (Seq(
+          Simple("import java.io.File\n"),
+          Simple("import java.net.URL\n")
+        ))
       }
 
     }
