@@ -210,7 +210,7 @@ class PlayTwirlParser extends JavaTokenParsers {
   def template: Parser[Template] = {
     templateDeclaration ~ """[ \t]*=[ \t]*[{]""".r ~ templateContent <~ "}" ^^ {
       case declaration ~ assign ~ content => {
-        Template(declaration._1, None, declaration._2, content._1, content._2, content._3, content._4)
+        Template(declaration._1, None, declaration._2, Nil, content._1, content._2, content._3, content._4)
       }
     }
   }
@@ -245,10 +245,12 @@ class PlayTwirlParser extends JavaTokenParsers {
   }
 
   def parser: Parser[Template] = {
-    opt(comment) ~ opt(whiteSpace) ~ opt(at ~> positioned((parentheses+) ^^ { case s => PosString(s.mkString) })) ~ templateContent ^^ {
-      case comment ~ _ ~ args ~ content => {
-        Template(PosString(""), comment, args.getOrElse(PosString("()")), content._1, content._2, content._3, content._4)
-      }
+    (opt(whiteSpace) ~> opt(several(comment <~ opt(whiteSpace)) ~> rep1(importExpression <~ opt(whiteSpace)))) ~
+    (opt(comment) <~ opt(whiteSpace)) ~
+    opt(at ~> positioned((parentheses+) ^^ { case s => PosString(s.mkString) })) ~
+    templateContent ^^ {
+      case imports ~ comment ~ args ~ content =>
+        Template(PosString(""), comment, args.getOrElse(PosString("()")), imports.getOrElse(Seq.empty), content._1, content._2, content._3, content._4)
     }
   }
 

@@ -769,7 +769,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
         if (check("{")) {
           val (imports, localDefs, templates, mixeds) = templateContent()
           if (check("}"))
-            result = Template(templDecl._1, None, templDecl._2, imports, localDefs, templates, mixeds)
+            result = Template(templDecl._1, None, templDecl._2, Nil, imports, localDefs, templates, mixeds)
         }
       }
     }
@@ -832,11 +832,37 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     (imports, localDefs, templates, mixeds)
   }
 
+  def extraImports(): Seq[Simple] = {
+    val resetPosition = input.offset
+    val imports = new ArrayBuffer[Simple]
+
+    while (whitespace().nonEmpty || (comment() ne null)) {} // ignore
+
+    var done = false
+    while (!done) {
+      val importExp = importExpression()
+      if (importExp ne null) {
+        imports += importExp
+        whitespace()
+      } else {
+        done = true
+      }
+    }
+
+    if (imports.isEmpty) {
+      input.regressTo(resetPosition)
+    }
+
+    imports
+  }
+
   def parse(source: String): ParseResult = {
     // Initialize mutable state
     input.reset(source)
     errorStack.clear()
 
+    val topImports = extraImports()
+    whitespace()
     val commentpos = input.offset
     val cm = Option(position(comment(), commentpos))
     whitespace()
@@ -850,7 +876,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       } else None
     val (imports, localDefs, templates, mixeds) = templateContent()
 
-    val template = Template(PosString(""), cm, args.getOrElse(PosString("()")), imports, localDefs, templates, mixeds)
+    val template = Template(PosString(""), cm, args.getOrElse(PosString("()")), topImports, imports, localDefs, templates, mixeds)
 
     if (errorStack.length == 0)
       Success(template, input)

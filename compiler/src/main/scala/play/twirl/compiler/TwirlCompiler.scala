@@ -312,7 +312,7 @@ object TwirlCompiler {
       }
     }
 
-    val imports = template.imports.map(_.code).mkString("\n")
+    val imports = formatImports(template.imports)
 
     Nil :+ imports :+ "\n" :+ defs :+ "\n" :+ "Seq[Any](" :+ visit(template.content, Nil) :+ ")"
   }
@@ -322,6 +322,8 @@ object TwirlCompiler {
       root.params.str,
       resultType)
 
+    val imports = additionalImports + "\n" + formatImports(root.topImports)
+
     val generated = {
       Nil :+ """
 package """ :+ packageName :+ """
@@ -329,7 +331,7 @@ package """ :+ packageName :+ """
 import play.twirl.api._
 import play.twirl.api.TemplateMagic._
 
-""" :+ additionalImports :+ """
+""" :+ imports :+ """
 /*""" :+ root.comment.map(_.msg).getOrElse("") :+ """*/
 object """ :+ name :+ """ extends BaseScalaTemplate[""" :+ resultType :+ """,Format[""" :+ resultType :+ """]](""" :+ formatterType :+ """) with """ :+ extra._3 :+ """ {
 
@@ -347,6 +349,10 @@ object """ :+ name :+ """ extends BaseScalaTemplate[""" :+ resultType :+ """,For
 }"""
     }
     generated
+  }
+
+  def formatImports(imports: Seq[Simple]): String = {
+    imports.map(_.code).mkString("\n")
   }
 
   def generateFinalTemplate(absolutePath: String, contents: Array[Byte], packageName: String, name: String, root: Template, resultType: String, formatterType: String, additionalImports: String): String = {
