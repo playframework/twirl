@@ -22,7 +22,7 @@ To add the sbt plugin to your project add the sbt plugin dependency in
 `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("com.typesafe.sbt" % "sbt-twirl" % "1.0-M3")
+addSbtPlugin("com.typesafe.sbt" % "sbt-twirl" % "1.0.0-RC1")
 ```
 
 And enable the plugin on projects using:
