@@ -55,16 +55,20 @@ object HtmlFormat extends Format[Html] {
   def escape(text: String): Html = {
     // Using our own algorithm here because commons lang escaping wasn't designed for protecting against XSS, and there
     // don't seem to be any other good generic escaping tools out there.
-    val sb = new StringBuilder(text.length)
-    text.foreach {
-      case '<' => sb.append("&lt;")
-      case '>' => sb.append("&gt;")
-      case '"' => sb.append("&quot;")
-      case '\'' => sb.append("&#x27;")
-      case '&' => sb.append("&amp;")
-      case c => sb += c
+    if (text eq null) {
+      new Html("null")
+    } else {
+      val sb = new StringBuilder(text.length)
+      text.foreach {
+        case '<' => sb.append("&lt;")
+        case '>' => sb.append("&gt;")
+        case '"' => sb.append("&quot;")
+        case '\'' => sb.append("&#x27;")
+        case '&' => sb.append("&amp;")
+        case c => sb += c
+      }
+      new Html(sb.toString)
     }
-    new Html(sb.toString)
   }
 
   /**
