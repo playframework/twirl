@@ -59,7 +59,7 @@ lazy val plugin = project
 
 def common = Seq(
   organization := "com.typesafe.play",
-  version := "1.0-SNAPSHOT",
+  version := "1.0.0-RC2",
   scalaVersion := sys.props.get("scala.version").getOrElse("2.10.4"),
   scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 )
