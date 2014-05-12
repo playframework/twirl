@@ -10,10 +10,10 @@ case class BaseScalaTemplate[T <: Appendable[T], F <: Format[T]](format: F) {
   // The overloaded methods are here for speed. The compiled templates
   // can take advantage of them for a 12% performance boost
   def _display_(x: AnyVal): T = format.escape(x.toString)
-  def _display_(x: String): T = format.escape(x)
+  def _display_(x: String): T = if (x eq null) format.empty else format.escape(x)
   def _display_(x: Unit): T = format.empty
-  def _display_(x: scala.xml.NodeSeq): T = format.raw(x.toString())
-  def _display_(x: T): T = x
+  def _display_(x: scala.xml.NodeSeq): T = if (x eq null) format.empty else format.raw(x.toString())
+  def _display_(x: T): T = if (x eq null) format.empty else x
 
   def _display_(o: Any)(implicit m: Manifest[T]): T = {
     import play.twirl.api.ScalaCompat._ // for Manifest.runtimeClass

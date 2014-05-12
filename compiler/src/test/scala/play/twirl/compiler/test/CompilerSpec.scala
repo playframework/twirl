@@ -73,6 +73,12 @@ abstract class CompilerTests(oldParser: Boolean = false) extends Specification {
       hello must be_==("<h1>Hello World!</h1><h1>xml</h1>")
     }
 
+    "compile successfully (helloNull)" in {
+      val helper = newCompilerHelper
+      val hello = helper.compile[((String) => Html)]("helloNull.scala.html", "html.helloNull")(null).toString.trim
+      hello must be_==("<h1>Hello !</h1>")
+    }
+
     "compile successfully (set)" in {
       val helper = newCompilerHelper
       val set = helper.compile[((collection.immutable.Set[String]) => Html)]("set.scala.html", "html.set")(Set("first","second","third")).toString.trim.replace("\n","").replaceAll("\\s+", "")
