@@ -16,7 +16,8 @@ object TemplateProblem {
   }
 
   def exception(source: File, message: String, line: Int, column: Int) = {
-    new ProblemException(TemplateProblem(message, TemplatePosition(source, line, column)))
+    val column0 = 0 max (column - 1) // convert to 0-based column
+    new ProblemException(TemplateProblem(message, TemplatePosition(source, line, column0)))
   }
 
   class ProblemException(issues: Problem*) extends CompileFailed with FeedbackProvidedException {
