@@ -219,7 +219,7 @@ object TwirlCompiler {
       }
       case templateParser.Error(_, rest, errors) => {
         val firstError = errors.head
-        throw new TemplateCompilationError(new File(absolutePath), "Errors occurred while parsing.\n" + firstError.str, firstError.pos.line, firstError.pos.column)
+        throw new TemplateCompilationError(new File(absolutePath), firstError.str, firstError.pos.line, firstError.pos.column)
       }
     }
   }
