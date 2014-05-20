@@ -215,7 +215,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   def error(str: String): Unit = {
-    val error = PosString("[ERROR] " + str + ".")
+    val error = PosString(str)
     error.pos = input.pos
     errorStack += error
   }

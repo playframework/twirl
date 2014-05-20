@@ -93,15 +93,15 @@ object ParserSpec extends Specification {
     "fail for" in {
 
       "unclosedBracket.scala.html" in {
-        parseFailure("unclosedBracket.scala.html", "[ERROR] Expected '}' but found: 'EOF'.", 12, 6)
+        parseFailure("unclosedBracket.scala.html", "Expected '}' but found: 'EOF'", 12, 6)
       }
 
       "unclosedBracket2.scala.html" in {
-        parseFailure("unclosedBracket2.scala.html", "[ERROR] Expected '}' but found: 'EOF'.", 32, 1)
+        parseFailure("unclosedBracket2.scala.html", "Expected '}' but found: 'EOF'", 32, 1)
       }
 
       "invalidAt.scala.html" in {
-        parseFailure("invalidAt.scala.html", "[ERROR] Invalid '@' symbol.", 5, 6)
+        parseFailure("invalidAt.scala.html", "Invalid '@' symbol", 5, 6)
       }
 
     }
