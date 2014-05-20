@@ -50,6 +50,7 @@ lazy val plugin = project
     name := "sbt-twirl",
     organization := "com.typesafe.sbt",
     sbtPlugin := true,
+    libraryDependencies += specs2(scalaBinaryVersion.value),
     scriptedLaunchOpts += ("-Dproject.version=" + version.value),
     scriptedLaunchOpts += "-XX:MaxPermSize=256m",
     resourceGenerators in Compile <+= generateVersionFile
