@@ -182,7 +182,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     if (!input.isPastEOF(len) && input.matches(str))
       input.advance(len)
     else
-      error("Expected '" + str + "' but found: '" + (if (input.isPastEOF(len)) "EOF" else input(len)) + "'")
+      error("Expected '" + str + "' but found '" + (if (input.isPastEOF(len)) "EOF" else input(len)) + "'")
   }
 
   /**
@@ -223,7 +223,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
  /** Consume/Advance `length` characters, and return the consumed characters. Returns "" if at EOF. */
   def any(length: Int = 1): String = {
     if (input.isEOF()) {
-      error("Expected more input, but instead found EOF")
+      error("Expected more input but found 'EOF'")
       ""
     } else {
       val s = input(length)
@@ -286,7 +286,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
           stack -= 1
           sb.append(suffix)
         } else if (input.isEOF()) {
-          error("Expected '" + suffix + "', but instead found EOF")
+          error("Expected '" + suffix + "' but found 'EOF'")
           stack = 0
         } else if (allowStringLiterals) {
           stringLiteral("\"", "\\") match {
@@ -322,7 +322,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
             sb.append(escape)
           }
         } else if (input.isEOF()) {
-          error("Expected '" + quote + "', but instead found EOF")
+          error("Expected '" + quote + "' but found 'EOF'")
           within = false
         } else {
           sb.append(any())
