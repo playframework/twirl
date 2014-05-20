@@ -34,7 +34,7 @@ object ParserSpec extends Specification {
   def parseFailure(templateName: String, message: String, line: Int, column: Int) = parse(templateName) must beLike {
     case parser.Error(_, rest, errors) => {
       val e = errors.head
-      if (e.str == message && e.pos.line == line && e.pos.column == column) ok else ko
+      (e.str must_== message) and (e.pos.line must_== line) and (e.pos.column must_== column)
     }
   }
 
@@ -101,7 +101,7 @@ object ParserSpec extends Specification {
       }
 
       "invalidAt.scala.html" in {
-        parseFailure("invalidAt.scala.html", "Invalid '@' symbol", 5, 6)
+        parseFailure("invalidAt.scala.html", "Invalid '@' symbol", 5, 5)
       }
 
     }

@@ -214,10 +214,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     } else false
   }
 
-  def error(str: String): Unit = {
-    val error = PosString(str)
-    error.pos = input.pos
-    errorStack += error
+  def error(message: String, offset: Int = input.offset): Unit = {
+    errorStack += position(PosString(message), offset)
   }
 
  /** Consume/Advance `length` characters, and return the consumed characters. Returns "" if at EOF. */
@@ -821,7 +819,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
             if (mix != null) mixeds ++= mix
             else {
               // check for an invalid '@' symbol, and just skip it so we can continue the parse
-              if (check("@")) error("Invalid '@' symbol")
+              val pos = input.offset
+              if (check("@")) error("Invalid '@' symbol", pos)
               else done = true
             }
           }
