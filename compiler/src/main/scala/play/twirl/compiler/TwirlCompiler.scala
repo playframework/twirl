@@ -151,7 +151,7 @@ case class GeneratedSourceVirtual(path: String) extends AbstractGeneratedSource 
 object TwirlCompiler {
   import play.twirl.parser.TreeNodes._
 
-  val UTF8 = Codec("UTF-8")
+  val codec = implicitly[Codec]
 
   def compile(source: File, sourceDirectory: File, generatedDirectory: File, formatterType: String, additionalImports: String = "", inclusiveDot: Boolean = false, useOldParser: Boolean = false) = {
     val resultType = formatterType + ".Appendable"
@@ -167,7 +167,7 @@ object TwirlCompiler {
 
   def compileVirtual(content: String, source: File, sourceDirectory: File, resultType: String, formatterType: String, additionalImports: String = "", inclusiveDot: Boolean = false, useOldParser: Boolean = false) = {
     val (templateName, generatedSource) = generatedFileVirtual(source, sourceDirectory, inclusiveDot)
-    val generated = parseAndGenerateCode(templateName, content.getBytes(UTF8.charSet), source.getAbsolutePath, resultType, formatterType, additionalImports, inclusiveDot, useOldParser)
+    val generated = parseAndGenerateCode(templateName, content.getBytes(codec.charSet), source.getAbsolutePath, resultType, formatterType, additionalImports, inclusiveDot, useOldParser)
     generatedSource.setContent(generated)
     generatedSource
   }
@@ -181,7 +181,7 @@ object TwirlCompiler {
 
   def parseAndGenerateCodeOldParser(templateName: Array[String], content: Array[Byte], absolutePath: String, resultType: String, formatterType: String, additionalImports: String) = {
     val templateParser = new PlayTwirlParser
-    templateParser.parse(new String(content, UTF8.charSet)) match {
+    templateParser.parse(new String(content, codec.charSet)) match {
       case templateParser.Success(parsed: Template, rest) if rest.atEnd => {
         generateFinalTemplate(absolutePath,
           content,
@@ -203,7 +203,7 @@ object TwirlCompiler {
 
   def parseAndGenerateCodeNewParser(templateName: Array[String], content: Array[Byte], absolutePath: String, resultType: String, formatterType: String, additionalImports: String, inclusiveDot: Boolean) = {
     val templateParser = new TwirlParser(inclusiveDot)
-    templateParser.parse(new String(content, UTF8.charSet)) match {
+    templateParser.parse(new String(content, codec.charSet)) match {
       case templateParser.Success(parsed: Template, rest) if rest.atEnd => {
         generateFinalTemplate(absolutePath,
           content,
