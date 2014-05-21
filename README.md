@@ -59,7 +59,7 @@ To add additional imports for the Scala code in template files, use the
 `templateImports` key. For example:
 
 ```scala
-TwirlKeys.templateImports in Compile += "org.example._"
+TwirlKeys.templateImports += "org.example._"
 ```
 
 ### Source directories
