@@ -16,7 +16,8 @@ object TemplateProblem {
   }
 
   def exception(source: File, message: String, line: Int, column: Int) = {
-    new ProblemException(TemplateProblem(message, TemplatePosition(source, line, column)))
+    val column0 = 0 max (column - 1) // convert to 0-based column
+    new ProblemException(TemplateProblem(message, TemplatePosition(source, line, column0)))
   }
 
   class ProblemException(issues: Problem*) extends CompileFailed with FeedbackProvidedException {
@@ -32,47 +33,89 @@ object TemplateProblem {
 
   object TemplatePosition {
     def apply(source: File, line: Int, column: Int): TemplatePosition = {
-      val lines = IO.readLines(source)
-      val offset = offsetBefore(lines, line) + column
-      val mapping = TemplateMapping(line, column, offset, lines(line - 1))
-      new TemplatePosition(Some(source), mapping)
+      val location = TemplateMapping(Some(source)).location(line, column)
+      new TemplatePosition(Some(source), location)
     }
 
     def apply(generated: GeneratedSource, position: Position): TemplatePosition = {
-      val line = position.line map { l => generated.mapLine(l) } getOrElse 0
-      val lines = generated.source.toSeq flatMap { file => IO.readLines(file) }
-      val offset = position.offset map { o => generated.mapPosition(o) } getOrElse 0
-      val column = offset - offsetBefore(lines, line)
-      val mapping = TemplateMapping(line, column, offset, lines(line - 1))
-      new TemplatePosition(generated.source, mapping)
-    }
-
-    def offsetBefore(lines: Seq[String], line: Int) = {
-      lines.take(line - 1).map(_.size + 1).sum
+      val offset = position.offset map { o => generated.mapPosition(o) }
+      val location = offset flatMap { o => TemplateMapping(generated.source).location(o) }
+      new TemplatePosition(generated.source, location)
     }
   }
 
-  class TemplatePosition(source: Option[File], mapping: TemplateMapping) extends Position {
-    val line: Maybe[Integer] = Maybe.just(mapping.line)
+  class TemplatePosition(source: Option[File], location: Option[TemplateMapping.Location]) extends Position {
+    val line: Maybe[Integer] = maybe { location map (_.line) }
 
-    val lineContent: String = mapping.content
+    val lineContent: String = location.fold("")(_.content)
 
-    val offset: Maybe[Integer] = Maybe.just(mapping.offset)
+    val offset: Maybe[Integer] = maybe { location map (_.offset) }
 
-    val pointer: Maybe[Integer] = Maybe.just(mapping.column)
+    val pointer: Maybe[Integer] = maybe { location map (_.column) }
 
-    val pointerSpace: Maybe[String] = Maybe.just {
-      lineContent.take(mapping.column) map { case '\t' => '\t'; case _ => ' ' }
+    val pointerSpace: Maybe[String] = maybe {
+      location.map { l => lineContent.take(l.column) map { case '\t' => '\t'; case _ => ' ' } }
     }
 
     val sourceFile: Maybe[File] = maybe(source)
 
-    val sourcePath: Maybe[String] = maybe {
-      source map (_.getCanonicalPath)
+    val sourcePath: Maybe[String] = maybe { source map (_.getCanonicalPath) }
+  }
+
+  object TemplateMapping {
+    case class Location(line: Int, column: Int, offset: Int, content: String)
+
+    case class Line(line: Int, start: Int, end: Int, content: String) {
+      def location(l: Int, c: Int): Location = {
+        if (l < line) {
+          Location(line, 0, start, content)
+        } else if (l > line) {
+          Location(line, content.length, end, content)
+        } else {
+          val column = 0 max c min content.length
+          val offset = start + column
+          Location(line, column, offset, content)
+        }
+      }
+
+      def location(o: Int): Location = {
+        val offset = start max o min end
+        val column = offset - start
+        Location(line, column, offset, content)
+      }
+    }
+
+    def apply(source: Option[File]): TemplateMapping = {
+      val lines = source.toSeq flatMap { file => IO.readLines(file) }
+      TemplateMapping(lines)
     }
   }
 
-  case class TemplateMapping(line: Int, column: Int, offset: Int, content: String)
+  case class TemplateMapping(sourceLines: Seq[String]) {
+    import TemplateMapping.{ Line, Location }
+
+    val lines: Seq[Line] = sourceLines.scanLeft(Line(0, -1, -1, "")) {
+      (previous, content) => Line(previous.line + 1, previous.end + 1, previous.end + 1 + content.length, content)
+    }.drop(1)
+
+    def location(offset: Int): Option[Location] = {
+      if (lines.isEmpty) {
+        None
+      } else {
+        val index = 0 max lines.lastIndexWhere(_.start <= offset)
+        Some(lines(index).location(offset))
+      }
+    }
+
+    def location(line: Int, column: Int): Option[Location] = {
+      if (lines.isEmpty) {
+        None
+      } else {
+        val index = 0 max (line - 1) min (lines.length - 1)
+        Some(lines(index).location(line, column))
+      }
+    }
+  }
 
   def maybe[A](o: Option[A]): Maybe[A] = o match {
     case Some(v) => Maybe.just(v)
