@@ -7,6 +7,24 @@
 import org.specs2.mutable._
 
 object FormatSpec extends Specification {
+  "Formats" should {
+    "show null text values as empty" in {
+      val text: String = null
+
+      Html(text).body must beEmpty
+      new Html(text).body must beEmpty
+
+      Txt(text).body must beEmpty
+      new Txt(text).body must beEmpty
+
+      Xml(text).body must beEmpty
+      new Xml(text).body must beEmpty
+
+      JavaScript(text).body must beEmpty
+      new JavaScript(text).body must beEmpty
+    }
+  }
+
   "HtmlFormat" should {
     "escape '<', '&' and '>'" in {
       HtmlFormat.escape("foo < bar & baz >").body must_== "foo &lt; bar &amp; baz &gt;"

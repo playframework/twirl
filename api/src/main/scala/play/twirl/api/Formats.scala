@@ -13,11 +13,15 @@ object MimeTypes {
   val JAVASCRIPT = "text/javascript"
 }
 
+object Formats {
+  def safe(text: String): String = if (text eq null) "" else text
+}
+
 /**
  * Content type used in default HTML templates.
  */
 class Html private (elements: immutable.Seq[Html], text: String) extends BufferedContent[Html](elements, text) {
-  def this(text: String) = this(Nil, text)
+  def this(text: String) = this(Nil, Formats.safe(text))
   def this(elements: immutable.Seq[Html]) = this(elements, "")
 
   /**
@@ -83,7 +87,7 @@ object HtmlFormat extends Format[Html] {
  * Content type used in default text templates.
  */
 class Txt private (elements: immutable.Seq[Txt], text: String) extends BufferedContent[Txt](elements, text) {
-  def this(text: String) = this(Nil, text)
+  def this(text: String) = this(Nil, Formats.safe(text))
   def this(elements: immutable.Seq[Txt]) = this(elements, "")
 
   /**
@@ -137,7 +141,7 @@ object TxtFormat extends Format[Txt] {
  * Content type used in default XML templates.
  */
 class Xml private (elements: immutable.Seq[Xml], text: String) extends BufferedContent[Xml](elements, text) {
-  def this(text: String) = this(Nil, text)
+  def this(text: String) = this(Nil, Formats.safe(text))
   def this(elements: immutable.Seq[Xml]) = this(elements, "")
 
   /**
@@ -191,7 +195,7 @@ object XmlFormat extends Format[Xml] {
  * Type used in default JavaScript templates.
  */
 class JavaScript private (elements: immutable.Seq[JavaScript], text: String) extends BufferedContent[JavaScript](elements, text) {
-  def this(text: String) = this(Nil, text)
+  def this(text: String) = this(Nil, Formats.safe(text))
   def this(elements: immutable.Seq[JavaScript]) = this(elements, "")
 
   /**
