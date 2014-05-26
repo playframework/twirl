@@ -106,6 +106,8 @@ sealed trait AbstractGeneratedSource {
 
 case class GeneratedSource(file: File) extends AbstractGeneratedSource {
 
+  import TwirlCompiler.codec
+
   def content = TwirlIO.readFileAsString(file)
 
   def needRecompilation(imports: String): Boolean = !file.exists ||
@@ -151,7 +153,9 @@ case class GeneratedSourceVirtual(path: String) extends AbstractGeneratedSource 
 object TwirlCompiler {
   import play.twirl.parser.TreeNodes._
 
-  val codec = implicitly[Codec]
+  val encoding = sys.props.getOrElse("twirl.encoding", scala.util.Properties.sourceEncoding)
+
+  implicit val codec = Codec(encoding)
 
   def compile(source: File, sourceDirectory: File, generatedDirectory: File, formatterType: String, additionalImports: String = "", inclusiveDot: Boolean = false, useOldParser: Boolean = false) = {
     val resultType = formatterType + ".Appendable"
