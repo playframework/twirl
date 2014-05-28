@@ -25,8 +25,8 @@ case class TemplateCompilationError(source: File, message: String, line: Int, co
 
 object MaybeGeneratedSource {
 
-  def unapply(source: File): Option[GeneratedSource] = {
-    val generated = GeneratedSource(source)
+  def apply(source: File, codec: Codec): Option[GeneratedSource] = {
+    val generated = GeneratedSource(source, codec)
     if (generated.meta.isDefinedAt("SOURCE")) {
       Some(generated)
     } else {
@@ -104,11 +104,9 @@ sealed trait AbstractGeneratedSource {
   }
 }
 
-case class GeneratedSource(file: File) extends AbstractGeneratedSource {
+case class GeneratedSource(file: File, codec: Codec = TwirlIO.defaultCodec) extends AbstractGeneratedSource {
 
-  import TwirlCompiler.codec
-
-  def content = TwirlIO.readFileAsString(file)
+  def content = TwirlIO.readFileAsString(file, codec)
 
   def needRecompilation(imports: String): Boolean = !file.exists ||
     // A generated source already exist but
@@ -118,7 +116,7 @@ case class GeneratedSource(file: File) extends AbstractGeneratedSource {
   def toSourcePosition(marker: Int): (Int, Int) = {
     try {
       val targetMarker = mapPosition(marker)
-      val line = TwirlIO.readFileAsString(source.get).substring(0, targetMarker).split('\n').size
+      val line = TwirlIO.readFileAsString(source.get, codec).substring(0, targetMarker).split('\n').size
       (line, targetMarker)
     } catch {
       case _: Exception => (0, 0)
@@ -153,37 +151,33 @@ case class GeneratedSourceVirtual(path: String) extends AbstractGeneratedSource 
 object TwirlCompiler {
   import play.twirl.parser.TreeNodes._
 
-  val encoding = sys.props.getOrElse("twirl.encoding", scala.util.Properties.sourceEncoding)
-
-  implicit val codec = Codec(encoding)
-
-  def compile(source: File, sourceDirectory: File, generatedDirectory: File, formatterType: String, additionalImports: String = "", inclusiveDot: Boolean = false, useOldParser: Boolean = false) = {
+  def compile(source: File, sourceDirectory: File, generatedDirectory: File, formatterType: String, additionalImports: String = "", codec: Codec = TwirlIO.defaultCodec, inclusiveDot: Boolean = false, useOldParser: Boolean = false) = {
     val resultType = formatterType + ".Appendable"
-    val (templateName, generatedSource) = generatedFile(source, sourceDirectory, generatedDirectory, inclusiveDot)
+    val (templateName, generatedSource) = generatedFile(source, codec, sourceDirectory, generatedDirectory, inclusiveDot)
     if (generatedSource.needRecompilation(additionalImports)) {
-      val generated = parseAndGenerateCode(templateName, TwirlIO.readFile(source), source.getAbsolutePath, resultType, formatterType, additionalImports, inclusiveDot, useOldParser)
-      TwirlIO.writeStringToFile(generatedSource.file, generated.toString)
+      val generated = parseAndGenerateCode(templateName, TwirlIO.readFile(source), codec, source.getAbsolutePath, resultType, formatterType, additionalImports, inclusiveDot, useOldParser)
+      TwirlIO.writeStringToFile(generatedSource.file, generated.toString, codec)
       Some(generatedSource.file)
     } else {
       None
     }
   }
 
-  def compileVirtual(content: String, source: File, sourceDirectory: File, resultType: String, formatterType: String, additionalImports: String = "", inclusiveDot: Boolean = false, useOldParser: Boolean = false) = {
+  def compileVirtual(content: String, source: File, sourceDirectory: File, resultType: String, formatterType: String, additionalImports: String = "", codec: Codec = TwirlIO.defaultCodec, inclusiveDot: Boolean = false, useOldParser: Boolean = false) = {
     val (templateName, generatedSource) = generatedFileVirtual(source, sourceDirectory, inclusiveDot)
-    val generated = parseAndGenerateCode(templateName, content.getBytes(codec.charSet), source.getAbsolutePath, resultType, formatterType, additionalImports, inclusiveDot, useOldParser)
+    val generated = parseAndGenerateCode(templateName, content.getBytes(codec.charSet), codec, source.getAbsolutePath, resultType, formatterType, additionalImports, inclusiveDot, useOldParser)
     generatedSource.setContent(generated)
     generatedSource
   }
 
-  def parseAndGenerateCode(templateName: Array[String], content: Array[Byte], absolutePath: String, resultType: String, formatterType: String, additionalImports: String, inclusiveDot: Boolean, useOldParser: Boolean) = {
+  def parseAndGenerateCode(templateName: Array[String], content: Array[Byte], codec: Codec, absolutePath: String, resultType: String, formatterType: String, additionalImports: String, inclusiveDot: Boolean, useOldParser: Boolean) = {
     if (useOldParser)
-      parseAndGenerateCodeOldParser(templateName, content, absolutePath, resultType, formatterType, additionalImports)
+      parseAndGenerateCodeOldParser(templateName, content, codec, absolutePath, resultType, formatterType, additionalImports)
     else
-      parseAndGenerateCodeNewParser(templateName, content, absolutePath, resultType, formatterType, additionalImports, inclusiveDot)
+      parseAndGenerateCodeNewParser(templateName, content, codec, absolutePath, resultType, formatterType, additionalImports, inclusiveDot)
   }
 
-  def parseAndGenerateCodeOldParser(templateName: Array[String], content: Array[Byte], absolutePath: String, resultType: String, formatterType: String, additionalImports: String) = {
+  def parseAndGenerateCodeOldParser(templateName: Array[String], content: Array[Byte], codec: Codec, absolutePath: String, resultType: String, formatterType: String, additionalImports: String) = {
     val templateParser = new PlayTwirlParser
     templateParser.parse(new String(content, codec.charSet)) match {
       case templateParser.Success(parsed: Template, rest) if rest.atEnd => {
@@ -205,7 +199,7 @@ object TwirlCompiler {
     }
   }
 
-  def parseAndGenerateCodeNewParser(templateName: Array[String], content: Array[Byte], absolutePath: String, resultType: String, formatterType: String, additionalImports: String, inclusiveDot: Boolean) = {
+  def parseAndGenerateCodeNewParser(templateName: Array[String], content: Array[Byte], codec: Codec, absolutePath: String, resultType: String, formatterType: String, additionalImports: String, inclusiveDot: Boolean) = {
     val templateParser = new TwirlParser(inclusiveDot)
     templateParser.parse(new String(content, codec.charSet)) match {
       case templateParser.Success(parsed: Template, rest) if rest.atEnd => {
@@ -228,12 +222,12 @@ object TwirlCompiler {
     }
   }
 
-  def generatedFile(template: File, sourceDirectory: File, generatedDirectory: File, inclusiveDot: Boolean) = {
+  def generatedFile(template: File, codec: Codec, sourceDirectory: File, generatedDirectory: File, inclusiveDot: Boolean) = {
     val templateName = {
       val name = source2TemplateName(template, sourceDirectory, template.getName.split('.').takeRight(1).head).split('.')
       if (inclusiveDot) addInclusiveDotName(name) else name
     }
-    templateName -> GeneratedSource(new File(generatedDirectory, templateName.mkString("/") + ".template.scala"))
+    templateName -> GeneratedSource(new File(generatedDirectory, templateName.mkString("/") + ".template.scala"), codec)
   }
 
   def generatedFileVirtual(template: File, sourceDirectory: File, inclusiveDot: Boolean) = {

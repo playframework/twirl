@@ -5,6 +5,7 @@ package play.twirl.sbt
 
 import sbt._
 import sbt.Keys._
+import scala.io.Codec
 
 object Import {
   object TwirlKeys {
@@ -12,6 +13,7 @@ object Import {
     val templateFormats = SettingKey[Map[String, String]]("twirl-template-formats", "Defined twirl template formats")
     val templateImports = SettingKey[Seq[String]]("twirl-template-imports", "Extra imports for twirl templates")
     val useOldParser = SettingKey[Boolean]("twirl-use-old-parser", "Use the original Play template parser")
+    val sourceEncoding = TaskKey[String]("twirl-source-encoding", "Source encoding for template files and generated scala files")
     val compileTemplates = TaskKey[Seq[File]]("twirl-compile-templates", "Compile twirl templates into scala source files")
   }
 }
@@ -56,17 +58,23 @@ object SbtTwirl extends AutoPlugin {
   def defaultSettings: Seq[Setting[_]] = Seq(
     useOldParser := false,
     templateFormats := defaultFormats,
-    templateImports := Seq.empty
+    templateImports := Seq.empty,
+    sourceEncoding := scalacEncoding(scalacOptions.value)
   )
 
   def positionSettings: Seq[Setting[_]] = Seq(
-    sourcePositionMappers += TemplateProblem.positionMapper
+    sourcePositionMappers += TemplateProblem.positionMapper(Codec(sourceEncoding.value))
   )
 
   def dependencySettings: Seq[Setting[_]] = Seq(
     twirlVersion := readResourceProperty("twirl.version.properties", "twirl.api.version"),
     libraryDependencies += "com.typesafe.play" %% "twirl-api" % twirlVersion.value
   )
+
+  def scalacEncoding(options: Seq[String]): String = {
+    val i = options.indexOf("-encoding") + 1
+    if (i > 0 && i < options.length) options(i) else "UTF-8"
+  }
 
   def defaultFormats = Map(
     "html" -> "play.twirl.api.HtmlFormat",
@@ -83,6 +91,7 @@ object SbtTwirl extends AutoPlugin {
       templateImports.value,
       (includeFilter in compileTemplates).value,
       (excludeFilter in compileTemplates).value,
+      Codec(sourceEncoding.value),
       useOldParser.value,
       streams.value.log
     )
