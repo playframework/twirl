@@ -6,18 +6,19 @@ package play.twirl.sbt
 import sbt._
 import play.twirl.compiler.{ GeneratedSource, MaybeGeneratedSource }
 import xsbti.{ CompileFailed, Maybe, Position, Problem, Severity }
+import scala.io.Codec
 
 object TemplateProblem {
 
-  val positionMapper: Position => Option[Position] = position => {
-    position.sourceFile collect {
-      case MaybeGeneratedSource(generated) => TemplatePosition(generated, position)
+  def positionMapper(codec: Codec): Position => Option[Position] = position => {
+    position.sourceFile flatMap (MaybeGeneratedSource(_, codec)) map {
+      generated => TemplatePosition(generated, position)
     }
   }
 
-  def exception(source: File, message: String, line: Int, column: Int) = {
+  def exception(source: File, codec: Codec, message: String, line: Int, column: Int) = {
     val column0 = 0 max (column - 1) // convert to 0-based column
-    new ProblemException(TemplateProblem(message, TemplatePosition(source, line, column0)))
+    new ProblemException(TemplateProblem(message, TemplatePosition(source, codec, line, column0)))
   }
 
   class ProblemException(issues: Problem*) extends CompileFailed with FeedbackProvidedException {
@@ -32,14 +33,14 @@ object TemplateProblem {
   }
 
   object TemplatePosition {
-    def apply(source: File, line: Int, column: Int): TemplatePosition = {
-      val location = TemplateMapping(Some(source)).location(line, column)
+    def apply(source: File, codec: Codec, line: Int, column: Int): TemplatePosition = {
+      val location = TemplateMapping(Some(source), codec).location(line, column)
       new TemplatePosition(Some(source), location)
     }
 
     def apply(generated: GeneratedSource, position: Position): TemplatePosition = {
       val offset = position.offset map { o => generated.mapPosition(o) }
-      val location = offset flatMap { o => TemplateMapping(generated.source).location(o) }
+      val location = offset flatMap { o => TemplateMapping(generated.source, generated.codec).location(o) }
       new TemplatePosition(generated.source, location)
     }
   }
@@ -85,8 +86,8 @@ object TemplateProblem {
       }
     }
 
-    def apply(source: Option[File]): TemplateMapping = {
-      val lines = source.toSeq flatMap { file => IO.readLines(file) }
+    def apply(source: Option[File], codec: Codec): TemplateMapping = {
+      val lines = source.toSeq flatMap { file => IO.readLines(file, codec.charSet) }
       TemplateMapping(lines)
     }
   }

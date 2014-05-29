@@ -11,6 +11,10 @@ import java.net.URL
  */
 private[twirl] object TwirlIO {
 
+  val defaultEncoding = scala.util.Properties.sourceEncoding
+
+  val defaultCodec = Codec(defaultEncoding)
+
   /**
    * Read the given stream into a byte array.
    *
@@ -44,17 +48,17 @@ private[twirl] object TwirlIO {
    *
    * Does not close the stream.
    */
-  def readStreamAsString(stream: InputStream)(implicit codec: Codec): String = {
+  def readStreamAsString(stream: InputStream, codec: Codec = defaultCodec): String = {
     new String(readStream(stream), codec.name)
   }
 
   /**
    * Read the URL as a String.
    */
-  def readUrlAsString(url: URL)(implicit codec: Codec): String = {
+  def readUrlAsString(url: URL, codec: Codec = defaultCodec): String = {
     val is = url.openStream()
     try {
-      readStreamAsString(is)
+      readStreamAsString(is, codec)
     } finally {
       closeQuietly(is)
     }
@@ -63,10 +67,10 @@ private[twirl] object TwirlIO {
   /**
    * Read the file as a String.
    */
-  def readFileAsString(file: File)(implicit codec: Codec): String = {
+  def readFileAsString(file: File, codec: Codec = defaultCodec): String = {
     val is = new FileInputStream(file)
     try {
-      readStreamAsString(is)
+      readStreamAsString(is, codec)
     } finally {
       closeQuietly(is)
     }
@@ -75,7 +79,7 @@ private[twirl] object TwirlIO {
   /**
    * Write the given String to a file
    */
-  def writeStringToFile(file: File, contents: String)(implicit codec: Codec) = {
+  def writeStringToFile(file: File, contents: String, codec: Codec = defaultCodec) = {
     if (!file.getParentFile.exists) {
       file.getParentFile.mkdirs()
     }
