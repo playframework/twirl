@@ -25,6 +25,8 @@ case class TemplateCompilationError(source: File, message: String, line: Int, co
 
 object MaybeGeneratedSource {
 
+  def unapply(source: File): Option[GeneratedSource] = apply(source, TwirlIO.defaultCodec)
+
   def apply(source: File, codec: Codec): Option[GeneratedSource] = {
     val generated = GeneratedSource(source, codec)
     if (generated.meta.isDefinedAt("SOURCE")) {
