@@ -66,7 +66,7 @@ def common = Seq(
 )
 
 def crossScala = Seq(
-  crossScalaVersions := Seq("2.9.3", "2.10.4", "2.11.0"),
+  crossScalaVersions := Seq("2.9.3", "2.10.4", "2.11.1"),
   unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
 )
 
