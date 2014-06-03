@@ -518,7 +518,10 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       if (blk != null) {
         result = ScalaExp(ListBuffer(pattern, blk))
         whitespace()
-      } else error("Expected block after 'case'")
+      } else {
+        //error("Expected block after 'case'")
+        input.regressTo(wspos)
+      }
     } else if (ws.length > 0) {
       // We could regress here and not return something for the ws, because the plain production rule
       // would parse this, but this would actually be a hotspot for backtracking, so let's return it
