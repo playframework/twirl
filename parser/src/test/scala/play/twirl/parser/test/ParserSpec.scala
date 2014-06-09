@@ -76,6 +76,10 @@ object ParserSpec extends Specification {
         ))
       }
 
+      "case.scala.js" in {
+        parseSuccess("case.scala.js")
+      }
+
     }
 
     "handle string literals within parentheses" in {
