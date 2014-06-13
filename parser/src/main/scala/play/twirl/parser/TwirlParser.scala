@@ -26,7 +26,7 @@ import scala.util.parsing.input.OffsetPosition
  *   scalaBlockDisplayed : scalaBlock
  *   scalaBlockChained : scalaBlock
  *   scalaBlock : '@' brackets
- *   importExpression : '@' 'import' .* '\r'? '\n'
+ *   importExpression : '@' 'import ' .* '\r'? '\n'
  *   caseExpression : whitespace? 'case' .+ '=>' block whitespace?
  *   forExpression : '@' "for" parentheses block
  *   matchExpression : '@' (simpleExpr | complexExpr) whitespaceNoBreak 'match' block
@@ -61,7 +61,7 @@ import scala.util.parsing.input.OffsetPosition
  *   scalaBlockDisplayed : scalaBlock
  *   scalaBlockChained : scalaBlock
  *   scalaBlock : '@' brackets
- *   importExpression : '@' 'import' .* '\r'? '\n'
+ *   importExpression : '@' 'import ' .* '\r'? '\n'
  *   caseExpression : (whitespace? 'case' .+ '=>' block whitespace?) | whitespace
  *   forExpression : '@' "for" parentheses block
  *   simpleExpr : methodCall expressionPart*
@@ -379,7 +379,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
   def importExpression(): Simple = {
     val p = input.offset
-    if (check("@import"))
+    if (check("@import "))
       position(Simple("import " + anyUntil("\n", inclusive = true).trim), p+1) // don't include position of @
     else null
   }
