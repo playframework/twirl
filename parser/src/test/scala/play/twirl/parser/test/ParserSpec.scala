@@ -80,6 +80,11 @@ object ParserSpec extends Specification {
         parseSuccess("case.scala.js")
       }
 
+      "import expressions" in {
+        parseTemplateString("@import identifier").topImports must be_== (Seq(Simple("import identifier")))
+        parseTemplateString("@importIdentifier").topImports must beEmpty
+      }
+
     }
 
     "handle string literals within parentheses" in {
