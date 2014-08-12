@@ -166,7 +166,7 @@ object Helper {
     val compiler = {
 
       def additionalClassPathEntry: Option[String] = Some(
-        Class.forName("play.twirl.compiler.TwirlCompiler").getClassLoader.asInstanceOf[URLClassLoader].getURLs.map(_.getFile).mkString(":"))
+        Class.forName("play.twirl.compiler.TwirlCompiler").getClassLoader.asInstanceOf[URLClassLoader].getURLs.map(url => new File(url.toURI)).mkString(":"))
 
       val settings = new Settings
       val scalaObjectSource = Class.forName("scala.Option").getProtectionDomain.getCodeSource
