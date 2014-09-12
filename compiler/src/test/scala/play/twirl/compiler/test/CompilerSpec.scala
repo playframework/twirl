@@ -93,6 +93,12 @@ abstract class CompilerTests(oldParser: Boolean = false) extends Specification {
       result must be_==("<p>file: example, url: http://example.org</p>")
     }
 
+    "compile successfully (escape closing brace)" in {
+      val helper = newCompilerHelper
+      val result = helper.compile[(Option[String] => Html)]("escapebrace.scala.html", "html.escapebrace")(Some("foo")).toString.trim
+      result must be_==("foo: }")
+    }
+
     "compile successfully (utf8)" in {
       val helper = newCompilerHelper
       val text = helper.compile[(() => Html)]("utf8.scala.html", "html.utf8")().toString.trim

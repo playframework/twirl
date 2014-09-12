@@ -49,6 +49,8 @@ class PlayTwirlParser extends JavaTokenParsers {
 
   def escapedAt = at ~> at
 
+  def escapedBrace = at ~> "}"
+
   def any = {
     Parser(in => if (in.atEnd) {
       Failure("end of file", in)
@@ -59,7 +61,7 @@ class PlayTwirlParser extends JavaTokenParsers {
 
   def plain: Parser[Plain] = {
     positioned(
-      ((escapedAt | (not(at) ~> (not("{" | "}") ~> any))) +) ^^ {
+      ((escapedAt | escapedBrace | (not(at) ~> (not("{" | "}") ~> any))) +) ^^ {
         case charList => Plain(charList.mkString)
       })
   }

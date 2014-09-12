@@ -99,6 +99,10 @@ object ParserSpec extends Specification {
 
     }
 
+    "handle escaped closing curly braces" in {
+      parseStringSuccess("""@for(i <- is) { @} }""")
+    }
+
     "fail for" in {
 
       "unclosedBracket.scala.html" in {

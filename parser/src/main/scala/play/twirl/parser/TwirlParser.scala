@@ -78,7 +78,7 @@ import scala.util.parsing.input.OffsetPosition
  *   comment : '@*' [^'*@']* '*@'
  *   parentheses : '(' (parentheses | [^')'])* ')'
  *   squareBrackets : '[' (squareBrackets | [^']'])* ']'
- *   plain : ('@@' | ([^'@'] [^'{' '}']))+
+ *   plain : ('@@' | '@}' | ([^'@'] [^'{' '}']))+
  *   whitespaceNoBreak : [' ' '\t']+
  *   identifier : javaIdentStart javaIdentPart* // see java docs for what these two rules mean
  * }}}
@@ -592,6 +592,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   def plain(): Plain = {
     def single(): String = {
       if (check("@@")) "@"
+      else if (check("@}")) "}"
       else if (!input.isEOF() && input() != '@' && input() != '}' && input() != '{') any()
       else null
     }
