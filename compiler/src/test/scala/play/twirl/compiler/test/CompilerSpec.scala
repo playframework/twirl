@@ -15,6 +15,8 @@ class OldParserCompilerSpec extends CompilerTests(oldParser = true)
 
 abstract class CompilerTests(oldParser: Boolean = false) extends Specification {
 
+  sequential
+
   import Helper._
 
   val parserName = if (oldParser) "old" else "new"
@@ -95,6 +97,12 @@ abstract class CompilerTests(oldParser: Boolean = false) extends Specification {
       val helper = newCompilerHelper
       val text = helper.compile[(() => Html)]("utf8.scala.html", "html.utf8")().toString.trim
       text must be_==("€, ö, or ü")
+    }
+
+    "compile successfully (triple quotes)" in {
+      val helper = newCompilerHelper
+      val out = helper.compile[(() => Html)]("triplequotes.scala.html", "html.triplequotes")().toString.trim
+      out must be_==("\"\"\"\n\n\"\"\"\"\"\n\n\"\"\"\"\"\"")
     }
 
     "fail compilation for error.scala.html" in {
