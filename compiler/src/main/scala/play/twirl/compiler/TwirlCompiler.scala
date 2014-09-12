@@ -272,10 +272,20 @@ object TwirlCompiler {
     }
   }
 
+  private val tripleQuote = "\"" * 3
+  // Scala doesn't offer a way to escape triple quoted strings inside triple quoted strings (to my knowledge), so we
+  // have to escape them in this rather crude way
+  // We need to double escape slashes, since it's a regex replacement
+  private val escapedTripleQuote = "\\\"" * 3
+  private val doubleEscapedTripleQuote = "\\\\\"" * 3
+  private val tripleQuoteReplacement = escapedTripleQuote + " + \\\"" + doubleEscapedTripleQuote + "\\\" + " + escapedTripleQuote
+  private def quoteAndEscape(text: String): Seq[String] = {
+    Seq(tripleQuote, text.replaceAll(tripleQuote, tripleQuoteReplacement), tripleQuote)
+  }
+
   def visit(elem: Seq[TemplateTree], previous: Seq[Any]): Seq[Any] = {
     elem.toList match {
       case head :: tail =>
-        val tripleQuote = "\"\"\""
         visit(tail, head match {
           case p @ Plain(text) =>
 
@@ -284,8 +294,8 @@ object TwirlCompiler {
             // over 20000 characters. 20000 characters is a nice round number, use that.
             val grouped = StringGrouper(text, 20000)
             (if (previous.isEmpty) Nil else previous :+ ",") :+
-              "format.raw" :+ Source("(", p.pos) :+ tripleQuote :+ grouped.head :+ tripleQuote :+ ")" :+
-              grouped.tail.flatMap { t => Seq(",\nformat.raw(", tripleQuote, t, tripleQuote, ")") }
+              "format.raw" :+ Source("(", p.pos) :+ quoteAndEscape(grouped.head) :+ ")" :+
+              grouped.tail.flatMap { t => Seq(",\nformat.raw(", quoteAndEscape(t), ")") }
           case Comment(msg) => previous
           case Display(exp) => (if (previous.isEmpty) Nil else previous :+ ",") :+ displayVisitedChildren(visit(Seq(exp), Nil))
           case ScalaExp(parts) => previous :+ parts.map {
