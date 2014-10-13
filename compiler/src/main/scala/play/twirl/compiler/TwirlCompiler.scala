@@ -260,7 +260,7 @@ object TwirlCompiler {
       case (f, name) if name == topDirectory => source2TemplateName(f.getParentFile, sourceDirectory, ext, name + "." + ext + "." + suffix, topDirectory, false)
       case (f, Name(name, _)) if f.isFile => source2TemplateName(f.getParentFile, sourceDirectory, ext, name, topDirectory, setExt)
       case (f, name) if !f.isFile => source2TemplateName(f.getParentFile, sourceDirectory, ext, name + "." + suffix, topDirectory, setExt)
-      case (f, name) => throw TemplateCompilationError(f, "Invalid template name [" + name + "]", 0, 0)
+      case (f, name) => throw TemplateCompilationError(f, "Invalid template name [" + name + "], filenames must only consist of alphanumeric characters and underscores or periods.", 0, 0)
     }
   }
 
