@@ -129,9 +129,13 @@ def scalaParserCombinators(scalaVersion: String) =
 def scalaXml(scalaVersion: String) =
   whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-xml" % "1.0.1")
 
-def specs2(scalaBinaryVersion: String) = scalaBinaryVersion match {
+def specs2(scalaBinaryVersion: String): ModuleID = scalaBinaryVersion match {
   case "2.9.3" => "org.specs2" %% "specs2" % "1.12.4.1" % "test"
   case "2.10" | "2.11" => "org.specs2" %% "specs2" % "2.3.11" % "test"
+  // workaround for https://github.com/typesafehub/dbuild/issues/145
+  case other =>
+    val defaultBinVer = "2.11"
+    specs2(defaultBinVer)
 }
 
 def whenAtLeast(version: String, major: Int, minor: Int, module: ModuleID): Seq[ModuleID] = {
