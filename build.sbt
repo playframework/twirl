@@ -65,9 +65,17 @@ def common = Seq(
   scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 )
 
+def scalaSpecificSrcDirName(scalaBinaryVersion: String): String = scalaBinaryVersion match {
+  case "2.9.3" | "2.10" | "2.11" => s"scala-$scalaBinaryVersion"
+  // workaround for https://github.com/typesafehub/dbuild/issues/145
+  case other => "scala-2.11"
+}
+
 def crossScala = Seq(
-  crossScalaVersions := Seq("2.9.3", "2.10.4", "2.11.1"),
-  unmanagedSourceDirectories in Compile += (sourceDirectory in Compile).value / ("scala-" + scalaBinaryVersion.value)
+  crossScalaVersions := Seq("2.9.3", "2.10.4", "2.11.1"), {
+    unmanagedSourceDirectories in Compile +=
+      (sourceDirectory in Compile).value / scalaSpecificSrcDirName(scalaBinaryVersion.value)
+  }
 )
 
 def publishMaven = Seq(
