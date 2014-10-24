@@ -1,2 +1,4 @@
 language: scala
-script: sbt +test +publishLocal plugin/test plugin/scripted
+script:
+  - sbt +test +publishLocal plugin/test plugin/scripted
+  - cd docs && sbt test validateDocs
