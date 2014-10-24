@@ -12,6 +12,7 @@ lazy val api = project
   .settings(publishMaven: _*)
   .settings(
     name := "twirl-api",
+    projectID := withSourceUrl.value,
     libraryDependencies += commonsLang,
     libraryDependencies ++= scalaXml(scalaVersion.value),
     libraryDependencies += specs2(scalaBinaryVersion.value)
@@ -106,6 +107,16 @@ def noPublish = Seq(
   publishLocal := {},
   publishTo := Some(Resolver.file("no-publish", crossTarget.value / "no-publish"))
 )
+
+// Aggregated documentation
+
+def withSourceUrl = Def.setting {
+  val baseUrl = "https://github.com/playframework/twirl"
+  val sourceTree = if (isSnapshot.value) "master" else ("v" + version.value)
+  val sourceDirectory = IO.relativize((baseDirectory in ThisBuild).value, baseDirectory.value).getOrElse("")
+  val sourceUrl = s"${baseUrl}/tree/${sourceTree}/${sourceDirectory}"
+  projectID.value.extra("info.sourceUrl" -> sourceUrl)
+}
 
 // Version file
 
