@@ -10,6 +10,7 @@ lazy val api = project
   .settings(common: _*)
   .settings(crossScala: _*)
   .settings(publishMaven: _*)
+  .settings(playdocSettings: _*)
   .settings(
     name := "twirl-api",
     projectID := withSourceUrl.value,
@@ -117,6 +118,20 @@ def withSourceUrl = Def.setting {
   val sourceUrl = s"${baseUrl}/tree/${sourceTree}/${sourceDirectory}"
   projectID.value.extra("info.sourceUrl" -> sourceUrl)
 }
+
+val packagePlaydoc = TaskKey[File]("package-playdoc", "Package play documentation")
+
+def playdocSettings: Seq[Setting[_]] =
+  Defaults.packageTaskSettings(packagePlaydoc, mappings in packagePlaydoc) ++
+  Seq(
+    mappings in packagePlaydoc := {
+      val base = (baseDirectory in ThisBuild).value / "docs"
+      (base / "manual").***.get pair relativeTo(base)
+    },
+    artifactClassifier in packagePlaydoc := Some("playdoc"),
+    artifact in packagePlaydoc ~= { _.copy(configurations = Seq(Docs)) }
+  ) ++
+  addArtifact(artifact in packagePlaydoc, packagePlaydoc)
 
 // Version file
 
