@@ -10,8 +10,10 @@ lazy val api = project
   .settings(common: _*)
   .settings(crossScala: _*)
   .settings(publishMaven: _*)
+  .settings(playdocSettings: _*)
   .settings(
     name := "twirl-api",
+    projectID := withSourceUrl.value,
     libraryDependencies += commonsLang,
     libraryDependencies ++= scalaXml(scalaVersion.value),
     libraryDependencies += specs2(scalaBinaryVersion.value)
@@ -114,6 +116,30 @@ def noPublish = Seq(
   publishLocal := {},
   publishTo := Some(Resolver.file("no-publish", crossTarget.value / "no-publish"))
 )
+
+// Aggregated documentation
+
+def withSourceUrl = Def.setting {
+  val baseUrl = "https://github.com/playframework/twirl"
+  val sourceTree = if (isSnapshot.value) "master" else ("v" + version.value)
+  val sourceDirectory = IO.relativize((baseDirectory in ThisBuild).value, baseDirectory.value).getOrElse("")
+  val sourceUrl = s"${baseUrl}/tree/${sourceTree}/${sourceDirectory}"
+  projectID.value.extra("info.sourceUrl" -> sourceUrl)
+}
+
+val packagePlaydoc = TaskKey[File]("package-playdoc", "Package play documentation")
+
+def playdocSettings: Seq[Setting[_]] =
+  Defaults.packageTaskSettings(packagePlaydoc, mappings in packagePlaydoc) ++
+  Seq(
+    mappings in packagePlaydoc := {
+      val base = (baseDirectory in ThisBuild).value / "docs"
+      (base / "manual").***.get pair relativeTo(base)
+    },
+    artifactClassifier in packagePlaydoc := Some("playdoc"),
+    artifact in packagePlaydoc ~= { _.copy(configurations = Seq(Docs)) }
+  ) ++
+  addArtifact(artifact in packagePlaydoc, packagePlaydoc)
 
 // Version file
 
