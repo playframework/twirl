@@ -8,4 +8,4 @@ resolvers ++= DefaultOptions.resolvers(snapshot = true)
 
 resolvers += Resolver.typesafeRepo("releases")
 
-addSbtPlugin("com.typesafe.play" % "play-docs-sbt-plugin" % "2.4-2014-10-24-0d38e6b-SNAPSHOT")
+addSbtPlugin("com.typesafe.play" % "play-docs-sbt-plugin" % "2.4-2014-10-31-e8009b2-SNAPSHOT")
