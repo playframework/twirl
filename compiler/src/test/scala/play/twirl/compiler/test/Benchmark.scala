@@ -8,7 +8,7 @@ import play.twirl.parser.TwirlIO
 /**
  * Easiest way to run this:
  *
- * sbt compiler/test:runMain play.twirl.compiler.test.Benchmark
+ * sbt "compiler/test:runMain play.twirl.compiler.test.Benchmark"
  */
 object Benchmark extends App {
 
@@ -27,23 +27,25 @@ object Benchmark extends App {
   val template = helper.compile[((String, List[String]) => (Int) => Html)]("real.scala.html", "html.real")
   val input = (1 to 100).map(_.toString).toList
 
+  val text = "world " * 100
+
   // warmup
   println("Warming up...")
   for (i <- 1 to 10000) {
-    template("World", input)(4).body
+    template(text, input)(4).body
   }
 
   println("Starting first run...")
   val start1 = System.currentTimeMillis()
   for (i <- 1 to 100000) {
-    template("World", input)(4).body
+    template(text, input)(4).body
   }
   println("First run: " + (System.currentTimeMillis() - start1) + "ms")
 
   println("Starting second run...")
   val start2 = System.currentTimeMillis()
   for (i <- 1 to 100000) {
-    template("World", input)(4).body
+    template(text, input)(4).body
   }
   println("Second run: " + (System.currentTimeMillis() - start2) + "ms")
 
