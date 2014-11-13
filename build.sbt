@@ -1,3 +1,5 @@
+import com.typesafe.tools.mima.plugin.MimaKeys
+
 lazy val twirl = project
   .in(file("."))
   .aggregate(api, parser, compiler)
@@ -16,7 +18,8 @@ lazy val api = project
     projectID := withSourceUrl.value,
     libraryDependencies += commonsLang,
     libraryDependencies ++= scalaXml(scalaVersion.value),
-    libraryDependencies += specs2(scalaBinaryVersion.value)
+    libraryDependencies += specs2(scalaBinaryVersion.value),
+    MimaKeys.previousArtifact := Some(organization.value % s"${moduleName.value}_${scalaBinaryVersion.value}" % "1.0.0")
   )
 
 lazy val parser = project
@@ -60,7 +63,7 @@ lazy val plugin = project
 
 // Shared settings
 
-def common = Seq(
+def common = mimaDefaultSettings ++ Seq(
   organization := "com.typesafe.play",
   version := "1.0.4-SNAPSHOT",
   scalaVersion := sys.props.get("scala.version").getOrElse("2.10.4"),
