@@ -375,15 +375,22 @@ object """ :+ name :+ """ extends BaseScalaTemplate[""" :+ resultType :+ """,For
     import scala.tools.nsc.Settings
     import scala.tools.nsc.reporters.ConsoleReporter
 
+    type Tree = PresentationCompiler.global.Tree
+    type DefDef = PresentationCompiler.global.DefDef
+    type TypeDef = PresentationCompiler.global.TypeDef
+    type ValDef = PresentationCompiler.global.ValDef
+
+    // For some reason they got rid of mods.isByNameParam
+    object ByNameParam {
+      def unapply(param: ValDef): Option[(String, String)] = if (param.mods.hasFlag(Flags.BYNAMEPARAM)) {
+        Some((param.name.toString, param.tpt.children(1).toString))
+      } else None
+    }
+
     /** The maximum time in milliseconds to wait for a compiler response to finish. */
     private val Timeout = 10000
 
     def getFunctionMapping(signature: String, returnType: String): (String, String, String) = synchronized {
-
-      type Tree = PresentationCompiler.global.Tree
-      type DefDef = PresentationCompiler.global.DefDef
-      type TypeDef = PresentationCompiler.global.TypeDef
-      type ValDef = PresentationCompiler.global.ValDef
 
       def filterType(t: String) = t match {
         case vararg if vararg.startsWith("_root_.scala.<repeated>") => vararg.replace("_root_.scala.<repeated>", "Array")
@@ -396,13 +403,6 @@ object """ :+ name :+ """ extends BaseScalaTemplate[""" :+ resultType :+ """,For
           case t: DefDef if t.name.toString == "signature" => Some(t)
           case t: Tree => t.children.flatMap(findSignature).headOption
         }
-      }
-
-      // For some reason they got rid of mods.isByNameParam
-      object ByNameParam {
-        def unapply(param: ValDef): Option[(String, String)] = if (param.mods.hasFlag(Flags.BYNAMEPARAM)) {
-          Some((param.name.toString, param.tpt.children(1).toString))
-        } else None
       }
 
       val params = findSignature(
