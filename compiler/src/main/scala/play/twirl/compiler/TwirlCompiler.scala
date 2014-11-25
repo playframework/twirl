@@ -445,12 +445,12 @@ object """ :+ name :+ """ extends BaseScalaTemplate[""" :+ resultType :+ """,For
 
       resp match {
         case None =>
-          PresentationCompiler.global.reportThrowable(new Throwable("Timeout in getFunctionMapping"))
+          PresentationCompiler.global.logThrowable(new Throwable("Timeout in getFunctionMapping"))
           ("", "", "")
         case Some(res) =>
           res match {
             case Right(t) =>
-              PresentationCompiler.global.reportThrowable(new Throwable("Throwable in getFunctionMapping", t))
+              PresentationCompiler.global.logThrowable(new Throwable("Throwable in getFunctionMapping", t))
               ("", "", "")
             case Left(res) =>
               res
