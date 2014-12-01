@@ -105,6 +105,12 @@ abstract class CompilerTests(oldParser: Boolean = false) extends Specification {
       text must be_==("€, ö, or ü")
     }
 
+    "compile successfully (existential)" in {
+      val helper = newCompilerHelper
+      val text = helper.compile[(List[_] => Html)]("existential.scala.html", "html.existential")(List(1, 2, 3)).toString.trim
+      text must be_==("123")
+    }
+
     "compile successfully (triple quotes)" in {
       val helper = newCompilerHelper
       val out = helper.compile[(() => Html)]("triplequotes.scala.html", "html.triplequotes")().toString.trim

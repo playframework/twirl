@@ -385,12 +385,22 @@ object """ :+ name :+ """ extends BaseScalaTemplate[""" :+ resultType :+ """,For
     import scala.tools.nsc.Settings
     import scala.tools.nsc.reporters.ConsoleReporter
 
-    def getFunctionMapping(signature: String, returnType: String): (String, String, String) = synchronized {
+    type Tree = PresentationCompiler.global.Tree
+    type DefDef = PresentationCompiler.global.DefDef
+    type TypeDef = PresentationCompiler.global.TypeDef
+    type ValDef = PresentationCompiler.global.ValDef
 
-      type Tree = PresentationCompiler.global.Tree
-      type DefDef = PresentationCompiler.global.DefDef
-      type TypeDef = PresentationCompiler.global.TypeDef
-      type ValDef = PresentationCompiler.global.ValDef
+    // For some reason they got rid of mods.isByNameParam
+    object ByNameParam {
+      def unapply(param: ValDef): Option[(String, String)] = if (param.mods.hasFlag(Flags.BYNAMEPARAM)) {
+        Some((param.name.toString, param.tpt.children(1).toString))
+      } else None
+    }
+
+    /** The maximum time in milliseconds to wait for a compiler response to finish. */
+    private val Timeout = 10000
+
+    def getFunctionMapping(signature: String, returnType: String): (String, String, String) = synchronized {
 
       def filterType(t: String) = t match {
         case vararg if vararg.startsWith("_root_.scala.<repeated>") => vararg.replace("_root_.scala.<repeated>", "Array")
@@ -405,47 +415,57 @@ object """ :+ name :+ """ extends BaseScalaTemplate[""" :+ resultType :+ """,For
         }
       }
 
-      // For some reason they got rid of mods.isByNameParam
-      object ByNameParam {
-        def unapply(param: ValDef): Option[(String, String)] = if (param.mods.hasFlag(Flags.BYNAMEPARAM)) {
-          Some((param.name.toString, param.tpt.children(1).toString))
-        } else None
-      }
-
       val params = findSignature(
         PresentationCompiler.treeFrom("object FT { def signature" + signature + " }")).get.vparamss
 
-      val functionType = "(" + params.map(group => "(" + group.map {
-        case ByNameParam(_, paramType) => " => " + paramType
-        case a => filterType(a.tpt.toString)
-      }.mkString(",") + ")").mkString(" => ") + " => " + returnType + ")"
+      val resp = PresentationCompiler.global.askForResponse { () =>
 
-      val renderCall = "def render%s: %s = apply%s".format(
-        "(" + params.flatten.map {
-          case ByNameParam(name, paramType) => name + ":" + paramType
-          case a => a.name.toString + ":" + filterType(a.tpt.toString)
-        }.mkString(",") + ")",
-        returnType,
-        params.map(group => "(" + group.map { p =>
-          p.name.toString + Option(p.tpt.toString).filter(_.startsWith("_root_.scala.<repeated>")).map(_ => ":_*").getOrElse("")
-        }.mkString(",") + ")").mkString)
-
-      val templateType = "play.twirl.api.Template%s[%s%s]".format(
-        params.flatten.size,
-        params.flatten.map {
-          case ByNameParam(_, paramType) => paramType
+        val functionType = "(" + params.map(group => "(" + group.map {
+          case ByNameParam(_, paramType) => " => " + paramType
           case a => filterType(a.tpt.toString)
-        }.mkString(","),
-        (if (params.flatten.isEmpty) "" else ",") + returnType)
+        }.mkString(",") + ")").mkString(" => ") + " => " + returnType + ")"
 
-      val f = "def f:%s = %s => apply%s".format(
-        functionType,
-        params.map(group => "(" + group.map(_.name.toString).mkString(",") + ")").mkString(" => "),
-        params.map(group => "(" + group.map { p =>
-          p.name.toString + Option(p.tpt.toString).filter(_.startsWith("_root_.scala.<repeated>")).map(_ => ":_*").getOrElse("")
-        }.mkString(",") + ")").mkString)
+        val renderCall = "def render%s: %s = apply%s".format(
+          "(" + params.flatten.map {
+            case ByNameParam(name, paramType) => name + ":" + paramType
+            case a => a.name.toString + ":" + filterType(a.tpt.toString)
+          }.mkString(",") + ")",
+          returnType,
+          params.map(group => "(" + group.map { p =>
+            p.name.toString + Option(p.tpt.toString).filter(_.startsWith("_root_.scala.<repeated>")).map(_ => ":_*").getOrElse("")
+          }.mkString(",") + ")").mkString)
 
-      (renderCall, f, templateType)
+        val templateType = "play.twirl.api.Template%s[%s%s]".format(
+          params.flatten.size,
+          params.flatten.map {
+            case ByNameParam(_, paramType) => paramType
+            case a => filterType(a.tpt.toString)
+          }.mkString(","),
+          (if (params.flatten.isEmpty) "" else ",") + returnType)
+
+        val f = "def f:%s = %s => apply%s".format(
+          functionType,
+          params.map(group => "(" + group.map(_.name.toString).mkString(",") + ")").mkString(" => "),
+          params.map(group => "(" + group.map { p =>
+            p.name.toString + Option(p.tpt.toString).filter(_.startsWith("_root_.scala.<repeated>")).map(_ => ":_*").getOrElse("")
+          }.mkString(",") + ")").mkString)
+
+        (renderCall, f, templateType)
+      }.get(Timeout)
+
+      resp match {
+        case None =>
+          PresentationCompiler.global.logThrowable(new Throwable("Timeout in getFunctionMapping"))
+          ("", "", "")
+        case Some(res) =>
+          res match {
+            case Right(t) =>
+              PresentationCompiler.global.logThrowable(new Throwable("Throwable in getFunctionMapping", t))
+              ("", "", "")
+            case Left(res) =>
+              res
+          }
+      }
     }
 
     class CompilerInstance {
