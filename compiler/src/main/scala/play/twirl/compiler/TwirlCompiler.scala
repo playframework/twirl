@@ -470,8 +470,17 @@ object """ :+ name :+ """ extends BaseScalaTemplate[""" :+ resultType :+ """,For
 
         // is null in Eclipse/OSGI but luckily we don't need it there
         if (scalaPredefSource != null) {
+          import java.net.URL
           import java.security.CodeSource
-          def toAbsolutePath(cs: CodeSource) = new File(cs.getLocation.toURI).getAbsolutePath
+          def urlToFile(url: URL): File = try {
+            val file = new File(url.toURI)
+            if (file.exists) file else new File(url.getPath) // assume malformed URL
+          } catch {
+            case _: java.net.URISyntaxException =>
+              // malformed URL: fallback to using the URL path directly
+              new File(url.getPath)
+          }
+          def toAbsolutePath(cs: CodeSource): String = urlToFile(cs.getLocation).getAbsolutePath
           val compilerPath = toAbsolutePath(Class.forName("scala.tools.nsc.Interpreter").getProtectionDomain.getCodeSource)
           val libPath = toAbsolutePath(scalaPredefSource)
           val pathList = List(compilerPath, libPath)
