@@ -65,7 +65,6 @@ lazy val plugin = project
 
 def common = mimaDefaultSettings ++ Seq(
   organization := "com.typesafe.play",
-  version := "1.0.5-SNAPSHOT",
   scalaVersion := sys.props.get("scala.version").getOrElse("2.10.4"),
   scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 )
