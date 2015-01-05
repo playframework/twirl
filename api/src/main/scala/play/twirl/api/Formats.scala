@@ -19,10 +19,47 @@ object Formats {
 
 /**
  * Content type used in default HTML templates.
+ *
+ * This has 3 states, either it's a tree of elements, or a leaf, if it's a leaf, it's either safe text, or unsafe text
+ * that needs to be escaped when written out.
  */
-class Html private (elements: immutable.Seq[Html], text: String) extends BufferedContent[Html](elements, text) {
-  def this(text: String) = this(Nil, Formats.safe(text))
-  def this(elements: immutable.Seq[Html]) = this(elements, "")
+class Html private[api] (elements: immutable.Seq[Html], text: String, escape: Boolean) extends BufferedContent[Html](elements, text) {
+  def this(text: String) = this(Nil, Formats.safe(text), false)
+  def this(elements: immutable.Seq[Html]) = this(elements, "", false)
+
+  /**
+   * We override buildString for performance - allowing text to not be escaped until passed in the final StringBuilder
+   * to encode it into.
+   *
+   * An alternative way of implementing this would be to make HtmlFormat.escape return a subclass of Html with a custom
+   * buildString implementation.  While this does significantly improve performance if a template needs to escape a lot
+   * of Strings, if it doesn't, performance actually goes down (measured 10%), due to the fact that the JVM can't
+   * optimise the invocation of buildString as well because there are two different possible implementations.
+   */
+  override protected def buildString(builder: StringBuilder) {
+    if (!elements.isEmpty) {
+      elements.foreach { e =>
+        e.buildString(builder)
+      }
+    } else if (escape) {
+      // Using our own algorithm here because commons lang escaping wasn't designed for protecting against XSS, and there
+      // don't seem to be any other good generic escaping tools out there.
+      var i = 0
+      while (i < text.length) {
+        text.charAt(i) match {
+          case '<' => builder.append("&lt;")
+          case '>' => builder.append("&gt;")
+          case '"' => builder.append("&quot;")
+          case '\'' => builder.append("&#x27;")
+          case '&' => builder.append("&amp;")
+          case c => builder += c
+        }
+        i += 1
+      }
+    } else {
+      builder.append(text)
+    }
+  }
 
   /**
    * Content type of HTML.
@@ -57,18 +94,7 @@ object HtmlFormat extends Format[Html] {
    * Creates a safe (escaped) HTML fragment.
    */
   def escape(text: String): Html = {
-    // Using our own algorithm here because commons lang escaping wasn't designed for protecting against XSS, and there
-    // don't seem to be any other good generic escaping tools out there.
-    val sb = new StringBuilder(text.length)
-    text.foreach {
-      case '<' => sb.append("&lt;")
-      case '>' => sb.append("&gt;")
-      case '"' => sb.append("&quot;")
-      case '\'' => sb.append("&#x27;")
-      case '&' => sb.append("&amp;")
-      case c => sb += c
-    }
-    new Html(sb.toString)
+    new Html(Nil, text, true)
   }
 
   /**
