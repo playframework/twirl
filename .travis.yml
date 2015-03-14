@@ -1,6 +1,5 @@
 language: scala
-jdk: oraclejdk8
 script:
   - sbt +test +publishLocal plugin/test plugin/scripted
-  - cd docs && sbt test validateDocs
+  - jdk_switcher use oraclejdk8 && cd docs && sbt test validateDocs
 sudo: false
