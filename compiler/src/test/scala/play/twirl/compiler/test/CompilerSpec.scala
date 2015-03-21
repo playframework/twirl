@@ -117,6 +117,12 @@ abstract class CompilerTests(oldParser: Boolean = false) extends Specification {
       out must be_==("\"\"\"\n\n\"\"\"\"\"\n\n\"\"\"\"\"\"")
     }
 
+    "compile successfully (var args existential)" in {
+      val helper = newCompilerHelper
+      val text = helper.compile[(Array[List[_]] => Html)]("varArgsExistential.scala.html", "html.varArgsExistential")(Array(List(1, 2, 3), List(4, 5, 6))).toString.trim
+      text must be_==("123456")
+    }
+
     "fail compilation for error.scala.html" in {
       val helper = newCompilerHelper
       helper.compile[(() => Html)]("error.scala.html", "html.error") must throwA[CompilationError].like {
