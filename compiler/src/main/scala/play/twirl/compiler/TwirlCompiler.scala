@@ -402,11 +402,9 @@ object """ :+ name :+ """ extends BaseScalaTemplate[""" :+ resultType :+ """,For
 
     def getFunctionMapping(signature: String, returnType: String): (String, String, String) = synchronized {
 
-      def filterType(t: String) = t match {
-        case vararg if vararg.startsWith("_root_.scala.<repeated>") => vararg.replace("_root_.scala.<repeated>", "Array")
-        case synthetic if synthetic.contains("<synthetic>") => synthetic.replace("<synthetic>", "")
-        case t => t
-      }
+      def filterType(t: String) = t
+        .replace("_root_.scala.<repeated>", "Array")
+        .replace("<synthetic>", "")
 
       def findSignature(tree: Tree): Option[DefDef] = {
         tree match {
