@@ -15,7 +15,7 @@ lazy val api = project
     name := "twirl-api",
     libraryDependencies += commonsLang,
     libraryDependencies ++= scalaXml(scalaVersion.value),
-    libraryDependencies += specs2(scalaBinaryVersion.value),
+    libraryDependencies ++= specs2(scalaBinaryVersion.value),
     OmnidocKeys.githubRepo := "playframework/twirl"
   )
 
@@ -27,7 +27,7 @@ lazy val parser = project
   .settings(
     name := "twirl-parser",
     libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
-    libraryDependencies += specs2(scalaBinaryVersion.value)
+    libraryDependencies ++= specs2(scalaBinaryVersion.value)
   )
 
 lazy val compiler = project
@@ -52,7 +52,7 @@ lazy val plugin = project
     name := "sbt-twirl",
     organization := "com.typesafe.sbt",
     sbtPlugin := true,
-    libraryDependencies += specs2(scalaBinaryVersion.value),
+    libraryDependencies ++= specs2(scalaBinaryVersion.value),
     scriptedLaunchOpts += ("-Dproject.version=" + version.value),
     scriptedLaunchOpts += "-XX:MaxPermSize=256m",
     resourceGenerators in Compile <+= generateVersionFile
@@ -62,8 +62,9 @@ lazy val plugin = project
 
 def common = Seq(
   organization := "com.typesafe.play",
-  scalaVersion := sys.props.get("scala.version").getOrElse("2.10.4"),
-  scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
+  scalaVersion := sys.props.get("scala.version").getOrElse("2.10.5"),
+  scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8"),
+  resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
 )
 
 def scalaSpecificSrcDirName(scalaBinaryVersion: String): String = scalaBinaryVersion match {
@@ -73,7 +74,7 @@ def scalaSpecificSrcDirName(scalaBinaryVersion: String): String = scalaBinaryVer
 }
 
 def crossScala = Seq(
-  crossScalaVersions := Seq("2.9.3", "2.10.4", "2.11.1"), {
+  crossScalaVersions := Seq("2.9.3", "2.10.5", "2.11.6"), {
     unmanagedSourceDirectories in Compile +=
       (sourceDirectory in Compile).value / scalaSpecificSrcDirName(scalaBinaryVersion.value)
   }
@@ -128,7 +129,7 @@ def generateVersionFile = Def.task {
 
 // Dependencies
 
-def commonsLang = "org.apache.commons" % "commons-lang3" % "3.1"
+def commonsLang = "org.apache.commons" % "commons-lang3" % "3.4"
 
 def scalaCompiler(version: String) = "org.scala-lang" % "scala-compiler" % version
 
@@ -138,9 +139,14 @@ def scalaParserCombinators(scalaVersion: String) =
 def scalaXml(scalaVersion: String) =
   whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-xml" % "1.0.1")
 
-def specs2(scalaBinaryVersion: String): ModuleID = scalaBinaryVersion match {
-  case "2.9.3" => "org.specs2" %% "specs2" % "1.12.4.1" % "test"
-  case "2.10" | "2.11" => "org.specs2" %% "specs2" % "2.3.11" % "test"
+def specs2(scalaBinaryVersion: String): Seq[ModuleID] = scalaBinaryVersion match {
+  case "2.9.3" => Seq("org.specs2" %% "specs2" % "1.12.4.1" % "test")
+  case "2.10" | "2.11" => Seq(
+      "org.specs2" %% "specs2-core"  % "3.6" % "test",
+      "org.specs2" %% "specs2-junit" % "3.6" % "test",
+      "org.specs2" %% "specs2-mock"  % "3.6" % "test",
+      "org.specs2" %% "specs2-matcher-extra" % "3.6" % "test"
+    )
   // workaround for https://github.com/typesafehub/dbuild/issues/145
   case other =>
     val defaultBinVer = "2.11"
