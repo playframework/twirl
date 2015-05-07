@@ -1,3 +1,10 @@
+lazy val specs2 = Seq(
+  "org.specs2" %% "specs2-core"  % "3.6" % "test",
+  "org.specs2" %% "specs2-junit" % "3.6" % "test",
+  "org.specs2" %% "specs2-mock"  % "3.6" % "test",
+  "org.specs2" %% "specs2-matcher-extra" % "3.6" % "test"
+)
+
 lazy val twirl = project
   .in(file("."))
   .aggregate(api, parser, compiler)
@@ -15,7 +22,7 @@ lazy val api = project
     name := "twirl-api",
     libraryDependencies += commonsLang,
     libraryDependencies ++= scalaXml(scalaVersion.value),
-    libraryDependencies ++= specs2(scalaBinaryVersion.value),
+    libraryDependencies ++= specs2,
     OmnidocKeys.githubRepo := "playframework/twirl"
   )
 
@@ -27,7 +34,7 @@ lazy val parser = project
   .settings(
     name := "twirl-parser",
     libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
-    libraryDependencies ++= specs2(scalaBinaryVersion.value)
+    libraryDependencies ++= specs2
   )
 
 lazy val compiler = project
@@ -52,7 +59,7 @@ lazy val plugin = project
     name := "sbt-twirl",
     organization := "com.typesafe.sbt",
     sbtPlugin := true,
-    libraryDependencies ++= specs2(scalaBinaryVersion.value),
+    libraryDependencies ++= specs2,
     scriptedLaunchOpts += ("-Dproject.version=" + version.value),
     scriptedLaunchOpts += "-XX:MaxPermSize=256m",
     resourceGenerators in Compile <+= generateVersionFile
@@ -67,16 +74,10 @@ def common = Seq(
   resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
 )
 
-def scalaSpecificSrcDirName(scalaBinaryVersion: String): String = scalaBinaryVersion match {
-  case "2.9.3" | "2.10" | "2.11" => s"scala-$scalaBinaryVersion"
-  // workaround for https://github.com/typesafehub/dbuild/issues/145
-  case other => "scala-2.11"
-}
-
 def crossScala = Seq(
-  crossScalaVersions := Seq("2.9.3", "2.10.5", "2.11.6"), {
+  crossScalaVersions := Seq("2.10.5", "2.11.6"), {
     unmanagedSourceDirectories in Compile +=
-      (sourceDirectory in Compile).value / scalaSpecificSrcDirName(scalaBinaryVersion.value)
+      (sourceDirectory in Compile).value / s"scala-${scalaBinaryVersion.value}"
   }
 )
 
@@ -138,20 +139,6 @@ def scalaParserCombinators(scalaVersion: String) =
 
 def scalaXml(scalaVersion: String) =
   whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-xml" % "1.0.1")
-
-def specs2(scalaBinaryVersion: String): Seq[ModuleID] = scalaBinaryVersion match {
-  case "2.9.3" => Seq("org.specs2" %% "specs2" % "1.12.4.1" % "test")
-  case "2.10" | "2.11" => Seq(
-      "org.specs2" %% "specs2-core"  % "3.6" % "test",
-      "org.specs2" %% "specs2-junit" % "3.6" % "test",
-      "org.specs2" %% "specs2-mock"  % "3.6" % "test",
-      "org.specs2" %% "specs2-matcher-extra" % "3.6" % "test"
-    )
-  // workaround for https://github.com/typesafehub/dbuild/issues/145
-  case other =>
-    val defaultBinVer = "2.11"
-    specs2(defaultBinVer)
-}
 
 def whenAtLeast(version: String, major: Int, minor: Int, module: ModuleID): Seq[ModuleID] = {
   CrossVersion.partialVersion(version) match {

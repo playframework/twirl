@@ -93,7 +93,7 @@ Follow these guidelines when creating public commits and writing commit messages
 4. Add keywords for your commit (depending on the degree of automation we reach, the list may change over time):
     * ``Review by @gituser`` - if you want to notify someone on the team. The others can, and are encouraged to participate.
     * ``Fix/Fixing/Fixes/Close/Closing/Refs #ticket`` - if you want to mark the ticket as fixed in the issue tracker (Assembla understands this).
-    * ``backport to _branch name_`` - if the fix needs to be cherry-picked to another branch (like 2.9.x, 2.10.x, etc)
+    * ``backport to _branch name_`` - if the fix needs to be cherry-picked to another branch (like 2.10.x, etc)
 
 Example:
 
