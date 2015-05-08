@@ -327,12 +327,32 @@ object TwirlCompiler {
     Nil :+ imports :+ "\n" :+ defs :+ "\n" :+ "Seq[Any](" :+ visit(template.content, Nil) :+ ")"
   }
 
-  def generateCode(packageName: String, name: String, root: Template, resultType: String, formatterType: String, additionalImports: String) = {
+  def generateCode(packageName: String, name: String, root: Template, resultType: String, formatterType: String, additionalImports: String): Seq[Any] = {
     val extra = TemplateAsFunctionCompiler.getFunctionMapping(
       root.params.str,
       resultType)
 
-    val imports = additionalImports + "\n" + formatImports(root.topImports)
+    // Get the imports that we need to include, filtering out empty imports
+    val imports: Seq[String] = Seq(additionalImports, formatImports(root.topImports)).filter(!_.isEmpty)
+
+    // Get a reference to the template class we're going to generate. It may
+    // be nested inside several objects, one for each set of import statements.
+    // e.g. mytemplate_Scope0.mytemplate_Scope1.mytemplate
+    val templateClassReference: Seq[String] = Range(0, imports.length).map(i => s"${name}_Scope$i.") :+ name
+
+    // Generate one enclosing object for each import scope we might need
+    // If there are no extra imports then there will be no enclosing objects
+    // generated, which is more efficient.
+    val startImportScopes: Seq[Seq[String]] = imports.zipWithIndex.map {
+      case (importCode, i) => Seq("""
+     object """, name, """_Scope""", i.toString, """ {
+""", importCode, """
+""")
+    }
+
+    val endImportScopes: Seq[String] = imports.map { _ => """
+}"""
+    }
 
     val generated = {
       Nil :+ """
@@ -341,13 +361,16 @@ package """ :+ packageName :+ """
 import play.twirl.api._
 import play.twirl.api.TemplateMagic._
 
-""" :+ imports :+ """
-/*""" :+ root.comment.map(_.msg).getOrElse("") :+ """*/
-object """ :+ name :+ """ extends BaseScalaTemplate[""" :+ resultType :+ """,Format[""" :+ resultType :+ """]](""" :+ formatterType :+ """) with """ :+ extra._3 :+ """ {
+""" :+ startImportScopes :+ """
+class """ :+ name :+ """ extends BaseScalaTemplate[""" :+ resultType :+ """,Format[""" :+ resultType :+ """]](""" :+ formatterType :+ """) with """ :+ extra._3 :+ """ {
 
   /*""" :+ root.comment.map(_.msg).getOrElse("") :+ """*/
   def apply""" :+ Source(root.params.str, root.params.pos) :+ """:""" :+ resultType :+ """ = {
-      _display_ {""" :+ templateCode(root, resultType) :+ """}
+    _display_ {
+      {
+""" :+ templateCode(root, resultType) :+ """
+      }
+    }
   }
 
   """ :+ extra._1 :+ """
@@ -356,7 +379,12 @@ object """ :+ name :+ """ extends BaseScalaTemplate[""" :+ resultType :+ """,For
 
   def ref: this.type = this
 
-}"""
+}
+
+""" :+ endImportScopes :+ """
+
+/*""" :+ root.comment.map(_.msg).getOrElse("") :+ """*/
+object """ :+ name :+ """ extends """ :+ templateClassReference
     }
     generated
   }
