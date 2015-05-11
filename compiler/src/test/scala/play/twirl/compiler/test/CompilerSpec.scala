@@ -87,10 +87,34 @@ abstract class CompilerTests(oldParser: Boolean = false) extends Specification {
       set must be_==("firstsecondthird")
     }
 
-    "compile successfully (imports)" in {
+    "compile successfully (arg imports)" in {
       val helper = newCompilerHelper
-      val result = helper.compile[((java.io.File, java.net.URL) => Html)]("imports.scala.html", "html.imports")(new java.io.File("example"), new java.net.URL("http://example.org")).toString.trim
+      val result = helper.compile[((java.io.File, java.net.URL) => Html)]("argImports.scala.html", "html.argImports")(new java.io.File("example"), new java.net.URL("http://example.org")).toString.trim
       result must be_==("<p>file: example, url: http://example.org</p>")
+    }
+
+    "compile successfully (default imports)" in {
+      val helper = newCompilerHelper
+      val result = helper.compile[(() => Html)]("importsDefault.scala.html", "html.importsDefault")().toString.trim
+      result must be_==("play.twirl.api.TemplateMagic$Default$")
+    }
+
+    "compile successfully (additional imports beat default imports)" in {
+      val helper = newCompilerHelper
+      val result = helper.compile[(() => Html)]("importsDefaultAdditional.scala.html", "html.importsDefaultAdditional", additionalImports = "import play.twirl.compiler.test.imports.bar._")().toString.trim
+      result must be_==("play.twirl.compiler.test.imports.bar.Default$")
+    }
+
+    "compile successfully (template imports beat additional and default imports)" in {
+      val helper = newCompilerHelper
+      val result = helper.compile[(() => Html)]("importsDefaultAdditionalTemplate.scala.html", "html.importsDefaultAdditionalTemplate", additionalImports = "import play.twirl.compiler.test.imports.bar._")().toString.trim
+      result must be_==("play.twirl.compiler.test.imports.foo.Default$")
+    }
+
+    "compile successfully (template imports beat default imports)" in {
+      val helper = newCompilerHelper
+      val result = helper.compile[(() => Html)]("importsDefaultTemplate.scala.html", "html.importsDefaultTemplate")().toString.trim
+      result must be_==("play.twirl.compiler.test.imports.foo.Default$")
     }
 
     "compile successfully (escape closing brace)" in {
@@ -216,9 +240,11 @@ object Helper {
       compiler
     }
 
-    def compile[T](templateName: String, className: String): T = {
+    def compile[T](templateName: String, className: String, additionalImports: String = ""): T = {
       val templateFile = new File(sourceDir, templateName)
-      val Some(generated) = twirlCompiler.compile(templateFile, sourceDir, generatedDir, "play.twirl.api.HtmlFormat", useOldParser = useOldParser)
+      val Some(generated) = twirlCompiler.compile(templateFile, sourceDir, generatedDir, "play.twirl.api.HtmlFormat",
+        additionalImports = additionalImports,
+        useOldParser = useOldParser)
 
       val mapper = GeneratedSource(generated)
 
@@ -237,7 +263,7 @@ object Helper {
 
       val t = classloader.loadClass(className + "$").getDeclaredField("MODULE$").get(null)
 
-      t.getClass.getDeclaredMethod("f").invoke(t).asInstanceOf[T]
+      t.getClass.getMethod("f").invoke(t).asInstanceOf[T]
     }
   }
 }
