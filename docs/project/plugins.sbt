@@ -4,6 +4,4 @@ lazy val sbtTwirl = ProjectRef(Path.fileProperty("user.dir").getParentFile, "plu
 
 resolvers ++= DefaultOptions.resolvers(snapshot = true)
 
-resolvers += Resolver.typesafeRepo("releases")
-
-addSbtPlugin("com.typesafe.play" % "play-docs-sbt-plugin" % sys.props.getOrElse("play.version", "2.4.0-RC1"))
+addSbtPlugin("com.typesafe.play" % "play-docs-sbt-plugin" % sys.props.getOrElse("play.version", "2.4.0-RC2"))

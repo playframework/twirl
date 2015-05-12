@@ -16,7 +16,6 @@ case class BaseScalaTemplate[T <: Appendable[T], F <: Format[T]](format: F) {
   def _display_(x: T): T = if (x eq null) format.empty else x
 
   def _display_(o: Any)(implicit m: Manifest[T]): T = {
-    import play.twirl.api.ScalaCompat._ // for Manifest.runtimeClass
     o match {
       case escaped if escaped != null && escaped.getClass == m.runtimeClass => escaped.asInstanceOf[T]
       case () => format.empty

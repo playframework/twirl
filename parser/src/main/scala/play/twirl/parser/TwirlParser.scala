@@ -332,7 +332,6 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
   /** Match zero or more `parser` */
   def several[T, BufferType <: Buffer[T]](parser: () => T, provided: BufferType = null)(implicit manifest: Manifest[BufferType]): BufferType = {
-    import play.twirl.api.ScalaCompat._ // for Manifest.runtimeClass
     val ab = if (provided != null) provided else manifest.runtimeClass.newInstance().asInstanceOf[BufferType]
     var parsed = parser()
     while (parsed != null) {

@@ -37,7 +37,7 @@ class Html private[api] (elements: immutable.Seq[Html], text: String, escape: Bo
    * optimise the invocation of buildString as well because there are two different possible implementations.
    */
   override protected def buildString(builder: StringBuilder) {
-    if (!elements.isEmpty) {
+    if (elements.nonEmpty) {
       elements.foreach { e =>
         e.buildString(builder)
       }
@@ -203,7 +203,7 @@ object XmlFormat extends Format[Xml] {
   /**
    * Creates an escaped XML fragment.
    */
-  def escape(text: String) = Xml(StringEscapeUtils.escapeXml(text))
+  def escape(text: String) = Xml(StringEscapeUtils.escapeXml11(text))
 
   /**
    * Generate an empty XML fragment
