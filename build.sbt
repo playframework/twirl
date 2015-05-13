@@ -56,6 +56,12 @@ lazy val plugin = project
   )
 
 playBuildRepoName in ThisBuild := "twirl"
+playBuildExtraTests := {
+  (scripted in plugin).toTask("").value
+}
+playBuildExtraPublish := {
+  (PgpKeys.publishSigned in plugin).value
+}
 
 // Shared settings
 
