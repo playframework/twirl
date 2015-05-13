@@ -52,7 +52,13 @@ lazy val plugin = project
     name := "sbt-twirl",
     organization := "com.typesafe.sbt",
     libraryDependencies ++= specs2,
-    resourceGenerators in Compile <+= generateVersionFile
+    resourceGenerators in Compile <+= generateVersionFile,
+    scriptedDependencies := {
+      scriptedDependencies.value
+      publishLocal.all(ScopeFilter(
+        inDependencies(compiler)
+      )).value
+    }
   )
 
 playBuildRepoName in ThisBuild := "twirl"
