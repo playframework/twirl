@@ -127,7 +127,9 @@ Again, there’s nothing special here. You can just call any other template you 
 </div>
 ```
 
-## moreScripts and moreStyles equivalentsTo define old moreScripts or moreStyles variables equivalents (like on Play! 1.x) on a Scala template, you can define a variable in the main template like this :
+## moreScripts and moreStyles equivalents
+
+To define old moreScripts or moreStyles variables equivalents (like on Play! 1.x) on a Scala template, you can define a variable in the main template like this:
 
 ```html
 @(title: String, scripts: Html = Html(""))(content: Html)
