@@ -147,3 +147,9 @@ By default, dynamic content parts are escaped according to the template type’s
 For example to output raw HTML:
 
 @[raw-html](code/scalaguide/templates/snippets.scala.html)
+
+## String interpolation
+
+The template engine can be used as a [string interpolator](http://docs.scala-lang.org/overviews/core/string-interpolation.html). You basically trade the “@” for a “$”:
+
+@[string-interpolation](code/ScalaTemplates.scala)

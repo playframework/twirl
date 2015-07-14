@@ -59,6 +59,17 @@ object ScalaTemplatesSpec extends Specification {
       body must contain("bar")
     }
 
+    "support string interpolation" in {
+      //#string-interpolation
+      import play.twirl.api.StringInterpolation
+
+      val name = "Martin"
+      val p = html"<p>Hello $name</p>"
+      //#string-interpolation
+
+      p.body must_== "<p>Hello Martin</p>"
+    }
+
     "allow simple parameters" in {
       val body = html.simpleParameters(customer, orders).body
       body must contain(customer.toString)
