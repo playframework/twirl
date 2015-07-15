@@ -10,4 +10,9 @@ lazy val docs = project
     libraryDependencies += component("play-specs2") % "test",
     PlayDocsKeys.javaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "javaGuide" ** "code").get,
     PlayDocsKeys.scalaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "scalaGuide" ** "code").get
-  )
+  ).dependsOn(twirlApi)
+
+// the twirl plugin automatically adds this dependency, but this overrides it so
+// it can be an interproject dependency, rather than requiring it to be published
+// first
+lazy val twirlApi = ProjectRef(Path.fileProperty("user.dir").getParentFile, "api")
