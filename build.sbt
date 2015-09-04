@@ -17,7 +17,7 @@ lazy val api = project
   .settings(common: _*)
   .settings(
     name := "twirl-api",
-    libraryDependencies += commonsLang,
+    libraryDependencies += "org.unbescape" % "unbescape" % "1.1.1.RELEASE",
     libraryDependencies ++= scalaXml(scalaVersion.value),
     libraryDependencies ++= specs2
   )
@@ -86,8 +86,6 @@ def generateVersionFile = Def.task {
 }
 
 // Dependencies
-
-def commonsLang = "org.apache.commons" % "commons-lang3" % "3.4"
 
 def scalaCompiler(version: String) = "org.scala-lang" % "scala-compiler" % version
 
