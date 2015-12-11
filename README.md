@@ -86,6 +86,6 @@ An optimized version of the Twirl parser was contributed by the
 
 
 [play-site]: http://www.playframework.com
-[docs]: http://www.playframework.com/documentation/2.3.x/ScalaTemplates
+[docs]: http://www.playframework.com/documentation/2.4.x/ScalaTemplates
 [spray]: https://github.com/spray
 [scala-ide]: https://github.com/scala-ide
