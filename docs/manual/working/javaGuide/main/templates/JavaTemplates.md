@@ -69,6 +69,14 @@ Hello @(customer.getFirstName() + customer.getLastName())!
                           Dynamic Code
 ```
 
+> **Note:** Make sure not to include whitespaces between keywords of dynamic statements and parentheses.
+>
+> For example, the following code doesn't work:
+> ```
+> @for (menu <- menuList) { ... }  // Compilation error: '(' expected but ')' found.
+>     ^
+> ```
+
 You can also use curly brackets, to write a multi-statement block:
 
 ```
