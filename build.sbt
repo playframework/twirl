@@ -1,8 +1,10 @@
+val specs2Version = "3.6.6"
+
 lazy val specs2 = Seq(
-  "org.specs2" %% "specs2-core"  % "3.6" % "test",
-  "org.specs2" %% "specs2-junit" % "3.6" % "test",
-  "org.specs2" %% "specs2-mock"  % "3.6" % "test",
-  "org.specs2" %% "specs2-matcher-extra" % "3.6" % "test"
+  "org.specs2" %% "specs2-core"  % specs2Version % "test",
+  "org.specs2" %% "specs2-junit" % specs2Version % "test",
+  "org.specs2" %% "specs2-mock"  % specs2Version % "test",
+  "org.specs2" %% "specs2-matcher-extra" % specs2Version % "test"
 )
 
 lazy val twirl = project
@@ -95,7 +97,7 @@ def scalaParserCombinators(scalaVersion: String) =
   whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.1" % "optional")
 
 def scalaXml(scalaVersion: String) =
-  whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-xml" % "1.0.1")
+  whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-xml" % "1.0.5")
 
 def whenAtLeast(version: String, major: Int, minor: Int, module: ModuleID): Seq[ModuleID] = {
   CrossVersion.partialVersion(version) match {
