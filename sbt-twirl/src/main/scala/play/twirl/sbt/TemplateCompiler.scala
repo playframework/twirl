@@ -8,6 +8,7 @@ import play.twirl.compiler._
 import scala.io.Codec
 
 object TemplateCompiler {
+  @deprecated("Use other compile method", "1.2.0")
   def compile(
     sourceDirectories: Seq[File],
     targetDirectory: File,
@@ -17,14 +18,25 @@ object TemplateCompiler {
     excludeFilter: FileFilter,
     codec: Codec,
     useOldParser: Boolean,
-    log: Logger) = {
+    log: Logger): Seq[File] = compile(sourceDirectories, targetDirectory, templateFormats, templateImports, includeFilter,
+    excludeFilter, codec, log)
+
+  def compile(
+    sourceDirectories: Seq[File],
+    targetDirectory: File,
+    templateFormats: Map[String, String],
+    templateImports: Seq[String],
+    includeFilter: FileFilter,
+    excludeFilter: FileFilter,
+    codec: Codec,
+    log: Logger): Seq[File] = {
 
     try {
       syncGenerated(targetDirectory, codec)
       val templates = collectTemplates(sourceDirectories, templateFormats, includeFilter, excludeFilter)
       for ((template, sourceDirectory, extension, format) <- templates) {
         val imports = formatImports(templateImports, extension)
-        TwirlCompiler.compile(template, sourceDirectory, targetDirectory, format, imports, codec, inclusiveDot = false, useOldParser = useOldParser)
+        TwirlCompiler.compile(template, sourceDirectory, targetDirectory, format, imports, codec, inclusiveDot = false)
       }
       generatedFiles(targetDirectory).map(_.getAbsoluteFile)
     } catch handleError(log, codec)

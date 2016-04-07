@@ -9,20 +9,15 @@ import org.specs2.mutable._
 import play.twirl.api.Html
 import play.twirl.parser.TwirlIO
 
-class CompilerSpec extends CompilerTests
-
-class OldParserCompilerSpec extends CompilerTests(oldParser = true)
-
-abstract class CompilerTests(oldParser: Boolean = false) extends Specification {
+class CompilerSpec extends Specification {
 
   sequential
 
   import Helper._
 
-  val parserName = if (oldParser) "old" else "new"
-  val testName = "Twirl compiler (with " + parserName + " parser)"
+  val testName = "Twirl compiler"
 
-  val dirName = parserName + "-parser"
+  val dirName = "twirl-parser"
   val sourceDir = new File("compiler/src/test/resources")
   val generatedDir = new File("compiler/target/test/" + dirName + "/generated-templates")
   val generatedClasses = new File("compiler/target/test/" + dirName + "/generated-classes")
@@ -30,7 +25,7 @@ abstract class CompilerTests(oldParser: Boolean = false) extends Specification {
   TwirlIO.deleteRecursively(generatedClasses)
   generatedClasses.mkdirs()
 
-  def newCompilerHelper = new CompilerHelper(sourceDir, generatedDir, generatedClasses, oldParser)
+  def newCompilerHelper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
 
   testName should {
 
@@ -197,7 +192,7 @@ object Helper {
 
   case class CompilationError(message: String, line: Int, column: Int) extends RuntimeException(message)
 
-  class CompilerHelper(sourceDir: File, generatedDir: File, generatedClasses: File, useOldParser: Boolean = false) {
+  class CompilerHelper(sourceDir: File, generatedDir: File, generatedClasses: File) {
     import scala.tools.nsc.Global
     import scala.tools.nsc.Settings
     import scala.tools.nsc.reporters.ConsoleReporter
@@ -243,8 +238,7 @@ object Helper {
     def compile[T](templateName: String, className: String, additionalImports: String = ""): T = {
       val templateFile = new File(sourceDir, templateName)
       val Some(generated) = twirlCompiler.compile(templateFile, sourceDir, generatedDir, "play.twirl.api.HtmlFormat",
-        additionalImports = additionalImports,
-        useOldParser = useOldParser)
+        additionalImports = additionalImports)
 
       val mapper = GeneratedSource(generated)
 
