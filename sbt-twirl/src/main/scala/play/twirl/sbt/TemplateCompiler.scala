@@ -18,14 +18,16 @@ object TemplateCompiler {
     excludeFilter: FileFilter,
     codec: Codec,
     useOldParser: Boolean,
-    log: Logger): Seq[File] = compile(sourceDirectories, targetDirectory, templateFormats, templateImports, includeFilter,
-    excludeFilter, codec, log)
+    log: Logger): Seq[File] =
+    compile(sourceDirectories, targetDirectory, templateFormats, templateImports, Nil, includeFilter, excludeFilter,
+      codec,  log)
 
   def compile(
     sourceDirectories: Seq[File],
     targetDirectory: File,
     templateFormats: Map[String, String],
     templateImports: Seq[String],
+    constructorAnnotations: Seq[String],
     includeFilter: FileFilter,
     excludeFilter: FileFilter,
     codec: Codec,
@@ -36,7 +38,8 @@ object TemplateCompiler {
       val templates = collectTemplates(sourceDirectories, templateFormats, includeFilter, excludeFilter)
       for ((template, sourceDirectory, extension, format) <- templates) {
         val imports = formatImports(templateImports, extension)
-        TwirlCompiler.compile(template, sourceDirectory, targetDirectory, format, imports, codec, inclusiveDot = false)
+        TwirlCompiler.compile(template, sourceDirectory, targetDirectory, format, imports, constructorAnnotations,
+          codec, inclusiveDot = false)
       }
       generatedFiles(targetDirectory).map(_.getAbsoluteFile)
     } catch handleError(log, codec)
@@ -62,8 +65,8 @@ object TemplateCompiler {
     }
   }
 
-  def formatImports(templateImports: Seq[String], extension: String): String = {
-    templateImports.map("import " + _.replace("%format%", extension)).mkString("\n")
+  def formatImports(templateImports: Seq[String], extension: String): Seq[String] = {
+    templateImports.map(_.replace("%format%", extension))
   }
 
   def handleError(log: Logger, codec: Codec): PartialFunction[Throwable, Nothing] = {
