@@ -12,7 +12,8 @@ object Import {
     val twirlVersion = SettingKey[String]("twirl-version", "Twirl version used for twirl-api dependency")
     val templateFormats = SettingKey[Map[String, String]]("twirl-template-formats", "Defined twirl template formats")
     val templateImports = SettingKey[Seq[String]]("twirl-template-imports", "Extra imports for twirl templates")
-    val useOldParser = SettingKey[Boolean]("twirl-use-old-parser", "Use the original Play template parser")
+    @deprecated("No longer supported", "1.2.0")
+    val useOldParser = SettingKey[Boolean]("twirl-use-old-parser", "No longer supported")
     val sourceEncoding = TaskKey[String]("twirl-source-encoding", "Source encoding for template files and generated scala files")
     val compileTemplates = TaskKey[Seq[File]]("twirl-compile-templates", "Compile twirl templates into scala source files")
   }
@@ -56,7 +57,6 @@ object SbtTwirl extends AutoPlugin {
   )
 
   def defaultSettings: Seq[Setting[_]] = Seq(
-    useOldParser := false,
     templateFormats := defaultFormats,
     templateImports := Seq.empty,
     sourceEncoding := scalacEncoding(scalacOptions.value)
@@ -92,7 +92,6 @@ object SbtTwirl extends AutoPlugin {
       (includeFilter in compileTemplates).value,
       (excludeFilter in compileTemplates).value,
       Codec(sourceEncoding.value),
-      useOldParser.value,
       streams.value.log
     )
   }
