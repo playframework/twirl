@@ -5,6 +5,7 @@ package play.twirl.sbt
 
 import sbt._
 import play.twirl.compiler.{ GeneratedSource, MaybeGeneratedSource }
+import play.twirl.parser.TwirlIO
 import xsbti.{ CompileFailed, Maybe, Position, Problem, Severity }
 import scala.io.Codec
 
@@ -48,7 +49,7 @@ object TemplateProblem {
   class TemplatePosition(source: Option[File], location: Option[TemplateMapping.Location]) extends Position {
     val line: Maybe[Integer] = maybe { location map (_.line) }
 
-    val lineContent: String = location.fold("")(_.content)
+    val lineContent: String = location.fold("")(_.content.stripSuffix("\r"))
 
     val offset: Maybe[Integer] = maybe { location map (_.offset) }
 
@@ -87,7 +88,7 @@ object TemplateProblem {
     }
 
     def apply(source: Option[File], codec: Codec): TemplateMapping = {
-      val lines = source.toSeq flatMap { file => IO.readLines(file, codec.charSet) }
+      val lines = source.toSeq flatMap { file => TwirlIO.readFileAsString(file, codec).split('\n') }
       TemplateMapping(lines)
     }
   }
