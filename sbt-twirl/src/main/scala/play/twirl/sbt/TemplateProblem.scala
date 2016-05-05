@@ -3,9 +3,11 @@
  */
 package play.twirl.sbt
 
-import sbt._
 import play.twirl.compiler.{ GeneratedSource, MaybeGeneratedSource }
+import play.twirl.parser.TwirlIO
+import sbt._
 import xsbti.{ CompileFailed, Maybe, Position, Problem, Severity }
+
 import scala.io.Codec
 
 object TemplateProblem {
@@ -87,7 +89,9 @@ object TemplateProblem {
     }
 
     def apply(source: Option[File], codec: Codec): TemplateMapping = {
-      val lines = source.toSeq flatMap { file => IO.readLines(file, codec.charSet) }
+      val lines = source.toSeq flatMap { file =>
+        TwirlIO.readFileAsString(file, codec.charSet).stripSuffix("\n").split("\n")
+      }
       TemplateMapping(lines)
     }
   }
@@ -95,8 +99,8 @@ object TemplateProblem {
   case class TemplateMapping(sourceLines: Seq[String]) {
     import TemplateMapping.{ Line, Location }
 
-    val lines: Seq[Line] = sourceLines.scanLeft(Line(0, -1, -1, "")) {
-      (previous, content) => Line(previous.line + 1, previous.end + 1, previous.end + 1 + content.length, content)
+    val lines: Seq[Line] = sourceLines.scanLeft(Line(0, -1, -1, "")) { (previous, content) =>
+      Line(previous.line + 1, previous.end + 1, previous.end + 1 + content.length, content.stripSuffix("\r"))
     }.drop(1)
 
     def location(offset: Int): Option[Location] = {
