@@ -24,7 +24,7 @@ object Benchmark extends App {
   val helper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
 
   println("Compiling template...")
-  val template = helper.compile[((String, List[String]) => (Int) => Html)]("real.scala.html", "html.real")
+  val template = helper.compile[((String, List[String]) => (Int) => Html)]("real.scala.html", "html.real").static
   val input = (1 to 100).map(_.toString).toList
 
   val text = "world " * 100

@@ -5,6 +5,7 @@ package play.twirl.api
 
 import scala.language.implicitConversions
 
+@deprecated("Use TwirlDefaultImports instead", "1.2.0")
 object TemplateMagic {
 
   // --- UTILS

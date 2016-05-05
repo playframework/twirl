@@ -111,6 +111,18 @@ Or even several parameter groups:
 @(title:String)(body: Html)
 ```
 
+## Template constructor
+
+By default, a template is generated as a static function that can be invoked in any context.  If your template has dependencies on components, such as the messages API, you may find it easier to inject it with the components (and other templates) that it needs, and then you can inject that template into the controllers that use it.
+
+Twirl supports declaring a constructor for templates, using `@this()` syntax at the start of the file, before the template parameters.  The arguments to the constructor can be defined in the same way as the template parameters:
+
+```scala
+@this(messagesApi: MessagesApi)
+
+@(customer: models.Customer, orders: List[models.Order])
+```
+
 ## Iterating
 
 You can use the `for` keyword, in a pretty standard way:

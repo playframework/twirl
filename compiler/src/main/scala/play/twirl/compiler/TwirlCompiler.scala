@@ -11,11 +11,12 @@ import play.twirl.parser.{TwirlIO, TwirlParser}
 
 object Hash {
 
-  def apply(bytes: Array[Byte], imports: String): String = {
+  def apply(bytes: Array[Byte], imports: Seq[String]): String = {
     import java.security.MessageDigest
     val digest = MessageDigest.getInstance("SHA-1")
     digest.reset()
-    digest.update(bytes ++ imports.getBytes)
+    digest.update(bytes)
+    imports.foreach(i => digest.update(i.getBytes("utf-8")))
     digest.digest().map(0xFF & _).map { "%02x".format(_) }.foldLeft("") { _ + _ }
   }
 
@@ -110,7 +111,7 @@ case class GeneratedSource(file: File, codec: Codec = TwirlIO.defaultCodec) exte
 
   def content = TwirlIO.readFileAsString(file, codec)
 
-  def needRecompilation(imports: String): Boolean = !file.exists ||
+  def needRecompilation(imports: Seq[String]): Boolean = !file.exists ||
     // A generated source already exist but
     source.isDefined && ((source.get.lastModified > file.lastModified) || // the source has been modified
       (meta("HASH") != Hash(TwirlIO.readFile(source.get), imports))) // or the hash don't match
@@ -151,13 +152,26 @@ case class GeneratedSourceVirtual(path: String) extends AbstractGeneratedSource 
 }
 
 object TwirlCompiler {
+
+  val DefaultImports = Seq(
+    "_root_.play.twirl.api.TwirlFeatureImports._",
+    "_root_.play.twirl.api.TwirlHelperImports._",
+    "_root_.play.twirl.api.Html",
+    "_root_.play.twirl.api.JavaScript",
+    "_root_.play.twirl.api.Txt",
+    "_root_.play.twirl.api.Xml"
+  )
+
   import play.twirl.parser.TreeNodes._
 
-  def compile(source: File, sourceDirectory: File, generatedDirectory: File, formatterType: String, additionalImports: String = "", codec: Codec = TwirlIO.defaultCodec, inclusiveDot: Boolean = false) = {
+  def compile(source: File, sourceDirectory: File, generatedDirectory: File, formatterType: String,
+    additionalImports: Seq[String] = Nil, constructorAnnotations: Seq[String] = Nil, codec: Codec = TwirlIO.defaultCodec,
+    inclusiveDot: Boolean = false) = {
     val resultType = formatterType + ".Appendable"
     val (templateName, generatedSource) = generatedFile(source, codec, sourceDirectory, generatedDirectory, inclusiveDot)
     if (generatedSource.needRecompilation(additionalImports)) {
-      val generated = parseAndGenerateCode(templateName, TwirlIO.readFile(source), codec, source.getAbsolutePath, resultType, formatterType, additionalImports, inclusiveDot)
+      val generated = parseAndGenerateCode(templateName, TwirlIO.readFile(source), codec, source.getAbsolutePath,
+        resultType, formatterType, additionalImports, constructorAnnotations, inclusiveDot)
       TwirlIO.writeStringToFile(generatedSource.file, generated.toString, codec)
       Some(generatedSource.file)
     } else {
@@ -165,14 +179,19 @@ object TwirlCompiler {
     }
   }
 
-  def compileVirtual(content: String, source: File, sourceDirectory: File, resultType: String, formatterType: String, additionalImports: String = "", codec: Codec = TwirlIO.defaultCodec, inclusiveDot: Boolean = false) = {
+  def compileVirtual(content: String, source: File, sourceDirectory: File, resultType: String, formatterType: String,
+    additionalImports: Seq[String] = Nil, constructorAnnotations: Seq[String] = Nil,
+    codec: Codec = TwirlIO.defaultCodec, inclusiveDot: Boolean = false) = {
     val (templateName, generatedSource) = generatedFileVirtual(source, sourceDirectory, inclusiveDot)
-    val generated = parseAndGenerateCode(templateName, content.getBytes(codec.charSet), codec, source.getAbsolutePath, resultType, formatterType, additionalImports, inclusiveDot)
+    val generated = parseAndGenerateCode(templateName, content.getBytes(codec.charSet), codec, source.getAbsolutePath,
+      resultType, formatterType, additionalImports, constructorAnnotations, inclusiveDot)
     generatedSource.setContent(generated)
     generatedSource
   }
 
-  def parseAndGenerateCode(templateName: Array[String], content: Array[Byte], codec: Codec, absolutePath: String, resultType: String, formatterType: String, additionalImports: String, inclusiveDot: Boolean) = {
+  def parseAndGenerateCode(templateName: Array[String], content: Array[Byte], codec: Codec, absolutePath: String,
+    resultType: String, formatterType: String, additionalImports: Seq[String], constructorAnnotations: Seq[String],
+    inclusiveDot: Boolean) = {
     val templateParser = new TwirlParser(inclusiveDot)
     templateParser.parse(new String(content, codec.charSet)) match {
       case templateParser.Success(parsed: Template, rest) if rest.atEnd => {
@@ -183,7 +202,9 @@ object TwirlCompiler {
           parsed,
           resultType,
           formatterType,
-          additionalImports)
+          additionalImports,
+          constructorAnnotations
+        )
       }
       case templateParser.Success(_, rest) => {
         throw new TemplateCompilationError(new File(absolutePath), "Not parsed?", rest.pos.line, rest.pos.column)
@@ -298,42 +319,29 @@ object TwirlCompiler {
     Nil :+ imports :+ "\n" :+ defs :+ "\n" :+ "Seq[Any](" :+ visit(template.content, Nil) :+ ")"
   }
 
-  def generateCode(packageName: String, name: String, root: Template, resultType: String, formatterType: String, additionalImports: String): Seq[Any] = {
-    val extra = TemplateAsFunctionCompiler.getFunctionMapping(
+  def generateCode(packageName: String, name: String, root: Template, resultType: String, formatterType: String,
+    additionalImports: Seq[String], constructorAnnotations: Seq[String]): Seq[Any] = {
+    val (renderCall, f, templateType) = TemplateAsFunctionCompiler.getFunctionMapping(
       root.params.str,
       resultType)
 
     // Get the imports that we need to include, filtering out empty imports
-    val imports: Seq[String] = Seq(additionalImports, formatImports(root.topImports)).filter(!_.isEmpty)
+    val imports: Seq[Any] = Seq(additionalImports.map(i => Seq("import ", i, "\n")),
+      formatImports(root.topImports))
 
-    // Get a reference to the template class we're going to generate. It may
-    // be nested inside several objects, one for each set of import statements.
-    // e.g. mytemplate_Scope0.mytemplate_Scope1.mytemplate
-    val templateClassReference: Seq[String] = Range(0, imports.length).map(i => s"${name}_Scope$i.") :+ name
-
-    // Generate one enclosing object for each import scope we might need
-    // If there are no extra imports then there will be no enclosing objects
-    // generated, which is more efficient.
-    val startImportScopes: Seq[Seq[String]] = imports.zipWithIndex.map {
-      case (importCode, i) => Seq("""
-     object """, name, """_Scope""", i.toString, """ {
-""", importCode, """
-""")
-    }
-
-    val endImportScopes: Seq[String] = imports.map { _ => """
-}"""
+    val classDeclaration = root.constructor.fold[Seq[Any]](
+      Seq("object ", name)
+    ) { constructor =>
+      Vector.empty :+ "/*" :+ constructor.comment.fold("")(_.msg) :+ """*/
+class """ :+ name :+ " " :+ constructorAnnotations :+ " " :+ Source(constructor.params.str, constructor.params.pos)
     }
 
     val generated = {
-      Nil :+ """
+      Vector.empty :+ """
 package """ :+ packageName :+ """
 
-import play.twirl.api._
-import play.twirl.api.TemplateMagic._
-
-""" :+ startImportScopes :+ """
-class """ :+ name :+ """ extends BaseScalaTemplate[""" :+ resultType :+ """,Format[""" :+ resultType :+ """]](""" :+ formatterType :+ """) with """ :+ extra._3 :+ """ {
+""" :+ imports :+ """
+""" :+ classDeclaration :+ """ extends _root_.play.twirl.api.BaseScalaTemplate[""" :+ resultType :+ """,_root_.play.twirl.api.Format[""" :+ resultType :+ """]](""" :+ formatterType :+ """) with """ :+ templateType :+ """ {
 
   /*""" :+ root.comment.map(_.msg).getOrElse("") :+ """*/
   def apply""" :+ Source(root.params.str, root.params.pos) :+ """:""" :+ resultType :+ """ = {
@@ -344,28 +352,29 @@ class """ :+ name :+ """ extends BaseScalaTemplate[""" :+ resultType :+ """,Form
     }
   }
 
-  """ :+ extra._1 :+ """
+  """ :+ renderCall :+ """
 
-  """ :+ extra._2 :+ """
+  """ :+ f :+ """
 
   def ref: this.type = this
 
 }
 
-""" :+ endImportScopes :+ """
-
-/*""" :+ root.comment.map(_.msg).getOrElse("") :+ """*/
-object """ :+ name :+ """ extends """ :+ templateClassReference
+"""
     }
+
     generated
   }
 
-  def formatImports(imports: Seq[Simple]): String = {
-    imports.map(_.code).mkString("\n")
+  def formatImports(imports: Seq[Simple]): Seq[Any] = {
+    imports.map(i => Seq(Source(i.code, i.pos), "\n"))
   }
 
-  def generateFinalTemplate(absolutePath: String, contents: Array[Byte], packageName: String, name: String, root: Template, resultType: String, formatterType: String, additionalImports: String): String = {
-    val generated = generateCode(packageName, name, root, resultType, formatterType, additionalImports)
+  def generateFinalTemplate(absolutePath: String, contents: Array[Byte], packageName: String, name: String,
+    root: Template, resultType: String, formatterType: String, additionalImports: Seq[String],
+    constructorAnnotations: Seq[String]): String = {
+    val generated = generateCode(packageName, name, root, resultType, formatterType, additionalImports,
+      constructorAnnotations)
 
     Source.finalSource(absolutePath, contents, generated, Hash(contents, additionalImports))
   }
@@ -432,7 +441,7 @@ object """ :+ name :+ """ extends """ :+ templateClassReference
             p.name.toString + Option(p.tpt.toString).filter(_.startsWith("_root_.scala.<repeated>")).map(_ => ":_*").getOrElse("")
           }.mkString(",") + ")").mkString)
 
-        val templateType = "play.twirl.api.Template%s[%s%s]".format(
+        val templateType = "_root_.play.twirl.api.Template%s[%s%s]".format(
           params.flatten.size,
           params.flatten.map {
             case ByNameParam(_, paramType) => paramType

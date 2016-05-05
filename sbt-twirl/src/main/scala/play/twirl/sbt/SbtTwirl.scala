@@ -3,6 +3,7 @@
  */
 package play.twirl.sbt
 
+import play.twirl.compiler.TwirlCompiler
 import sbt._
 import sbt.Keys._
 import scala.io.Codec
@@ -12,6 +13,7 @@ object Import {
     val twirlVersion = SettingKey[String]("twirl-version", "Twirl version used for twirl-api dependency")
     val templateFormats = SettingKey[Map[String, String]]("twirl-template-formats", "Defined twirl template formats")
     val templateImports = SettingKey[Seq[String]]("twirl-template-imports", "Extra imports for twirl templates")
+    val constructorAnnotations = SettingKey[Seq[String]]("twirl-constructor-annotations",  "Annotations added to constructors in injectable templates")
     @deprecated("No longer supported", "1.2.0")
     val useOldParser = SettingKey[Boolean]("twirl-use-old-parser", "No longer supported")
     val sourceEncoding = TaskKey[String]("twirl-source-encoding", "Source encoding for template files and generated scala files")
@@ -58,7 +60,8 @@ object SbtTwirl extends AutoPlugin {
 
   def defaultSettings: Seq[Setting[_]] = Seq(
     templateFormats := defaultFormats,
-    templateImports := Seq.empty,
+    templateImports := TwirlCompiler.DefaultImports,
+    constructorAnnotations := Nil,
     sourceEncoding := scalacEncoding(scalacOptions.value)
   )
 
@@ -89,6 +92,7 @@ object SbtTwirl extends AutoPlugin {
       (target in compileTemplates).value,
       templateFormats.value,
       templateImports.value,
+      constructorAnnotations.value,
       (includeFilter in compileTemplates).value,
       (excludeFilter in compileTemplates).value,
       Codec(sourceEncoding.value),

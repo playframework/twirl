@@ -3,7 +3,7 @@
  */
 package play.twirl.parser
 
-import scala.annotation.elidable
+import scala.annotation.{tailrec, elidable}
 import scala.annotation.elidable._
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.Buffer
@@ -359,6 +359,9 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     result
   }
 
+  /**
+    * Parse a comment.
+    */
   def comment(): Comment = {
     val pos = input.offset
     if (check("@*")) {
@@ -368,12 +371,21 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     } else null
   }
 
-  def startArgs(): String = {
-    val result = several[String, ArrayBuffer[String]](parentheses)
-    if (result.length > 0)
-      result.mkString
-    else
-      null
+  /**
+    * Parses comments and/or whitespace, ignoring both until the last comment is reached, and returning that (if found)
+    */
+  def lastComment(): Comment = {
+    @tailrec
+    def tryNext(last: Comment): Comment = {
+      whitespace()
+      val next = comment()
+      if (next == null) {
+        last
+      } else {
+        tryNext(next)
+      }
+    }
+    tryNext(null)
   }
 
   def importExpression(): Simple = {
@@ -770,7 +782,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
         if (check("{")) {
           val (imports, localDefs, templates, mixeds) = templateContent()
           if (check("}"))
-            result = Template(templDecl._1, None, templDecl._2, Nil, imports, localDefs, templates, mixeds)
+            result = Template(templDecl._1, None, None, templDecl._2, Nil, imports, localDefs, templates, mixeds)
         }
       }
     }
@@ -835,27 +847,63 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   def extraImports(): Seq[Simple] = {
-    val resetPosition = input.offset
+    var resetPosition = input.offset
     val imports = new ArrayBuffer[Simple]
 
-    while (whitespace().nonEmpty || (comment() ne null)) {} // ignore
+    lastComment()
 
     var done = false
     while (!done) {
       val importExp = importExpression()
       if (importExp ne null) {
         imports += importExp
-        whitespace()
+        resetPosition = input.offset
+        lastComment()
       } else {
         done = true
       }
     }
 
-    if (imports.isEmpty) {
-      input.regressTo(resetPosition)
-    }
+    input.regressTo(resetPosition)
 
     imports
+  }
+
+  /**
+    * Parse the template arguments.
+    */
+  private def templateArgs(): String = {
+    val result = several[String, ArrayBuffer[String]](parentheses)
+    if (result.length > 0)
+      result.mkString
+    else
+      null
+  }
+
+  /**
+    * Parse the template arguments, if they exist
+    */
+  private def maybeTemplateArgs(): Option[PosString] = {
+    if (check("@(")) {
+      input.regress(1)
+      val p = input.offset
+      val args = templateArgs()
+      if (args != null) Some(position(PosString(args), p))
+      else None
+    } else None
+  }
+
+  /**
+    * Parse the template arguments, if they exist
+    */
+  private def constructorArgs(): PosString = {
+    if (check("@this(")) {
+      input.regress(1)
+      val p = input.offset
+      val args = templateArgs()
+      if (args != null) position(PosString(args), p)
+      else null
+    } else null
   }
 
   def parse(source: String): ParseResult = {
@@ -864,21 +912,24 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     errorStack.clear()
 
     val topImports = extraImports()
-    whitespace()
-    val commentpos = input.offset
-    val cm = Option(position(comment(), commentpos))
-    whitespace()
-    val args =
-      if (check("@(")) {
-        input.regress(1)
-        val p = input.offset
-        val args = startArgs()
-        if (args != null) Some(position(PosString(args), p))
-        else None
-      } else None
+    val (constructor, argsComment) = {
+      val constructorComment = Option(lastComment())
+      whitespace()
+      val constructor = constructorArgs()
+      if (constructor != null) {
+        // progress to try and parse comment for args
+        whitespace()
+        val argsComment = Option(lastComment())
+        whitespace()
+        (Some(Constructor(constructorComment, constructor)), argsComment)
+      } else {
+        (None, constructorComment)
+      }
+    }
+    val args = maybeTemplateArgs()
     val (imports, localDefs, templates, mixeds) = templateContent()
 
-    val template = Template(PosString(""), cm, args.getOrElse(PosString("()")), topImports, imports, localDefs, templates, mixeds)
+    val template = Template(PosString(""), constructor, argsComment, args.getOrElse(PosString("()")), topImports, imports, localDefs, templates, mixeds)
 
     if (errorStack.length == 0)
       Success(template, input)
