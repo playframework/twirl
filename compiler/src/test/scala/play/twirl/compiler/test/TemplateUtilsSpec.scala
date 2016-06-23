@@ -8,7 +8,7 @@ import org.specs2.mutable._
 import play.twirl.api._
 import scala.collection.immutable
 
-object TemplateUtilsSpec extends Specification {
+class TemplateUtilsSpec extends Specification {
 
   "Templates" should {
 

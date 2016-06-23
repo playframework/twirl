@@ -5,7 +5,7 @@ import play.twirl.api._
 
 import scala.collection.immutable
 
-object BufferedContentSpec extends Specification {
+class BufferedContentSpec extends Specification {
 
   "equality checking" should {
 

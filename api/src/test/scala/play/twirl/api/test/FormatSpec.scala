@@ -6,7 +6,7 @@
 
 import org.specs2.mutable._
 
-object FormatSpec extends Specification {
+ class FormatSpec extends Specification {
   "Formats" should {
     "show null text values as empty" in {
       val text: String = null
