@@ -7,7 +7,7 @@ package test
 import org.specs2.mutable._
 import play.twirl.parser.TreeNodes.{ Simple, Template }
 
-object ParserSpec extends Specification {
+class ParserSpec extends Specification {
 
   val parser = new TwirlParser(shouldParseInclusiveDot = false)
 

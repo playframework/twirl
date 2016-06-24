@@ -3,7 +3,7 @@ package test
 
 import org.specs2.mutable._
 
-object StringInterpolationSpec extends Specification {
+class StringInterpolationSpec extends Specification {
 
   "StringInterpolation" should {
     "leave string parts untouched" in {
