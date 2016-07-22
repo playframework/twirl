@@ -20,7 +20,7 @@ class ParserSpec extends Specification {
   }
 
   def parseString(template: String) = {
-    (new TwirlParser(shouldParseInclusiveDot = false)).parse(template)
+    parser.parse(template)
   }
 
   def parseSuccess(templateName: String) = {
@@ -43,7 +43,6 @@ class ParserSpec extends Specification {
   }
 
   def parseTemplateString(template: String): Template = {
-    val parser = new TwirlParser(shouldParseInclusiveDot = false)
     parser.parse(template) match {
       case parser.Success(template, input) =>
         if (!input.atEnd) sys.error("Template parsed but not at source end")
