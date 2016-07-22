@@ -53,6 +53,8 @@ class ParserSpec extends Specification {
     }
   }
 
+  sequential
+
   "New twirl parser" should {
 
     "succeed for" in {
