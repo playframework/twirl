@@ -8,7 +8,7 @@ lazy val specs2 = Seq(
 lazy val twirl = project
     .in(file("."))
     .enablePlugins(PlayRootProject)
-    .aggregate(apiJvm, parser, compiler)
+    .aggregate(apiJvm, apiJs, parser, compiler)
     .settings(common: _*)
 
 lazy val api = crossProject
@@ -17,7 +17,8 @@ lazy val api = crossProject
     .settings(common: _*)
     .settings(
       name := "twirl-api",
-      libraryDependencies ++= specs2
+      // RC4 is the only version that also supports SJS
+      libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.0-RC4" % "test"
     )
     .jvmSettings(
       // scala-xml and commons-lang can't work under ScalaJS (yet)
@@ -58,8 +59,7 @@ lazy val plugin = project
       name := "sbt-twirl",
       organization := "com.typesafe.sbt",
       libraryDependencies ++= specs2,
-      // Plugin for %%% ; TODO: Actually this also pulls in unnecessary stuff anybody
-      // got a better idea?
+      // Plugin for %%% ; TODO: Actually this also pulls in unnecessary stuff. anybody got a better idea?
       addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.11"),
       resourceGenerators in Compile <+= generateVersionFile,
       scriptedDependencies := {

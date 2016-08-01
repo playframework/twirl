@@ -1,6 +1,6 @@
 language: scala
 script:
-  - sbt +test +apiJS/test +publishLocal +apiJS/publishLocal plugin/test plugin/scripted
+  - sbt +test +publishLocal plugin/test plugin/scripted
   - jdk_switcher use oraclejdk8 && cd docs && sbt test validateDocs
 sudo: false
 cache:
