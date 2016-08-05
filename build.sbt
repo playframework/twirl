@@ -1,27 +1,19 @@
-lazy val specs2 = Seq(
-  "org.specs2" %% "specs2-core" % "3.8.4" % "test",
-  "org.specs2" %% "specs2-junit" % "3.8.4" % "test",
-  "org.specs2" %% "specs2-mock" % "3.8.4" % "test",
-  "org.specs2" %% "specs2-matcher-extra" % "3.8.4" % "test"
-)
+lazy val scalatest = "3.0.0"
 
 lazy val twirl = project
     .in(file("."))
     .enablePlugins(PlayRootProject)
     .aggregate(apiJvm, apiJs, parser, compiler)
-    .settings(common: _*)
 
 lazy val api = crossProject
     .in(file("api"))
     .enablePlugins(PlayLibrary, Playdoc)
-    .settings(common: _*)
     .settings(
       name := "twirl-api",
-      // RC4 is the only version that also supports SJS
-      libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.0" % "test"
+      libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
     )
     .jvmSettings(
-      // scala-xml and commons-lang can't work under ScalaJS (yet)
+      // scala-xml and commons-lang can't work under ScalaJS
       libraryDependencies += commonsLang,
       libraryDependencies ++= scalaXml(scalaVersion.value)
     )
@@ -32,18 +24,16 @@ lazy val apiJs = api.js
 lazy val parser = project
     .in(file("parser"))
     .enablePlugins(PlayLibrary)
-    .settings(common: _*)
     .settings(
       name := "twirl-parser",
       libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
-      libraryDependencies ++= specs2
+      libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
     )
 
 lazy val compiler = project
     .in(file("compiler"))
     .enablePlugins(PlayLibrary)
     .dependsOn(apiJvm, parser % "compile;test->test")
-    .settings(common: _*)
     .settings(
       name := "twirl-compiler",
       libraryDependencies += scalaCompiler(scalaVersion.value),
@@ -54,12 +44,11 @@ lazy val plugin = project
     .in(file("sbt-twirl"))
     .enablePlugins(PlaySbtPlugin)
     .dependsOn(compiler)
-    .settings(common: _*)
     .settings(
       name := "sbt-twirl",
       organization := "com.typesafe.sbt",
-      libraryDependencies ++= specs2,
-      // Plugin for %%% ; TODO: Actually this also pulls in unnecessary stuff. anybody got a better idea?
+      libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test",
+      // Plugin for %%%
       addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.11"),
       resourceGenerators in Compile <+= generateVersionFile,
       scriptedDependencies := {
@@ -77,12 +66,6 @@ playBuildExtraTests := {
 playBuildExtraPublish := {
   (PgpKeys.publishSigned in plugin).value
 }
-
-// Shared settings
-
-def common = Seq(
-  resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
-)
 
 // Version file
 

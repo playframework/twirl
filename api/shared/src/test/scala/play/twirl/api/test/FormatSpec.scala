@@ -4,7 +4,9 @@
 package play.twirl.api
 package test
 
-class FormatSpec extends PlaySpec {
+import org.scalatest.{ MustMatchers, WordSpec }
+
+class FormatSpec extends WordSpec with MustMatchers {
 
   "Formats" should {
     "show null text values as empty" in {

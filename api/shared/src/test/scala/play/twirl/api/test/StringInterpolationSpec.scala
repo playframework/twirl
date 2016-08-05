@@ -4,7 +4,9 @@
 package play.twirl.api
 package test
 
-class StringInterpolationSpec extends PlaySpec {
+import org.scalatest.{ MustMatchers, WordSpec }
+
+class StringInterpolationSpec extends WordSpec with MustMatchers {
 
   "StringInterpolation" should {
     "leave string parts untouched" in {

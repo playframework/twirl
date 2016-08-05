@@ -4,19 +4,20 @@
 package play.twirl.compiler
 package test
 
-import org.specs2.mutable._
+import org.scalatest.{ MustMatchers, WordSpec }
 import play.twirl.api._
+
 import scala.collection.immutable
 
-class TemplateUtilsSpec extends Specification {
+class TemplateUtilsSpec extends WordSpec with MustMatchers {
 
   "Templates" should {
 
     "provide a HASH util" in {
-      Hash("itShouldWork".getBytes, Nil) must be_==("31c0c4e0e142fe9b605fff44528fedb3dd8ae254")
+      Hash("itShouldWork".getBytes, Nil) must be("31c0c4e0e142fe9b605fff44528fedb3dd8ae254")
     }
 
-    "provide a Format API" in {
+    "provide a Format API" when {
 
       "HTML for example" in {
 
@@ -33,7 +34,7 @@ class TemplateUtilsSpec extends Specification {
 
         val html = HtmlFormat.raw("<h1>").body + HtmlFormat.escape("Hello <world>").body + HtmlFormat.raw("</h1>").body
 
-        html must be_==("<h1>Hello &lt;world></h1>")
+        html must be("<h1>Hello &lt;world></h1>")
       }
 
       "Text for example" in {
@@ -51,7 +52,7 @@ class TemplateUtilsSpec extends Specification {
 
         val text = TextFormat.raw("<h1>").body + TextFormat.escape("Hello <world>").body + TextFormat.raw("</h1>").body
 
-        text must be_==("<h1>Hello <world></h1>")
+        text must be("<h1>Hello <world></h1>")
 
       }
     }
