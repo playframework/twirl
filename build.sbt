@@ -18,7 +18,7 @@ lazy val api = crossProject
     .settings(
       name := "twirl-api",
       // RC4 is the only version that also supports SJS
-      libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.0-RC4" % "test"
+      libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.0" % "test"
     )
     .jvmSettings(
       // scala-xml and commons-lang can't work under ScalaJS (yet)
