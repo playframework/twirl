@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2016 Typesafe Inc. <http://www.typesafe.com>
+ * Copyright (C) 2009-2016 Lightbend Inc. (https://www.lightbend.com).
  */
 package play.twirl.api.utils
 
@@ -33,6 +33,29 @@ object StringEscapeUtils {
     s.toString()
   }
 
-  def escapeXml11(input: String): String = throw new RuntimeException("XML is not Supported on ScalaJS")
+  def escapeXml11(input: String): String = {
+    // Implemented per XML spec:
+    // http://www.w3.org/International/questions/qa-controls
+    val s = new StringBuilder()
+    val len = input.length
+    var pos = 0
+
+    while (pos < len) {
+      input.charAt(pos) match {
+        case '<' => s.append("&lt;")
+        case '>' => s.append("&gt;")
+        case '&' => s.append("&amp;")
+        case '"' => s.append("&quot;")
+        case '\n' => s.append('\n')
+        case '\r' => s.append('\r')
+        case '\t' => s.append('\t')
+        case c if c < ' ' =>
+        case c => s.append(c)
+      }
+      pos += 1
+    }
+
+    s.toString()
+  }
 
 }

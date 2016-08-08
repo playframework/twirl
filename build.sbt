@@ -13,8 +13,7 @@ lazy val api = crossProject
       libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
     )
     .jvmSettings(
-      // scala-xml and commons-lang can't work under ScalaJS
-      libraryDependencies += commonsLang,
+      // scala-xml can't work under ScalaJS
       libraryDependencies ++= scalaXml(scalaVersion.value)
     )
 
@@ -78,8 +77,6 @@ def generateVersionFile = Def.task {
 }
 
 // Dependencies
-
-def commonsLang = "org.apache.commons" % "commons-lang3" % "3.4"
 
 def scalaCompiler(version: String) = "org.scala-lang" % "scala-compiler" % version
 
