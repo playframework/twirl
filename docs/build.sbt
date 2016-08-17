@@ -27,4 +27,4 @@ def overrideTwirlSettings: Seq[Setting[_]] = Seq(
 // the twirl plugin automatically adds this dependency, but this overrides it so
 // it can be an interproject dependency, rather than requiring it to be published
 // first
-lazy val twirlApi = ProjectRef(Path.fileProperty("user.dir").getParentFile, "api")
+lazy val twirlApi = ProjectRef(Path.fileProperty("user.dir").getParentFile, "apiJVM")

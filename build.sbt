@@ -1,65 +1,62 @@
-lazy val specs2 = Seq(
-  "org.specs2" %% "specs2-core"  % "3.8.4" % "test",
-  "org.specs2" %% "specs2-junit" % "3.8.4" % "test",
-  "org.specs2" %% "specs2-mock"  % "3.8.4" % "test",
-  "org.specs2" %% "specs2-matcher-extra" % "3.8.4" % "test"
-)
+lazy val scalatest = "3.0.0"
 
 lazy val twirl = project
-  .in(file("."))
-  .enablePlugins(PlayRootProject)
-  .aggregate(api, parser, compiler)
-  .settings(common: _*)
+    .in(file("."))
+    .enablePlugins(PlayRootProject)
+    .aggregate(apiJvm, apiJs, parser, compiler)
 
-lazy val api = project
-  .in(file("api"))
-  .enablePlugins(PlayLibrary, Playdoc)
-  .settings(common: _*)
-  .settings(
-    name := "twirl-api",
-    libraryDependencies += commonsLang,
-    libraryDependencies ++= scalaXml(scalaVersion.value),
-    libraryDependencies ++= specs2
-  )
+lazy val api = crossProject
+    .in(file("api"))
+    .enablePlugins(PlayLibrary, Playdoc)
+    .settings(
+      name := "twirl-api",
+      libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
+    )
+    .jvmSettings(
+      // scala-xml can't work under ScalaJS
+      libraryDependencies ++= scalaXml(scalaVersion.value)
+    )
+
+lazy val apiJvm = api.jvm
+lazy val apiJs = api.js
 
 lazy val parser = project
-  .in(file("parser"))
-  .enablePlugins(PlayLibrary)
-  .settings(common: _*)
-  .settings(
-    name := "twirl-parser",
-    libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
-    libraryDependencies ++= specs2
-  )
+    .in(file("parser"))
+    .enablePlugins(PlayLibrary)
+    .settings(
+      name := "twirl-parser",
+      libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
+      libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
+    )
 
 lazy val compiler = project
-  .in(file("compiler"))
-  .enablePlugins(PlayLibrary)
-  .dependsOn(api, parser % "compile;test->test")
-  .settings(common: _*)
-  .settings(
-    name := "twirl-compiler",
-    libraryDependencies += scalaCompiler(scalaVersion.value),
-    fork in run := true
-  )
+    .in(file("compiler"))
+    .enablePlugins(PlayLibrary)
+    .dependsOn(apiJvm, parser % "compile;test->test")
+    .settings(
+      name := "twirl-compiler",
+      libraryDependencies += scalaCompiler(scalaVersion.value),
+      fork in run := true
+    )
 
 lazy val plugin = project
-  .in(file("sbt-twirl"))
-  .enablePlugins(PlaySbtPlugin)
-  .dependsOn(compiler)
-  .settings(common: _*)
-  .settings(
-    name := "sbt-twirl",
-    organization := "com.typesafe.sbt",
-    libraryDependencies ++= specs2,
-    resourceGenerators in Compile <+= generateVersionFile,
-    scriptedDependencies := {
-      scriptedDependencies.value
-      publishLocal.all(ScopeFilter(
-        inDependencies(compiler)
-      )).value
-    }
-  )
+    .in(file("sbt-twirl"))
+    .enablePlugins(PlaySbtPlugin)
+    .dependsOn(compiler)
+    .settings(
+      name := "sbt-twirl",
+      organization := "com.typesafe.sbt",
+      libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test",
+      // Plugin for %%%
+      addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.11"),
+      resourceGenerators in Compile <+= generateVersionFile,
+      scriptedDependencies := {
+        scriptedDependencies.value
+        publishLocal.all(ScopeFilter(
+          inDependencies(compiler)
+        )).value
+      }
+    )
 
 playBuildRepoName in ThisBuild := "twirl"
 playBuildExtraTests := {
@@ -69,16 +66,10 @@ playBuildExtraPublish := {
   (PgpKeys.publishSigned in plugin).value
 }
 
-// Shared settings
-
-def common = Seq(
-  resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
-)
-
 // Version file
 
 def generateVersionFile = Def.task {
-  val version = (Keys.version in api).value
+  val version = (Keys.version in apiJvm).value
   val file = (resourceManaged in Compile).value / "twirl.version.properties"
   val content = s"twirl.api.version=$version"
   IO.write(file, content)
@@ -86,8 +77,6 @@ def generateVersionFile = Def.task {
 }
 
 // Dependencies
-
-def commonsLang = "org.apache.commons" % "commons-lang3" % "3.4"
 
 def scalaCompiler(version: String) = "org.scala-lang" % "scala-compiler" % version
 

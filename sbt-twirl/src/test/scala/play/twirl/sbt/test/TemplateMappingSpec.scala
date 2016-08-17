@@ -4,22 +4,22 @@
 package play.twirl.sbt
 package test
 
-import org.specs2.mutable._
+import org.scalatest.{ Inspectors, MustMatchers, WordSpec }
 import play.twirl.sbt.TemplateProblem.TemplateMapping
 import play.twirl.sbt.TemplateProblem.TemplateMapping.Location
 
-class TemplateMappingSpec extends Specification {
+class TemplateMappingSpec extends WordSpec with MustMatchers with Inspectors {
 
   "TemplateMapping" should {
 
     "handle empty templates" in {
       val mapping = TemplateMapping(Seq.empty)
 
-      mapping.location(offset = 0) must beNone
-      mapping.location(offset = 7) must beNone
+      mapping.location(offset = 0) mustBe None
+      mapping.location(offset = 7) mustBe None
 
-      mapping.location(line = 1, column = 0) must beNone
-      mapping.location(line = 7, column = 7) must beNone
+      mapping.location(line = 1, column = 0) mustBe None
+      mapping.location(line = 7, column = 7) mustBe None
     }
 
     "map positions from offset or (line, column)" in {
@@ -33,9 +33,9 @@ class TemplateMappingSpec extends Specification {
         Location(4, 1, 7, "d")
       )
 
-      forall(testLocations) { location =>
-        mapping.location(location.offset) must beSome(location)
-        mapping.location(location.line, location.column) must beSome(location)
+      forAll (testLocations) { location =>
+        mapping.location(location.offset) mustBe Some(location)
+        mapping.location(location.line, location.column) mustBe Some(location)
       }
     }
 
@@ -47,8 +47,8 @@ class TemplateMappingSpec extends Specification {
         10 -> Location(4, 1, 7, "d")
       )
 
-      forall(testOffsets) { case (offset, location) =>
-        mapping.location(offset) must beSome(location)
+      forAll(testOffsets) { case (offset, location) =>
+        mapping.location(offset) mustBe Some(location)
       }
 
       val testPositions = Seq(
@@ -61,8 +61,8 @@ class TemplateMappingSpec extends Specification {
         (5, 0)  -> Location(4, 1, 7, "d")
       )
 
-      forall(testPositions) { case ((line, column), location) =>
-        mapping.location(line, column) must beSome(location)
+      forAll(testPositions) { case ((line, column), location) =>
+        mapping.location(line, column) mustBe Some(location)
       }
     }
   }

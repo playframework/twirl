@@ -1,5 +1,7 @@
 package play.twirl
 
+import scala.reflect.ClassTag
+
 package object api {
 
   /**
@@ -24,7 +26,7 @@ package object api {
 
     def js(args: Any*): JavaScript = interpolate(args, JavaScriptFormat)
 
-    def interpolate[A <: Appendable[A] : Manifest](args: Seq[Any], format: Format[A]): A = {
+    def interpolate[A <: Appendable[A] : ClassTag](args: Seq[Any], format: Format[A]): A = {
       sc.checkLengths(args)
       val array = Array.ofDim[Any](args.size + sc.parts.size)
       val strings = sc.parts.iterator

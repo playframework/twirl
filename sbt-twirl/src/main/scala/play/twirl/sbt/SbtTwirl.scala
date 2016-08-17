@@ -4,8 +4,9 @@
 package play.twirl.sbt
 
 import play.twirl.compiler.TwirlCompiler
-import sbt._
 import sbt.Keys._
+import sbt._
+
 import scala.io.Codec
 
 object Import {
@@ -13,7 +14,7 @@ object Import {
     val twirlVersion = SettingKey[String]("twirl-version", "Twirl version used for twirl-api dependency")
     val templateFormats = SettingKey[Map[String, String]]("twirl-template-formats", "Defined twirl template formats")
     val templateImports = SettingKey[Seq[String]]("twirl-template-imports", "Extra imports for twirl templates")
-    val constructorAnnotations = SettingKey[Seq[String]]("twirl-constructor-annotations",  "Annotations added to constructors in injectable templates")
+    val constructorAnnotations = SettingKey[Seq[String]]("twirl-constructor-annotations", "Annotations added to constructors in injectable templates")
     @deprecated("No longer supported", "1.2.0")
     val useOldParser = SettingKey[Boolean]("twirl-use-old-parser", "No longer supported")
     val sourceEncoding = TaskKey[String]("twirl-source-encoding", "Source encoding for template files and generated scala files")
@@ -22,9 +23,12 @@ object Import {
 }
 
 object SbtTwirl extends AutoPlugin {
+
   import Import.TwirlKeys._
 
   val autoImport = Import
+
+  import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
 
   override def requires = sbt.plugins.JvmPlugin
 
@@ -32,10 +36,10 @@ object SbtTwirl extends AutoPlugin {
 
   override def projectSettings: Seq[Setting[_]] =
     inConfig(Compile)(twirlSettings) ++
-    inConfig(Test)(twirlSettings) ++
-    defaultSettings ++
-    positionSettings ++
-    dependencySettings
+        inConfig(Test)(twirlSettings) ++
+        defaultSettings ++
+        positionSettings ++
+        dependencySettings
 
   def twirlSettings: Seq[Setting[_]] = Seq(
     includeFilter in compileTemplates := "*.scala.*",
@@ -69,9 +73,12 @@ object SbtTwirl extends AutoPlugin {
     sourcePositionMappers += TemplateProblem.positionMapper(Codec(sourceEncoding.value))
   )
 
-  def dependencySettings: Seq[Setting[_]] = Seq(
+  def dependencySettings = Def.settings(
+    // Task is undefined if not a ScalaJSPlugin
+    isScalaJSProject := (isScalaJSProject ?? false).value,
     twirlVersion := readResourceProperty("twirl.version.properties", "twirl.api.version"),
-    libraryDependencies += "com.typesafe.play" %% "twirl-api" % twirlVersion.value
+    // %%% will be the same as %% for normal projects
+    libraryDependencies += "com.typesafe.play" %%% "twirl-api" % twirlVersion.value
   )
 
   def scalacEncoding(options: Seq[String]): String = {
@@ -103,9 +110,15 @@ object SbtTwirl extends AutoPlugin {
   def readResourceProperty(resource: String, property: String): String = {
     val props = new java.util.Properties
     val stream = getClass.getClassLoader.getResourceAsStream(resource)
-    try { props.load(stream) }
-    catch { case e: Exception => }
-    finally { if (stream ne null) stream.close }
+    try {
+      props.load(stream)
+    }
+    catch {
+      case e: Exception =>
+    }
+    finally {
+      if (stream ne null) stream.close
+    }
     props.getProperty(property)
   }
 }

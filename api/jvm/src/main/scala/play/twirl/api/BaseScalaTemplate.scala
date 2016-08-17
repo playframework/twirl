@@ -1,9 +1,10 @@
 /*
- * Copyright (C) 2009-2014 Typesafe Inc. <http://www.typesafe.com>
+ * Copyright (C) 2009-2016 Typesafe Inc. <http://www.typesafe.com>
  */
 package play.twirl.api
 
 import scala.collection.immutable
+import scala.reflect.ClassTag
 
 case class BaseScalaTemplate[T <: Appendable[T], F <: Format[T]](format: F) {
 
@@ -15,7 +16,7 @@ case class BaseScalaTemplate[T <: Appendable[T], F <: Format[T]](format: F) {
   def _display_(x: scala.xml.NodeSeq): T = if (x eq null) format.empty else format.raw(x.toString())
   def _display_(x: T): T = if (x eq null) format.empty else x
 
-  def _display_(o: Any)(implicit m: Manifest[T]): T = {
+  def _display_(o: Any)(implicit m: ClassTag[T]): T = {
     o match {
       case escaped if escaped != null && escaped.getClass == m.runtimeClass => escaped.asInstanceOf[T]
       case () => format.empty

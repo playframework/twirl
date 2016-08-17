@@ -1,28 +1,31 @@
+/*
+ * Copyright (C) 2009-2016 Lightbend Inc. (https://www.lightbend.com).
+ */
 package play.twirl.api
 package test
 
-import org.specs2.mutable._
+import org.scalatest.{ MustMatchers, WordSpec }
 
-class StringInterpolationSpec extends Specification {
+class StringInterpolationSpec extends WordSpec with MustMatchers {
 
   "StringInterpolation" should {
     "leave string parts untouched" in {
       val p = html"<p>"
-      p.body must_== "<p>"
+      p.body mustBe "<p>"
     }
     "escape interpolated arguments" in {
       val arg = "<"
       val p = html"<p>$arg</p>"
-      p.body must_== "<p>&lt;</p>"
+      p.body mustBe "<p>&lt;</p>"
     }
     "leave nested templates untouched" in {
       val p = html"<p></p>"
       val div = html"<div>$p</div>"
-      div.body must_== "<div><p></p></div>"
+      div.body mustBe "<div><p></p></div>"
     }
     "display arguments as they would be displayed in a template" in {
-      html"${Some("a")} $None".body must_== "a "
-      html"${Seq("a", "b")}".body must_== "ab"
+      html"${Some("a")} $None".body mustBe "a "
+      html"${Seq("a", "b")}".body mustBe "ab"
     }
   }
 

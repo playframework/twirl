@@ -4,10 +4,10 @@
 package play.twirl.parser
 package test
 
-import org.specs2.mutable._
+import org.scalatest.{ Inside, MustMatchers, WordSpec }
 import play.twirl.parser.TreeNodes.{ Simple, Template }
 
-class ParserSpec extends Specification {
+class ParserSpec extends WordSpec with MustMatchers with Inside {
 
   val parser = new TwirlParser(shouldParseInclusiveDot = false)
 
@@ -27,15 +27,16 @@ class ParserSpec extends Specification {
     parseStringSuccess(get(templateName))
   }
 
-  def parseStringSuccess(template: String) = parseString(template) must beLike {
-    case parser.Success(_, rest) if rest.atEnd => ok
+  def parseStringSuccess(template: String) = parseString(template) must matchPattern {
+    case parser.Success(_, rest) if rest.atEnd() =>
   }
 
-  def parseFailure(templateName: String, message: String, line: Int, column: Int) = parse(templateName) must beLike {
-    case parser.Error(_, rest, errors) => {
+  def parseFailure(templateName: String, message: String, line: Int, column: Int) = inside(parse(templateName)) {
+    case parser.Error(_, rest, errors) =>
       val e = errors.head
-      (e.str must_== message) and (e.pos.line must_== line) and (e.pos.column must_== column)
-    }
+      e.str mustBe message
+      e.pos.line mustBe line
+      e.pos.column mustBe column
   }
 
   def parseTemplate(templateName: String): Template = {
@@ -44,19 +45,17 @@ class ParserSpec extends Specification {
 
   def parseTemplateString(template: String): Template = {
     parser.parse(template) match {
-      case parser.Success(template, input) =>
+      case parser.Success(tmpl, input) =>
         if (!input.atEnd) sys.error("Template parsed but not at source end")
-        template
+        tmpl
       case parser.Error(_, _, errors) =>
         sys.error("Template failed to parse: " + errors.head.str)
     }
   }
 
-  sequential
-
   "New twirl parser" should {
 
-    "succeed for" in {
+    "succeed for" when {
 
       "static.scala.html" in {
         parseSuccess("static.scala.html")
@@ -71,7 +70,7 @@ class ParserSpec extends Specification {
       }
 
       "imports.scala.html" in {
-        parseTemplate("imports.scala.html").topImports must be_== (Seq(
+        parseTemplate("imports.scala.html").topImports must be (Seq(
           Simple("import java.io.File"),
           Simple("import java.net.URL")
         ))
@@ -82,13 +81,13 @@ class ParserSpec extends Specification {
       }
 
       "import expressions" in {
-        parseTemplateString("@import identifier").topImports must be_== (Seq(Simple("import identifier")))
-        parseTemplateString("@importIdentifier").topImports must beEmpty
+        parseTemplateString("@import identifier").topImports must be (Seq(Simple("import identifier")))
+        parseTemplateString("@importIdentifier").topImports mustBe empty
       }
 
     }
 
-    "handle string literals within parentheses" in {
+    "handle string literals within parentheses" when {
 
       "with left parenthesis" in {
         parseStringSuccess("""@foo("(")""")
@@ -104,7 +103,7 @@ class ParserSpec extends Specification {
       parseStringSuccess("""@for(i <- is) { @} }""")
     }
 
-    "fail for" in {
+    "fail for" when {
 
       "unclosedBracket.scala.html" in {
         parseFailure("unclosedBracket.scala.html", "Expected '}' but found 'EOF'", 12, 6)

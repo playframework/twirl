@@ -3,7 +3,7 @@
  */
 package play.twirl.api
 
-import org.apache.commons.lang3.StringEscapeUtils
+import play.twirl.api.utils.StringEscapeUtils
 import scala.collection.immutable
 
 object MimeTypes {
