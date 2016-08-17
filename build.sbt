@@ -1,13 +1,24 @@
 lazy val scalatest = "3.0.0"
+lazy val scala210 = "2.10.6"
+lazy val scala211 = "2.11.8"
+lazy val scala212 = "2.12.0-RC1"
 
 lazy val twirl = project
     .in(file("."))
     .enablePlugins(PlayRootProject)
+    .settings(
+      scalaVersion := scala210,
+      crossScalaVersions := List(scalaVersion.value, scala211, scala212)
+    )
     .aggregate(apiJvm, apiJs, parser, compiler)
 
 lazy val api = crossProject
     .in(file("api"))
     .enablePlugins(PlayLibrary, Playdoc)
+    .settings(
+      scalaVersion := scala210,
+      crossScalaVersions := List(scalaVersion.value, scala211, scala212)
+    )
     .settings(
       name := "twirl-api",
       libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
@@ -24,6 +35,10 @@ lazy val parser = project
     .in(file("parser"))
     .enablePlugins(PlayLibrary)
     .settings(
+      scalaVersion := scala210,
+      crossScalaVersions := List(scalaVersion.value, scala211, scala212)
+    )
+    .settings(
       name := "twirl-parser",
       libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
       libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
@@ -33,6 +48,10 @@ lazy val compiler = project
     .in(file("compiler"))
     .enablePlugins(PlayLibrary)
     .dependsOn(apiJvm, parser % "compile;test->test")
+    .settings(
+      scalaVersion := scala210,
+      crossScalaVersions := List(scalaVersion.value, scala211, scala212)
+    )
     .settings(
       name := "twirl-compiler",
       libraryDependencies += scalaCompiler(scalaVersion.value),

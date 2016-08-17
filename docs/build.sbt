@@ -2,6 +2,7 @@ lazy val docs = project
   .in(file("."))
   .enablePlugins(PlayDocsPlugin)
   .settings(
+    scalaVersion := "2.11.8",
     // use special snapshot play version for now
     resolvers ++= DefaultOptions.resolvers(snapshot = true),
     resolvers += Resolver.typesafeRepo("releases"),
