@@ -3,6 +3,8 @@ script:
   - sbt +test +publishLocal plugin/test plugin/scripted
   - jdk_switcher use oraclejdk8 && cd docs && sbt test validateDocs
 sudo: false
+jdk:
+  - oraclejdk8
 cache:
   directories:
     - $HOME/.ivy2/cache
