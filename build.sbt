@@ -36,6 +36,7 @@ lazy val compiler = project
     .settings(
       name := "twirl-compiler",
       libraryDependencies += scalaCompiler(scalaVersion.value),
+      libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
       fork in run := true
     )
 
