@@ -533,7 +533,12 @@ package """ :+ packageName :+ """
         import tools.nsc.interactive.Response
         val r1 = new Response[global.Tree]
         global.askParsedEntered(file, true, r1)
-        r1.get.left.toOption.getOrElse(throw r1.get.right.get)
+        r1.get match {
+          case Left(result) =>
+            result
+          case Right(error) =>
+            throw error
+        }
       }
 
     }
