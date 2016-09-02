@@ -49,7 +49,7 @@ lazy val plugin = project
       organization := "com.typesafe.sbt",
       libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test",
       // Plugin for %%%
-      addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.11"),
+      addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.12"),
       resourceGenerators in Compile <+= generateVersionFile,
       scriptedDependencies := {
         scriptedDependencies.value
