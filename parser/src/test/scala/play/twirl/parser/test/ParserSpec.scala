@@ -4,8 +4,8 @@
 package play.twirl.parser
 package test
 
-import org.scalatest.{ Inside, MustMatchers, WordSpec }
-import play.twirl.parser.TreeNodes.{ Simple, Template }
+import org.scalatest.{Inside, MustMatchers, WordSpec}
+import play.twirl.parser.TreeNodes._
 
 class ParserSpec extends WordSpec with MustMatchers with Inside {
 
@@ -69,6 +69,19 @@ class ParserSpec extends WordSpec with MustMatchers with Inside {
         parseSuccess("complicated.scala.html")
       }
 
+      "elseIf.scala.html" in {
+        val template = parseTemplate("elseIf.scala.html")
+        val node = template.content(1)
+        val expressions = node.asInstanceOf[Display].exp.parts
+        expressions.head must be (Simple("if(input == 5)"))
+        expressions(1).asInstanceOf[Block]
+        expressions(2) must be (Simple("else if(input == 6)"))
+        expressions(3).asInstanceOf[Block]
+        expressions(4) must be (Simple("else if(input == 8)"))
+        expressions(5).asInstanceOf[Block]
+        expressions(6) must be (Simple("else"))
+      }
+
       "imports.scala.html" in {
         parseTemplate("imports.scala.html").topImports must be (Seq(
           Simple("import java.io.File"),
@@ -122,3 +135,4 @@ class ParserSpec extends WordSpec with MustMatchers with Inside {
   }
 
 }
+

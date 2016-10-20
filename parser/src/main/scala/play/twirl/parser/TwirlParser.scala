@@ -68,8 +68,9 @@ import scala.util.parsing.input.OffsetPosition
  *   complexExpr : parentheses
  *   safeExpression : '@' parentheses
  *   elseCall : whitespaceNoBreak? "else" whitespaceNoBreak?
+ *   elseIfCall : whitespaceNoBreak? "else if" parentheses  whitespaceNoBreak?
  *   chainedMethods : ('.' methodCall)+
- *   expressionPart : chainedMethods | block | (whitespaceNoBreak scalaBlockChained) | elseCall | parentheses
+ *   expressionPart : chainedMethods | block | (whitespaceNoBreak scalaBlockChained) | elseIfCall | elseCall | parentheses
  *   expression : '@' methodCall expressionPart*
  *   methodCall : identifier squareBrackets? parentheses?
  *   blockArgs : [^'=>' '\n']* '=>'
@@ -666,8 +667,11 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     chainedMethods() match {
       case null => block() match {
         case null => wsThenScalaBlockChained() match {
-          case null => elseCall() match {
-            case null => simpleParens()
+          case null => elseIfCall() match {
+            case null => elseCall() match {
+              case null =>simpleParens
+              case x => x
+            }
             case x => x
           }
           case x => x
@@ -756,6 +760,20 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       inclusiveDot()
     else
       exclusiveDot()
+  }
+
+  def elseIfCall(): Simple = {
+    val reset = input.offset
+    whitespaceNoBreak()
+    val p = input.offset
+    if (check("else if")) {
+      whitespaceNoBreak()
+      val args = several[String, ArrayBuffer[String]](parentheses _)
+      position(Simple("else if" + args.mkString(",")), p)
+    } else {
+      input.regressTo(reset)
+      null
+    }
   }
 
   def elseCall(): Simple = {

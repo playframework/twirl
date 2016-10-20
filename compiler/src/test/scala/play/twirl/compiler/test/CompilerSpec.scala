@@ -16,15 +16,17 @@ class CompilerSpec extends WordSpec with MustMatchers {
 
   val testName = "Twirl compiler"
 
-  val dirName = "twirl-parser"
   val sourceDir = new File("compiler/src/test/resources")
-  val generatedDir = new File("compiler/target/test/" + dirName + "/generated-templates")
-  val generatedClasses = new File("compiler/target/test/" + dirName + "/generated-classes")
-  TwirlIO.deleteRecursively(generatedDir)
-  TwirlIO.deleteRecursively(generatedClasses)
-  generatedClasses.mkdirs()
 
-  def newCompilerHelper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
+  def newCompilerHelper = {
+    val dirName = "twirl-parser"
+    val generatedDir = new File("compiler/target/test/" + dirName + "/generated-templates")
+    val generatedClasses = new File("compiler/target/test/" + dirName + "/generated-classes")
+    TwirlIO.deleteRecursively(generatedDir)
+    TwirlIO.deleteRecursively(generatedClasses)
+    generatedClasses.mkdirs()
+    new CompilerHelper(sourceDir, generatedDir, generatedClasses)
+  }
 
   testName should {
 
@@ -188,6 +190,24 @@ class CompilerSpec extends WordSpec with MustMatchers {
 
     "split after a surrogate pair" in {
       StringGrouper(line, 7) must contain allOf("abcde" + beer, "fg")
+    }
+  }
+
+  "compile successfully (elseIf)" when {
+    "input is in if clause" in {
+      val helper = newCompilerHelper
+      val hello = helper.compile[((Int) => Html)]("elseIf.scala.html", "html.elseIf").static(0).toString.trim
+      hello must be("hello")
+    }
+    "input is in else if clause" in {
+      val helper = newCompilerHelper
+      val hello = helper.compile[((Int) => Html)]("elseIf.scala.html", "html.elseIf").static(1).toString.trim
+      hello must be("world")
+    }
+    "input is in else clause" in {
+      val helper = newCompilerHelper
+      val hello = helper.compile[((Int) => Html)]("elseIf.scala.html", "html.elseIf").static(25).toString.trim
+      hello must be("fail!")
     }
   }
 
