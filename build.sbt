@@ -1,7 +1,7 @@
 lazy val scalatest = "3.0.0"
 lazy val scala210 = "2.10.6"
 lazy val scala211 = "2.11.8"
-lazy val scala212 = "2.12.0-RC2"
+lazy val scala212 = "2.12.0"
 
 lazy val twirl = project
     .in(file("."))
@@ -69,7 +69,7 @@ lazy val plugin = project
       libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test",
       // Plugin for %%%
       addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.13"),
-      resourceGenerators in Compile <+= generateVersionFile,
+      resourceGenerators in Compile += generateVersionFile.taskValue,
       scriptedDependencies := {
         scriptedDependencies.value
         publishLocal.all(ScopeFilter(
@@ -104,7 +104,7 @@ def scalaParserCombinators(scalaVersion: String) =
   whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4" % "optional")
 
 def scalaXml(scalaVersion: String) =
-  whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-xml" % "1.0.5")
+  whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-xml" % "1.0.6")
 
 def whenAtLeast(version: String, major: Int, minor: Int, module: ModuleID): Seq[ModuleID] = {
   CrossVersion.partialVersion(version) match {
