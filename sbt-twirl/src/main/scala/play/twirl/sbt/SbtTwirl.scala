@@ -46,20 +46,20 @@ object SbtTwirl extends AutoPlugin {
     excludeFilter in compileTemplates := HiddenFileFilter,
     sourceDirectories in compileTemplates := Seq(sourceDirectory.value / "twirl"),
 
-    sources in compileTemplates <<= Defaults.collectFiles(
+    sources in compileTemplates := Defaults.collectFiles(
       sourceDirectories in compileTemplates,
       includeFilter in compileTemplates,
       excludeFilter in compileTemplates
-    ),
+    ).value,
 
-    watchSources in Defaults.ConfigGlobal <++= sources in compileTemplates,
+    watchSources in Defaults.ConfigGlobal ++= (sources in compileTemplates).value,
 
     target in compileTemplates := crossTarget.value / "twirl" / Defaults.nameForSrc(configuration.value.name),
 
     compileTemplates := compileTemplatesTask.value,
 
-    sourceGenerators <+= compileTemplates,
-    managedSourceDirectories <+= target in compileTemplates
+    sourceGenerators += compileTemplates.taskValue,
+    managedSourceDirectories += (target in compileTemplates).value
   )
 
   def defaultSettings: Seq[Setting[_]] = Seq(
