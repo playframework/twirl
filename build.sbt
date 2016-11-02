@@ -1,7 +1,7 @@
 lazy val scalatest = "3.0.0"
 lazy val scala210 = "2.10.6"
 lazy val scala211 = "2.11.8"
-lazy val scala212 = "2.12.0-RC2"
+lazy val scala212 = "2.12.0"
 
 lazy val twirl = project
     .in(file("."))
