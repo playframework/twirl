@@ -1,22 +1,22 @@
 language: scala
 script:
-  - sbt +test +publishLocal plugin/test plugin/scripted
-  - jdk_switcher use oraclejdk8 && cd docs && sbt test validateDocs
+- sbt +test +publishLocal plugin/test plugin/scripted
+- jdk_switcher use oraclejdk8 && cd docs && sbt test validateDocs
 sudo: false
 jdk:
-  - oraclejdk8
+- oraclejdk8
 cache:
   directories:
-    - $HOME/.ivy2/cache
+  - "$HOME/.ivy2/cache"
 before_cache:
-  # Ensure changes to the cache aren't persisted
-  - rm -rf $HOME/.ivy2/cache/com.typesafe.play/twirl*
-  - rm -rf $HOME/.ivy2/cache/scala_*/sbt_*/com.typesafe.sbt/sbt-twirl
-  # Delete all ivydata files since ivy touches them on each build
-  - find $HOME/.ivy2/cache -name "ivydata-*.properties" | xargs rm
+- rm -rf $HOME/.ivy2/cache/com.typesafe.play/twirl*
+- rm -rf $HOME/.ivy2/cache/scala_*/sbt_*/com.typesafe.sbt/sbt-twirl
+- find $HOME/.ivy2/cache -name "ivydata-*.properties" | xargs rm
 notifications:
   webhooks:
     urls:
-      - https://webhooks.gitter.im/e/d2c8a242a2615f659595
+    - https://webhooks.gitter.im/e/d2c8a242a2615f659595
     on_success: always
     on_failure: always
+  slack:
+    secure: JDkadGYA5piFVsA33NZrIYdccwX3Bodl/BS/rVawR04EKw3pnCVYxwjzozwG23lfjgqvsvijJTGdB88xH3coBRDijs1+9vYgd3ss4A+OgmJHxSi6loUGPYzrLpHSTxVDYLyrjl6+ubg9f+qyI2sdQ2kAr4qW5no+FUkAKO/MDxg=
