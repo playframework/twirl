@@ -1,5 +1,4 @@
-Twirl
-=====
+# Twirl [![Latest version](https://index.scala-lang.org/playframework/twirl/twirl-api/latest.svg?color=orange)](https://index.scala-lang.org/playframework/twirl/twirl-api)
 
 Twirl is the [Play][play-site] [template engine][docs].
 
@@ -22,7 +21,7 @@ To add the sbt plugin to your project add the sbt plugin dependency in
 `project/plugins.sbt`:
 
 ```scala
-addSbtPlugin("com.typesafe.sbt" % "sbt-twirl" % "1.1.1")
+addSbtPlugin("com.typesafe.sbt" % "sbt-twirl" % "1.3.0")
 ```
 
 And enable the plugin on projects using:
