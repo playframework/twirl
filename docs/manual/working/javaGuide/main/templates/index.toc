@@ -1,3 +1,4 @@
 JavaTemplates:Templates syntax
+JavaTemplatesDependencyInjection:Dependency Injection with Templates
 JavaTemplateUseCases:Common use cases
 JavaCustomTemplateFormat:Custom formats
