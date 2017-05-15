@@ -3,11 +3,10 @@
  */
 package play.twirl.parser
 
-import scala.annotation.{tailrec, elidable}
+import scala.annotation.{elidable, tailrec}
 import scala.annotation.elidable._
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import scala.collection.mutable.Buffer
-import scala.collection.mutable.BufferLike
 import scala.collection.mutable.ListBuffer
 import scala.util.parsing.input.OffsetPosition
 
@@ -113,11 +112,11 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
      * Peek `length` characters ahead. Does not check for EOF.
      * @return string from current offset upto current offset + `length`
      */
-    def apply(length: Int): String = source_.substring(offset_, (offset_ + length))
+    def apply(length: Int): String = source_.substring(offset_, offset_ + length)
 
     /** Equivalent to `input(str.length) == str`. Does not check for EOF. */
     def matches(str: String): Boolean = {
-      var i = 0;
+      var i = 0
       val l = str.length
       while (i < l) {
         if (source_.charAt(offset_ + i) != str.charAt(i))
@@ -141,8 +140,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       @noinline @elidable(INFO)
       def updateRegressionStatistics() = {
         val distance = offset_ - offset
-        val methodName = Thread.currentThread().getStackTrace()(2).getMethodName()
-        val (count, charAccum) = regressionStatistics.get(methodName) getOrElse ((0, 0))
+        val methodName = Thread.currentThread().getStackTrace()(2).getMethodName
+        val (count, charAccum) = regressionStatistics.getOrElse(methodName, (0, 0))
         regressionStatistics(methodName) = (count + 1, charAccum + distance)
       }
 
@@ -151,15 +150,15 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
     def isPastEOF(len: Int): Boolean = (offset_ + len-1) >= length_
 
-    def isEOF() = isPastEOF(1)
+    def isEOF: Boolean = isPastEOF(1)
 
-    def atEnd() = isEOF()
+    def atEnd(): Boolean = isEOF
 
-    def pos() = new OffsetPosition(source_, offset_)
+    def pos() = OffsetPosition(source_, offset_)
 
-    def offset() = offset_
+    def offset(): Int = offset_
 
-    def source() = source_
+    def source(): String = source_
 
     /** Reset the input to have the given contents */
     def reset(source: String) {
@@ -194,7 +193,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
    *  @return true if advancing, false otherwise.
    */
   def check(f: Char => Boolean): Boolean = {
-    if (!input.isEOF() && f(input())) {
+    if (!input.isEOF && f(input())) {
       input.advance()
       true
     } else false
@@ -215,13 +214,13 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     } else false
   }
 
-  def error(message: String, offset: Int = input.offset): Unit = {
+  def error(message: String, offset: Int = input.offset()): Unit = {
     errorStack += position(PosString(message), offset)
   }
 
  /** Consume/Advance `length` characters, and return the consumed characters. Returns "" if at EOF. */
   def any(length: Int = 1): String = {
-    if (input.isEOF()) {
+    if (input.isEOF) {
       error("Expected more input but found 'EOF'")
       ""
     } else {
@@ -238,7 +237,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
    *  @return the consumed characters
    */
   def anyUntil(stop: String, inclusive: Boolean): String = {
-    var sb = new StringBuilder
+    val sb = new StringBuilder
     while (!input.isPastEOF(stop.length) && !input.matches(stop))
       sb.append(any())
     if (inclusive && !input.isPastEOF(stop.length))
@@ -253,10 +252,10 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
    *  @return the consumed characters
    */
   def anyUntil(f: Char => Boolean, inclusive: Boolean): String = {
-    var sb = new StringBuilder
-    while (!input.isEOF() && f(input()) == false)
+    val sb = new StringBuilder
+    while (!input.isEOF && !f(input()))
       sb.append(any())
-    if (inclusive && !input.isEOF())
+    if (inclusive && !input.isEOF)
       sb.append(any())
     sb.toString
   }
@@ -264,7 +263,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   /** Set the source position of a Positional */
   def position[T <: Positional](positional: T, offset: Int): T = {
     if (positional != null)
-      positional.setPos(OffsetPosition(input.source, offset))
+      positional.setPos(OffsetPosition(input.source(), offset))
     positional
   }
 
@@ -284,7 +283,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
         } else if (check(suffix)) {
           stack -= 1
           sb.append(suffix)
-        } else if (input.isEOF()) {
+        } else if (input.isEOF) {
           error("Expected '" + suffix + "' but found 'EOF'")
           stack = 0
         } else if (allowStringLiterals) {
@@ -296,7 +295,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
           sb.append(any())
         }
       }
-      sb.toString()
+      sb.toString
     } else null
   }
 
@@ -320,19 +319,19 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
           } else if (check(escape)) { // escaped escape
             sb.append(escape)
           }
-        } else if (input.isEOF()) {
+        } else if (input.isEOF) {
           error("Expected '" + quote + "' but found 'EOF'")
           within = false
         } else {
           sb.append(any())
         }
       }
-      sb.toString()
+      sb.toString
     } else null
   }
 
   /** Match zero or more `parser` */
-  def several[T, BufferType <: Buffer[T]](parser: () => T, provided: BufferType = null)(implicit manifest: Manifest[BufferType]): BufferType = {
+  def several[T, BufferType <: mutable.Buffer[T]](parser: () => T, provided: BufferType = null)(implicit manifest: Manifest[BufferType]): BufferType = {
     val ab = if (provided != null) provided else manifest.runtimeClass.newInstance().asInstanceOf[BufferType]
     var parsed = parser()
     while (parsed != null) {
@@ -354,8 +353,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   def identifier(): String = {
     var result: String = null
     // TODO: should I be checking for EOF here?
-    if (!input.isEOF() && Character.isJavaIdentifierStart(input())) {
-      result = anyUntil(Character.isJavaIdentifierPart(_) == false, false)
+    if (!input.isEOF && Character.isJavaIdentifierStart(input())) {
+      result = anyUntil(Character.isJavaIdentifierPart(_) == false, inclusive = false)
     }
     result
   }
@@ -364,7 +363,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     * Parse a comment.
     */
   def comment(): Comment = {
-    val pos = input.offset
+    val pos = input.offset()
     if (check("@*")) {
       val text = anyUntil("*@", inclusive = false)
       accept("*@")
@@ -390,7 +389,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   def importExpression(): Simple = {
-    val p = input.offset
+    val p = input.offset()
     if (check("@import "))
       position(Simple("import " + anyUntil("\n", inclusive = true).trim), p+1) // don't include position of @
     else null
@@ -398,7 +397,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
   def localDef(): Def = {
     var result: Def = null
-    val resetPosition = input.offset
+    val resetPosition = input.offset()
     val templDecl = templateDeclaration()
     if (templDecl != null) {
       anyUntil(c => c != ' ' && c != '\t', inclusive = false)
@@ -419,7 +418,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   def scalaBlock(): Simple = {
     if (check("@{")) {
       input.regress(1); // we need to parse the '{' via 'brackets()'
-      val p = input.offset
+      val p = input.offset()
       brackets() match {
         case null => null
         case b => position(Simple(b), p)
@@ -441,7 +440,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       val t =
         comment() match {
           case null => scalaBlockDisplayed() match {
-            case null => forExpression match {
+            case null => forExpression() match {
               case null => matchExpOrSafeExpOrExpr() match {
                 case null => caseExpression() match {
                   case null => plain()
@@ -465,9 +464,9 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       if (check("{")) {
         var buffer = new ListBuffer[TemplateTree]
         buffer += position(Plain("{"), lbracepos)
-        for (m <- several[ListBuffer[TemplateTree], ListBuffer[ListBuffer[TemplateTree]]](mixed _))
+        for (m <- several[ListBuffer[TemplateTree], ListBuffer[ListBuffer[TemplateTree]]](mixed))
           buffer = buffer ++ m // creates a new object, but is constant in time, as opposed to buffer ++= m which is linear (proportional to size of m)
-        val rbracepos = input.offset
+        val rbracepos = input.offset()
         if (check("}"))
           buffer += position(Plain("}"), rbracepos)
         else
@@ -491,8 +490,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   def blockArgs(): PosString = {
-    val p = input.offset
-    val result = anyUntil("=>", true)
+    val p = input.offset()
+    val result = anyUntil("=>", inclusive = true)
     if (result.endsWith("=>") && !result.contains("\n"))
       position(PosString(result), p)
     else {
@@ -503,11 +502,11 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
   def block(): Block = {
     var result: Block = null
-    val p = input.offset
+    val p = input.offset()
     val ws = whitespaceNoBreak()
     if (check("{")) {
       val blkArgs = Option(blockArgs())
-      val mixeds = several[ListBuffer[TemplateTree], ListBuffer[ListBuffer[TemplateTree]]](mixed _)
+      val mixeds = several[ListBuffer[TemplateTree], ListBuffer[ListBuffer[TemplateTree]]](mixed)
       accept("}")
       // TODO - not use flatten here (if it's a performance problem)
       result = position(Block(ws, blkArgs, mixeds.flatten), p)
@@ -521,7 +520,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   def caseExpression(): TemplateTree = {
     var result: TemplateTree = null
 
-    val wspos = input.offset
+    val wspos = input.offset()
     val ws = whitespace()
     val p = input.offset()
     if (check("case ")) {
@@ -545,7 +544,6 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   def matchExpOrSafeExpOrExpr(): Display = {
-    val resetPosition = input.offset
     val result =
       expression() match {
         case null => safeExpression()
@@ -554,7 +552,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
     if (result != null) {
       val exprs = result.exp.parts.asInstanceOf[ListBuffer[ScalaExpPart]]
-      val mpos = input.offset
+      val mpos = input.offset()
       val ws = whitespaceNoBreak()
       if (check("match")) {
         val m = position(Simple(ws + "match"), mpos)
@@ -576,7 +574,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
   def forExpression(): Display = {
     var result: Display = null
-    val p = input.offset
+    val p = input.offset()
     if (check("@for")) {
       val parens = parentheses()
       if (parens != null) {
@@ -596,7 +594,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   def safeExpression(): Display = {
     if (check("@(")) {
       input.regress(1)
-      val p = input.offset
+      val p = input.offset()
       Display(ScalaExp(ListBuffer(position(Simple(parentheses()), p))))
     } else null
   }
@@ -605,10 +603,10 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     def single(): String = {
       if (check("@@")) "@"
       else if (check("@}")) "}"
-      else if (!input.isEOF() && input() != '@' && input() != '}' && input() != '{') any()
+      else if (!input.isEOF && input() != '@' && input() != '}' && input() != '{') any()
       else null
     }
-    val p = input.offset
+    val p = input.offset()
     var result: Plain = null
     var part = single()
     if (part != null) {
@@ -617,7 +615,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
         sb.append(part)
         part = single()
       }
-      result = position(Plain(sb.toString()), p)
+      result = position(Plain(sb.toString), p)
     }
 
     result
@@ -626,10 +624,10 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   def expression(): Display = {
     var result: Display = null
     if (check("@")) {
-      val pos = input.offset
+      val pos = input.offset()
       val code = methodCall()
       if (code != null) {
-        val parts = several[ScalaExpPart, ListBuffer[ScalaExpPart]](expressionPart _)
+        val parts = several[ScalaExpPart, ListBuffer[ScalaExpPart]](expressionPart)
         parts.prepend(position(Simple(code), pos))
         result = Display(ScalaExp(parts))
       } else input.regressTo(pos - 1) // don't consume the @
@@ -642,23 +640,22 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     val name = identifier()
     if (name != null) {
       val sb = new StringBuffer(name)
-      sb.append(Option(squareBrackets) getOrElse "")
-      sb.append(Option(parentheses) getOrElse "")
-      sb.toString()
+      sb.append(Option(squareBrackets()) getOrElse "")
+      sb.append(Option(parentheses()) getOrElse "")
+      sb.toString
     } else null
   }
 
   def expressionPart(): ScalaExpPart = {
     def simpleParens() = {
-      val p = input.offset
+      val p = input.offset()
       val parens = parentheses()
       if (parens != null) position(Simple(parens), p)
       else null
     }
 
     def wsThenScalaBlockChained() = {
-      val reset = input.offset
-      val ws = whitespaceNoBreak()
+      val reset = input.offset()
       val chained = scalaBlockChained()
       if (chained eq null) input.regressTo(reset)
       chained
@@ -669,7 +666,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
         case null => wsThenScalaBlockChained() match {
           case null => elseIfCall() match {
             case null => elseCall() match {
-              case null =>simpleParens
+              case null =>simpleParens()
               case x => x
             }
             case x => x
@@ -692,7 +689,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   // varies from original parser in that it can accept a trailing '.'
   def chainedMethods(): Simple = {
     def inclusiveDot(): Simple = {
-      val p = input.offset
+      val p = input.offset()
       if (check(".")) {
         val sb = new StringBuffer(".")
 
@@ -712,7 +709,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
           }
           matchMethodCall = !matchMethodCall
         }
-        position(Simple(sb.toString()), p)
+        position(Simple(sb.toString), p)
       } else null
     }
 
@@ -720,7 +717,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     // We know we must start with a methodCall, so try to parse one.
     // If it exceeds, enter a loop trying to parse a dot and methodcall in each iteration.
     def exclusiveDot(): Simple = {
-      val p = input.offset
+      val p = input.offset()
       var result: Simple = null
       if (check(".")) {
         val firstMethodCall = methodCall()
@@ -728,7 +725,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
           val sb = new StringBuffer("." + firstMethodCall)
           var done = false
           while (!done) {
-            val reset = input.offset
+            val reset = input.offset()
             var nextLink: String = null
             if (check(".")) {
               methodCall() match {
@@ -738,18 +735,16 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
             }
 
             nextLink match {
-              case null => {
+              case null =>
                 done = true
                 input.regressTo(reset)
-              }
-              case _ => {
+              case _ =>
                 sb.append(".")
                 sb.append(nextLink)
-              }
             }
           }
 
-          result = position(Simple(sb.toString()), p)
+          result = position(Simple(sb.toString), p)
         } else input.regressTo(p)
       }
 
@@ -763,12 +758,12 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   def elseIfCall(): Simple = {
-    val reset = input.offset
+    val reset = input.offset()
     whitespaceNoBreak()
-    val p = input.offset
+    val p = input.offset()
     if (check("else if")) {
       whitespaceNoBreak()
-      val args = several[String, ArrayBuffer[String]](parentheses _)
+      val args = several[String, ArrayBuffer[String]](parentheses)
       position(Simple("else if" + args.mkString(",")), p)
     } else {
       input.regressTo(reset)
@@ -777,9 +772,9 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   def elseCall(): Simple = {
-    val reset = input.offset
+    val reset = input.offset()
     whitespaceNoBreak()
-    val p = input.offset
+    val p = input.offset()
     if (check("else")) {
       whitespaceNoBreak()
       position(Simple("else"), p)
@@ -791,7 +786,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
   def template(): Template = {
     var result: Template = null
-    val resetPosition = input.offset
+    val resetPosition = input.offset()
     val templDecl = templateDeclaration()
     if (templDecl != null) {
        anyUntil(c => c != ' ' && c != '\t', inclusive = false)
@@ -812,16 +807,16 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
   def templateDeclaration(): (PosString, PosString) = {
     if (check("@")) {
-      val namepos = input.offset
+      val namepos = input.offset()
       val name = identifier() match {
         case null => null
         case id => position(PosString(id), namepos)
       }
 
       if (name != null) {
-        val paramspos = input.offset
-        val types = Option(squareBrackets) getOrElse PosString("")
-        val args = several[String, ArrayBuffer[String]](parentheses _)
+        val paramspos = input.offset()
+        val types = Option(squareBrackets()) getOrElse PosString("")
+        val args = several[String, ArrayBuffer[String]](parentheses)
         val params = position(PosString(types + args.mkString), paramspos)
         if (params != null)
           return (name, params)
@@ -852,7 +847,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
             if (mix != null) mixeds ++= mix
             else {
               // check for an invalid '@' symbol, and just skip it so we can continue the parse
-              val pos = input.offset
+              val pos = input.offset()
               if (check("@")) error("Invalid '@' symbol", pos)
               else done = true
             }
@@ -865,7 +860,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   def extraImports(): Seq[Simple] = {
-    var resetPosition = input.offset
+    var resetPosition = input.offset()
     val imports = new ArrayBuffer[Simple]
 
     lastComment()
@@ -875,7 +870,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       val importExp = importExpression()
       if (importExp ne null) {
         imports += importExp
-        resetPosition = input.offset
+        resetPosition = input.offset()
         lastComment()
       } else {
         done = true
@@ -891,8 +886,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     * Parse the template arguments.
     */
   private def templateArgs(): String = {
-    val result = several[String, ArrayBuffer[String]](parentheses _)
-    if (result.length > 0)
+    val result = several[String, ArrayBuffer[String]](parentheses)
+    if (result.nonEmpty)
       result.mkString
     else
       null
@@ -904,7 +899,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   private def maybeTemplateArgs(): Option[PosString] = {
     if (check("@(")) {
       input.regress(1)
-      val p = input.offset
+      val p = input.offset()
       val args = templateArgs()
       if (args != null) Some(position(PosString(args), p))
       else None
@@ -917,7 +912,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   private def constructorArgs(): PosString = {
     if (check("@this(")) {
       input.regress(1)
-      val p = input.offset
+      val p = input.offset()
       val args = templateArgs()
       if (args != null) position(PosString(args), p)
       else null
@@ -949,7 +944,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
     val template = Template(PosString(""), constructor, argsComment, args.getOrElse(PosString("()")), topImports, imports, localDefs, templates, mixeds)
 
-    if (errorStack.length == 0)
+    if (errorStack.isEmpty)
       Success(template, input)
     else
       Error(template, input, errorStack.toList)
@@ -957,7 +952,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   def mkRegressionStatisticsString() {
-    val a = input.regressionStatistics.toArray.sortBy { case (m, (c, a)) => c }
+    val a = input.regressionStatistics.toArray.sortBy { case (_, (c, _)) => c }
     a.mkString("\n")
   }
 
