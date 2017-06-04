@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import scala.Option;
 import scala.collection.JavaConverters$;
 import scala.collection.Seq;
 import scala.io.Codec;
@@ -38,8 +39,10 @@ public class TwirlCompiler {
       Collection<String> additionalImports, List<String> constructorAnnotations, Codec codec, boolean inclusiveDot) {
     Seq<String> scalaAdditionalImports = JavaConverters$.MODULE$.asScalaBufferConverter(new ArrayList<String>(additionalImports)).asScala();
     Seq<String> scalaConstructorAnnotations = JavaConverters$.MODULE$.asScalaBufferConverter(constructorAnnotations).asScala();
-    return Optional.ofNullable(play.twirl.compiler.TwirlCompiler.compile(source, sourceDirectory, generatedDirectory,
-        formatterType, scalaAdditionalImports, scalaConstructorAnnotations, codec, inclusiveDot).getOrElse(null));
+
+    Option<File> option = play.twirl.compiler.TwirlCompiler.compile(source, sourceDirectory, generatedDirectory,
+        formatterType, scalaAdditionalImports, scalaConstructorAnnotations, codec, inclusiveDot);
+    return Optional.ofNullable(option.nonEmpty() ? option.get() : null);
   }
 
 }

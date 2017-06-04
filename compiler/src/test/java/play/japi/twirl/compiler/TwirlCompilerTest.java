@@ -28,6 +28,10 @@ public class TwirlCompilerTest {
     Optional<File> result = TwirlCompiler.compile(source, sourceDirectory, generatedDirectory, "play.twirl.api.HtmlFormat",
         TwirlCompiler.DEFAULT_IMPORTS, new ArrayList<String>());
     assertTrue(result.isPresent());
+
+    Optional<File> recompilationResult = TwirlCompiler.compile(source, sourceDirectory, generatedDirectory, "play.twirl.api.HtmlFormat",
+        TwirlCompiler.DEFAULT_IMPORTS, new ArrayList<String>());
+    assertFalse(recompilationResult.isPresent());
   }
 
   private static void deleteRecursively(File directory) {
