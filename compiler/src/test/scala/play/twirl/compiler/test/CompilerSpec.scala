@@ -218,6 +218,13 @@ class CompilerSpec extends WordSpec with MustMatchers {
     hello.static("twirl", "something-else").toString.trim must be("twirl")
   }
 
+  "compile successfully (complex if without brackets)" in {
+    val helper = newCompilerHelper
+    val hello = helper.compile[((String, String) => Html)]("ifWithoutBracketsComplex.scala.html", "html.ifWithoutBracketsComplex")
+    hello.static("twirl", "play").toString.trim must include("""<header class="play-twirl">""")
+    hello.static("twirl", "something-else").toString.trim must include("""<header class="twirl">""")
+  }
+
 }
 
 object Helper {
