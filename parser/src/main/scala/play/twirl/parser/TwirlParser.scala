@@ -656,6 +656,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
     def wsThenScalaBlockChained() = {
       val reset = input.offset()
+      whitespaceNoBreak()
       val chained = scalaBlockChained()
       if (chained eq null) input.regressTo(reset)
       chained
