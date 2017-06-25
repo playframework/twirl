@@ -1,0 +1,19 @@
+@(name:String, surname: String)
+
+@main(content: Html) = {
+    <div>@content</div>
+}
+
+@link(path: String, page: Int) = @{
+    s"$path/$page"
+}
+
+@header(p1: String, p2: String) = {
+    <header class="@if(p1 == "twirl") @{if(p2 == "play") "play-twirl" else "twirl"}">
+        @link(p1, 0)
+    </header>
+}
+
+@main {
+    @header(name, surname)
+}
