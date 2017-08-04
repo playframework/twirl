@@ -25,10 +25,9 @@ object Import {
 object SbtTwirl extends AutoPlugin {
 
   import Import.TwirlKeys._
+  import sbt.KeyRanks.BSetting
 
   val autoImport = Import
-
-  import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
 
   override def requires = sbt.plugins.JvmPlugin
 
@@ -74,11 +73,17 @@ object SbtTwirl extends AutoPlugin {
   )
 
   def dependencySettings = Def.settings(
-    // Task is undefined if not a ScalaJSPlugin
-    isScalaJSProject := (isScalaJSProject ?? false).value,
     twirlVersion := readResourceProperty("twirl.version.properties", "twirl.api.version"),
-    // %%% will be the same as %% for normal projects
-    libraryDependencies += "com.typesafe.play" %%% "twirl-api" % twirlVersion.value
+    libraryDependencies += {
+      val crossVer = crossVersion.value
+      val isScalaJS = CrossVersion(crossVer, scalaVersion.value, scalaBinaryVersion.value) match {
+        case Some(f) => f("").contains("_sjs0.6") // detect ScalaJS CrossVersion
+        case None => false
+      }
+      // TODO: use %%% from sbt-crossproject when we add support for scalajs 1.0
+      val baseModuleID = "com.typesafe.play" %% "twirl-api" % twirlVersion.value
+      if (isScalaJS) baseModuleID cross crossVer else baseModuleID
+    }
   )
 
   def scalacEncoding(options: Seq[String]): String = {
