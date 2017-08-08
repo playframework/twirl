@@ -67,8 +67,6 @@ lazy val plugin = project
       name := "sbt-twirl",
       organization := "com.typesafe.sbt",
       libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test",
-      // Plugin for %%%
-      addSbtPlugin("org.scala-js" % "sbt-scalajs" % scalaJSVersion),
       resourceGenerators in Compile += generateVersionFile.taskValue,
       scriptedDependencies := {
         scriptedDependencies.value
