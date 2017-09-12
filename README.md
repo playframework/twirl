@@ -1,4 +1,4 @@
-# Twirl [![Latest version](https://index.scala-lang.org/playframework/twirl/twirl-api/latest.svg?color=orange)](https://index.scala-lang.org/playframework/twirl/twirl-api)
+# Twirl [![Latest version](https://index.scala-lang.org/playframework/twirl/twirl-api/latest.svg?color=orange)](https://index.scala-lang.org/playframework/twirl/twirl-api) [![Build Status](https://travis-ci.org/playframework/twirl.svg?branch=v1.1.0)](https://travis-ci.org/playframework/twirl)
 
 Twirl is the [Play][play-site] [template engine][docs].
 
