@@ -3,7 +3,10 @@ dist: trusty
 sudo: false
 group: beta
 script:
-- sbt +test +publishLocal +plugin/test +plugin/scripted
+- sbt +test
+- sbt +publishLocal
+- sbt 'project plugin' +test
+- sbt 'project plugin' +scripted
 - cd docs && sbt test validateDocs
 jdk:
 - oraclejdk8
