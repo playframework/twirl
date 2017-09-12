@@ -7,7 +7,7 @@ import sbt._
 import play.twirl.compiler._
 import scala.io.Codec
 
-object TemplateCompiler {
+object TemplateCompiler extends TemplateCompilerErrorHandler {
   @deprecated("Use other compile method", "1.2.0")
   def compile(
     sourceDirectories: Seq[File],
@@ -67,14 +67,5 @@ object TemplateCompiler {
 
   def formatImports(templateImports: Seq[String], extension: String): Seq[String] = {
     templateImports.map(_.replace("%format%", extension))
-  }
-
-  def handleError(log: Logger, codec: Codec): PartialFunction[Throwable, Nothing] = {
-    case TemplateCompilationError(source, message, line, column) =>
-      val exception = TemplateProblem.exception(source, codec, message, line, column)
-      val reporter = new LoggerReporter(10, log)
-      exception.problems foreach { p => reporter.display(p.position, p.message, p.severity) }
-      throw exception
-    case e => throw e
   }
 }

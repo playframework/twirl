@@ -1,6 +1,6 @@
 import interplay.ScalaVersions._
 
-val scalatest = "3.0.3"
+val scalatest = "3.0.4"
 
 lazy val twirl = project
     .in(file("."))
