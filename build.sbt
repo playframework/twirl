@@ -5,11 +5,12 @@ val scalatest = "3.0.4"
 lazy val twirl = project
     .in(file("."))
     .enablePlugins(PlayRootProject)
+    .enablePlugins(CrossPerProjectPlugin)
     .settings(
       scalaVersion := scala210,
       crossScalaVersions := List(scalaVersion.value, scala211, scala212)
     )
-    .aggregate(apiJvm, apiJs, parser, compiler)
+    .aggregate(apiJvm, apiJs, parser, compiler, plugin)
 
 lazy val api = crossProject
     .in(file("api"))
