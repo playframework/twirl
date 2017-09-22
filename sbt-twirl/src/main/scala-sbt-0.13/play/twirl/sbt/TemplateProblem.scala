@@ -63,6 +63,16 @@ object TemplateProblem {
     val sourceFile: Maybe[File] = maybe(source)
 
     val sourcePath: Maybe[String] = maybe { source map (_.getCanonicalPath) }
+
+    override def toString: String = {
+      val stringBuilder = new StringBuilder
+
+      if (sourcePath.isDefined) stringBuilder.append(sourcePath.get)
+      if (line.isDefined) stringBuilder.append(":").append(line.get)
+      if (offset.isDefined) stringBuilder.append(":").append(offset.get)
+
+      stringBuilder.toString()
+    }
   }
 
   object TemplateMapping {
