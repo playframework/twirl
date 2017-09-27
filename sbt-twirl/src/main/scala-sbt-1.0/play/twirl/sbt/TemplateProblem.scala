@@ -63,6 +63,16 @@ object TemplateProblem {
     val sourceFile: java.util.Optional[File] = toJava(source)
 
     val sourcePath: java.util.Optional[String] = toJava { source map (_.getCanonicalPath) }
+
+    override def toString: String = {
+      val stringBuilder = new StringBuilder
+
+      if (sourcePath.isPresent) stringBuilder.append(sourcePath.get)
+      if (line.isPresent) stringBuilder.append(":").append(line.get)
+      if (offset.isPresent) stringBuilder.append(":").append(offset.get)
+
+      stringBuilder.toString()
+    }
   }
 
   object TemplateMapping {
