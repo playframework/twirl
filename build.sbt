@@ -1,4 +1,3 @@
-import ReleaseTransformations._
 import interplay.ScalaVersions._
 
 val scalatest = "3.0.4"
@@ -9,23 +8,8 @@ lazy val twirl = project
     .enablePlugins(CrossPerProjectPlugin)
     .settings(
       scalaVersion := scala210,
-      crossScalaVersions := List(scalaVersion.value, scala211, scala212)
-    )
-    .settings(
-      releaseCrossBuild := false,
-      releaseProcess := Seq[ReleaseStep](
-        checkSnapshotDependencies,
-        inquireVersions,
-        runClean,
-        releaseStepCommandAndRemaining("+test"),
-        setReleaseVersion,
-        commitReleaseVersion,
-        tagRelease,
-        releaseStepCommandAndRemaining("+publishSigned"),
-        setNextVersion,
-        commitNextVersion,
-        pushChanges
-      )
+      crossScalaVersions := List(scalaVersion.value, scala211, scala212),
+      releaseCrossBuild := false
     )
     .aggregate(apiJvm, apiJs, parser, compiler, plugin)
 
