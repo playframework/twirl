@@ -19,7 +19,7 @@ class TemplatePositionSpec extends WordSpec with MustMatchers with Inspectors {
         val location = TemplateMapping.Location(line = 10, column = 2, offset = 22, content = "some content")
         val tp = new TemplatePosition(Option(file), Option(location))
 
-        tp.toString mustBe "/some/path/file.scala.html:10:22"
+        tp.toString mustBe "/some/path/file.scala.html:10\nsome content"
       }
 
       "not have the source path when it is empty" in {
@@ -44,19 +44,27 @@ class TemplatePositionSpec extends WordSpec with MustMatchers with Inspectors {
         tp.toString mustBe "/some/path/file.scala.html"
       }
 
-      "have offset if present" in {
+      "have line content if present" in {
         val file = new File("/some/path/file.scala.html")
         val location = TemplateMapping.Location(line = 10, column = 2, offset = 22, content = "some content")
         val tp = new TemplatePosition(Option(file), Option(location))
 
-        tp.toString must include("22")
+        tp.toString must include("some content")
       }
 
-      "not have offset when it is empty" in {
+      "not have line content when it is missing" in {
         val file = new File("/some/path/file.scala.html")
         val tp = new TemplatePosition(Option(file), None /* means no location for the error, then no offset */)
 
         tp.toString mustBe "/some/path/file.scala.html"
+      }
+
+      "not have line content when it is empty" in {
+        val file = new File("/some/path/file.scala.html")
+        val location = TemplateMapping.Location(line = 10, column = 2, offset = 22, content = "")
+        val tp = new TemplatePosition(Option(file), Option(location))
+
+        tp.toString mustBe "/some/path/file.scala.html:10"
       }
     }
   }
