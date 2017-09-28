@@ -69,7 +69,7 @@ object TemplateProblem {
 
       if (sourcePath.isPresent) stringBuilder.append(sourcePath.get)
       if (line.isPresent) stringBuilder.append(":").append(line.get)
-      if (offset.isPresent) stringBuilder.append(":").append(offset.get)
+      if (lineContent.nonEmpty) stringBuilder.append("\n").append(lineContent)
 
       stringBuilder.toString()
     }
