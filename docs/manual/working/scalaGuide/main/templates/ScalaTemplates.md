@@ -84,6 +84,16 @@ Or even several parameter groups:
 
 @[curried-parameters](code/scalaguide/templates/curriedParameters.scala.html)
 
+### Defining an implicit Requests in Templates
+
+You can define implicit parameters for a template too:
+
+```
+@(user: models.User)(implicit requestHeader: RequestHeader, messagesProvider: MessagesProvider)
+```
+
+Many template helpers expect an implicit value to be in scope. For example, Cross-Site Request Forgery (CSRF) protection [needs a RequestHeader](ScalaCsrf#Defining-an-implicit-Requests-in-Templates) and Form Helpers [need a MessageProvider](ScalaForms#Passing-MessagesProvider-to-Form-Helpers).
+
 ## Template constructor
 
 By default, a template is generated as a static function that can be invoked in any context.  If your template has dependencies on components, such as the messages API, you may find it easier to inject it with the components (and other templates) that it needs, and then you can inject that template into the controllers that use it.
