@@ -2,24 +2,25 @@ import interplay.ScalaVersions._
 
 val scalatest = "3.0.4"
 
+val scala213 = "2.13.0-M2"
+
+val commonSettings = Seq(
+  scalaVersion := scala210,
+  crossScalaVersions := Seq(scalaVersion.value, scala211, scala212, scala213)
+)
+
 lazy val twirl = project
     .in(file("."))
     .enablePlugins(PlayRootProject)
     .enablePlugins(CrossPerProjectPlugin)
-    .settings(
-      scalaVersion := scala210,
-      crossScalaVersions := List(scalaVersion.value, scala211, scala212),
-      releaseCrossBuild := false
-    )
+    .settings(commonSettings: _*)
+    .settings(releaseCrossBuild := false)
     .aggregate(apiJvm, apiJs, parser, compiler, plugin)
 
 lazy val api = crossProject
     .in(file("api"))
     .enablePlugins(PlayLibrary, Playdoc)
-    .settings(
-      scalaVersion := scala210,
-      crossScalaVersions := List(scalaVersion.value, scala211, scala212)
-    )
+    .settings(commonSettings: _*)
     .settings(
       name := "twirl-api",
       libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
@@ -35,10 +36,7 @@ lazy val apiJs = api.js
 lazy val parser = project
     .in(file("parser"))
     .enablePlugins(PlayLibrary)
-    .settings(
-      scalaVersion := scala210,
-      crossScalaVersions := List(scalaVersion.value, scala211, scala212)
-    )
+    .settings(commonSettings: _*)
     .settings(
       name := "twirl-parser",
       libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
@@ -50,10 +48,7 @@ lazy val compiler = project
     .in(file("compiler"))
     .enablePlugins(PlayLibrary)
     .dependsOn(apiJvm, parser % "compile;test->test")
-    .settings(
-      scalaVersion := scala210,
-      crossScalaVersions := List(scalaVersion.value, scala211, scala212)
-    )
+    .settings(commonSettings: _*)
     .settings(
       name := "twirl-compiler",
       libraryDependencies += scalaCompiler(scalaVersion.value),
@@ -101,7 +96,7 @@ def generateVersionFile = Def.task {
 def scalaCompiler(version: String) = "org.scala-lang" % "scala-compiler" % version
 
 def scalaParserCombinators(scalaVersion: String) =
-  whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4" % "optional")
+  whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6" % "optional")
 
 def scalaXml(scalaVersion: String) =
   whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-xml" % "1.0.6")
