@@ -2,8 +2,6 @@ import interplay.ScalaVersions._
 
 val scalatest = "3.0.4"
 
-val scala213 = "2.13.0-M2"
-
 val commonSettings = Seq(
   scalaVersion := scala210,
   crossScalaVersions := Seq(scalaVersion.value, scala211, scala212, scala213)
