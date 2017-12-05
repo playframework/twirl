@@ -55,8 +55,8 @@ import scala.util.parsing.input.OffsetPosition
  *   templateDeclaration : '@' identifier squareBrackets? parentheses*
  *   localDef : templateDeclaration (' ' | '\t')* '=' (' ' | '\t') scalaBlock
  *   template : templateDeclaration (' ' | '\t')* '=' (' ' | '\t') '{' templateContent '}'
- *   mixed : (comment | scalaBlockDisplayed | forExpression | matchExpOrSafeExpOrExpr | caseExpression | plain) | ('{' mixed* '}')
- *   matchExpOrSafeExpOrExpr : (expression | safeExpression) (whitespaceNoBreak 'match' block)?
+ *   mixed : (comment | scalaBlockDisplayed | forExpression | matchExpOrSafeExpOrExpr | plain) | ('{' mixed* '}')
+ *   matchExpOrSafeExpOrExpr : (expression | safeExpression) (whitespaceNoBreak 'match' matchBlock)?
  *   scalaBlockDisplayed : scalaBlock
  *   scalaBlockChained : scalaBlock
  *   scalaBlock : '@' brackets
@@ -74,6 +74,7 @@ import scala.util.parsing.input.OffsetPosition
  *   methodCall : identifier squareBrackets? parentheses?
  *   blockArgs : [^'=>' '\n']* '=>'
  *   block : whitespaceNoBreak? '{' blockArgs? mixed* '}'
+ *   matchBlock : whitespaceNoBreak? '{' blockArgs? caseExpression+ '}'
  *   brackets : '{' (brackets | [^'}'])* '}'
  *   comment : '@*' [^'*@']* '*@'
  *   parentheses : '(' (parentheses | [^')'])* ')'
@@ -341,6 +342,12 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     ab
   }
 
+  def atLeastOne[T, BufferType <: mutable.Buffer[T]](parser: () => T, zeroErrorMessage: String, provided: BufferType = null)(implicit manifest: Manifest[BufferType]): BufferType = {
+    val ab = several(parser, provided)
+    if (ab.isEmpty) error(zeroErrorMessage)
+    ab
+  }
+
   def parentheses(): String = recursiveTag("(", ")", allowStringLiterals = true)
 
   def squareBrackets(): String = recursiveTag("[", "]")
@@ -435,18 +442,15 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   def mixed(): ListBuffer[TemplateTree] = {
-    // parses: comment | scalaBlockDisplayed | forExpression | matchExpOrSafeExprOrExpr | caseExpression | plain
+    // parses: comment | scalaBlockDisplayed | forExpression | matchExpOrSafeExprOrExpr | plain
     def opt1(): ListBuffer[TemplateTree] = {
       val t =
         comment() match {
           case null => scalaBlockDisplayed() match {
             case null => forExpression() match {
               case null => matchExpOrSafeExpOrExpr() match {
-                case null => caseExpression() match {
                   case null => plain()
                   case x => x
-                }
-                case x => x
               }
               case x => x
             }
@@ -500,16 +504,22 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     }
   }
 
-  def block(): Block = {
+  def block(matchBlock: Boolean = false): Block = {
     var result: Block = null
     val p = input.offset()
     val ws = whitespaceNoBreak()
     if (check("{")) {
       val blkArgs = Option(blockArgs())
-      val mixeds = several[ListBuffer[TemplateTree], ListBuffer[ListBuffer[TemplateTree]]](mixed)
+      val content = {
+        if (matchBlock) {
+          atLeastOne[TemplateTree, ListBuffer[TemplateTree]](caseExpression, "Expected 'case' within 'match' block.")
+        } else {
+          // TODO - not use flatten here (if it's a performance problem)
+          several[ListBuffer[TemplateTree], ListBuffer[ListBuffer[TemplateTree]]](mixed).flatten
+        }
+      }
       accept("}")
-      // TODO - not use flatten here (if it's a performance problem)
-      result = position(Block(ws, blkArgs, mixeds.flatten), p)
+      result = position(Block(ws, blkArgs, content), p)
     } else {
       input.regressTo(p)
     }
@@ -556,7 +566,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       val ws = whitespaceNoBreak()
       if (check("match")) {
         val m = position(Simple(ws + "match"), mpos)
-        val blk = block()
+        val blk = block(matchBlock = true)
         if (blk != null) {
           exprs.append(m)
           exprs.append(blk)

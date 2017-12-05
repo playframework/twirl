@@ -69,6 +69,10 @@ class ParserSpec extends WordSpec with MustMatchers with Inside {
         parseSuccess("complicated.scala.html")
       }
 
+      "pattern matching" in {
+        parseSuccess("patternMatching.scala.html")
+      }
+
       "elseIf.scala.html" in {
         val template = parseTemplate("elseIf.scala.html")
         val node = template.content(1)
@@ -91,6 +95,10 @@ class ParserSpec extends WordSpec with MustMatchers with Inside {
 
       "case.scala.js" in {
         parseSuccess("case.scala.js")
+      }
+
+      "JavaScript case and arrow functions" in {
+        parseSuccess("caseAndArrowFunctions.scala.js")
       }
 
       "import expressions" in {
