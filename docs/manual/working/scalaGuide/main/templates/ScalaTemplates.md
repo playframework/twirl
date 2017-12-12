@@ -169,3 +169,15 @@ For example to output raw HTML:
 The template engine can be used as a [string interpolator](http://docs.scala-lang.org/overviews/core/string-interpolation.html). You basically trade the “@” for a “$”:
 
 @[string-interpolation](code/ScalaTemplates.scala)
+
+## Displaying Scala types
+
+Twirl typically renders values of Scala types by calling `toString` method on them. However, if values are wrapped inside `Option` or collections (`Seq`, `Array`, `TraversableOnce`), Twirl first unwraps the values  and then calls `toString`. 
+
+For example,
+
+@[display-scala-types](code/scalaguide/templates/displayScalaTypes.scala.html)
+
+is rendered in the browser as
+
+[[images/displayScalaTypes.png]]
