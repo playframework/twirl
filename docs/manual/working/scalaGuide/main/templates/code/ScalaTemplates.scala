@@ -147,5 +147,16 @@ object ScalaTemplatesSpec extends Specification {
         body must contain("<foo>")
       }
     }
+
+    "display Scala types" in {
+      val body = html.displayScalaTypes().body
+
+      body must contain("User(Foo,Bar)")
+      body must contain("value inside option")
+      body must not contain("Option(value inside option)")
+      body must contain("firstlast")
+      body must not contain("List")
+      body must contain("helloUser(Foo,Bar)value inside optionfirstlast")
+    }
   }
 }
