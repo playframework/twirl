@@ -1,0 +1,12 @@
+@import scalaguide.templates._
+
+@()
+
+@* #display-scala-types *@
+<ul>
+  <li>@Option("value inside option")</li>
+  <li>@List("first", "last")</li>
+  <li>@User("Foo", "Bar")</li>
+  <li>@List("hello", User("Foo", "Bar"), Option("value inside option"), List("first", "last"))</li>
+</ul>
+@* #display-scala-types *@
