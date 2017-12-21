@@ -44,12 +44,22 @@ private[twirl] object TwirlIO {
   }
 
   /**
+   * Ensure that line breaks are only "\n".
+   *
+   * Windows line breaks are "\r\n" which was affecting the position calculations.
+   */
+  def sanitizeLineBreaks(string: String): String = {
+    if (util.Properties.lineSeparator == "\n") string // Linux
+    else string.replace(util.Properties.lineSeparator, "\n") // Windows
+  }
+
+  /**
    * Read the given stream into a String.
    *
    * Does not close the stream.
    */
   def readStreamAsString(stream: InputStream, codec: Codec = defaultCodec): String = {
-    new String(readStream(stream), codec.name)
+    sanitizeLineBreaks(new String(readStream(stream), codec.name))
   }
 
   /**

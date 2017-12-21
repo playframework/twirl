@@ -193,7 +193,7 @@ object TwirlCompiler {
     resultType: String, formatterType: String, additionalImports: Seq[String], constructorAnnotations: Seq[String],
     inclusiveDot: Boolean) = {
     val templateParser = new TwirlParser(inclusiveDot)
-    templateParser.parse(new String(content, codec.charSet)) match {
+    templateParser.parse(TwirlIO.sanitizeLineBreaks(new String(content, codec.charSet))) match {
       case templateParser.Success(parsed: Template, rest) if rest.atEnd => {
         generateFinalTemplate(absolutePath,
           content,
@@ -376,7 +376,7 @@ package """ :+ packageName :+ """
     val generated = generateCode(packageName, name, root, resultType, formatterType, additionalImports,
       constructorAnnotations)
 
-    Source.finalSource(absolutePath, contents, generated, Hash(contents, additionalImports))
+    Source.finalSource(absolutePath, generated, Hash(contents, additionalImports))
   }
 
   object TemplateAsFunctionCompiler {
@@ -567,7 +567,7 @@ object Source {
 
   import scala.collection.mutable.ListBuffer
 
-  def finalSource(absolutePath: String, contents: Array[Byte], generatedTokens: Seq[Any], hash: String): String = {
+  def finalSource(absolutePath: String, generatedTokens: Seq[Any], hash: String): String = {
     val scalaCode = new StringBuilder
     val positions = ListBuffer.empty[(Int, Int)]
     val lines = ListBuffer.empty[(Int, Int)]

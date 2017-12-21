@@ -48,7 +48,7 @@ class CompilerSpec extends WordSpec with MustMatchers {
       val testParam = "12345"
       val helper = newCompilerHelper
       helper.compile[((String) => Html)]("patternMatching.scala.html", "html.patternMatching").static(testParam).toString.trim must be(
-        """@test
+        TwirlIO.sanitizeLineBreaks("""@test
 @test.length
 @test.length.toInt
 
@@ -57,7 +57,7 @@ class CompilerSpec extends WordSpec with MustMatchers {
 @(test.length + 1)
 @(test.+(3))
 
-5 match @test.length""")
+5 match @test.length"""))
     }
 
     "compile successfully (hello)" in {
@@ -172,7 +172,6 @@ class CompilerSpec extends WordSpec with MustMatchers {
         template("world").body.trim mustBe "Hello 10 world"
       }
 
-
     }
   }
 
@@ -249,29 +248,25 @@ object Helper {
 
     val compiler = {
 
-      def additionalClassPathEntry: Option[String] = Some(
-        Class.forName("play.twirl.compiler.TwirlCompiler").getClassLoader.asInstanceOf[URLClassLoader].getURLs.map(url => new File(url.toURI)).mkString(":"))
-
       val settings = new Settings
-      val scalaObjectSource = Class.forName("scala.Option").getProtectionDomain.getCodeSource
+      val scalaOptionSource = Class.forName("scala.Option").getProtectionDomain.getCodeSource
 
       // is null in Eclipse/OSGI but luckily we don't need it there
-      if (scalaObjectSource != null) {
+      if (scalaOptionSource != null) {
         val compilerPath = Class.forName("scala.tools.nsc.Interpreter").getProtectionDomain.getCodeSource.getLocation
-        val libPath = scalaObjectSource.getLocation
-        val pathList = List(compilerPath, libPath)
-        val origBootclasspath = settings.bootclasspath.value
-        settings.bootclasspath.value = ((origBootclasspath :: pathList) ::: additionalClassPathEntry.toList) mkString File.pathSeparator
+        val libPath = scalaOptionSource.getLocation
+        val twirlCompilerPaths = Class.forName("play.twirl.compiler.TwirlCompiler").getClassLoader.asInstanceOf[URLClassLoader].getURLs
+        val pathList = List(compilerPath, libPath) ++ twirlCompilerPaths
+        val path = pathList.map(url => new File(url.toURI)).mkString(File.pathSeparator)
+        settings.bootclasspath.append(path)
         settings.outdir.value = generatedClasses.getAbsolutePath
       }
 
-      val compiler = new Global(settings, new ConsoleReporter(settings) {
+      new Global(settings, new ConsoleReporter(settings) {
         override def printMessage(pos: Position, msg: String) = {
           compileErrors.append(CompilationError(msg, pos.line, pos.point))
         }
       })
-
-      compiler
     }
 
     class CompiledTemplate[T](className: String) {

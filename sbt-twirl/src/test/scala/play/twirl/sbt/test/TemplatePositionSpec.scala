@@ -14,57 +14,54 @@ class TemplatePositionSpec extends WordSpec with MustMatchers with Inspectors {
 
     "toString" should {
 
-      "have the source path" in {
-        val file = new File("/some/path/file.scala.html")
-        val location = TemplateMapping.Location(line = 10, column = 2, offset = 22, content = "some content")
-        val tp = new TemplatePosition(Option(file), Option(location))
+      val sourceFile = new File("/some/path/file.scala.html")
+      val sourceAbsolutePath = sourceFile.getAbsolutePath // NOTE: Computed like this to work cross-platform (Linux and Windows)
 
-        tp.toString mustBe "/some/path/file.scala.html:10\nsome content"
+      "have the source path" in {
+        val location = TemplateMapping.Location(line = 10, column = 2, offset = 22, content = "some content")
+        val tp = new TemplatePosition(Option(sourceFile), Option(location))
+
+        tp.toString mustBe sourceAbsolutePath + ":10\nsome content"
       }
 
       "not have the source path when it is empty" in {
         val location = TemplateMapping.Location(line = 10, column = 2, offset = 22, content = "some content")
         val tp = new TemplatePosition(None, Option(location))
 
-        tp.toString mustNot include("/some/path/file.scala.html")
+        tp.toString mustNot include(sourceAbsolutePath)
       }
 
       "have line if present" in {
-        val file = new File("/some/path/file.scala.html")
         val location = TemplateMapping.Location(line = 10, column = 2, offset = 22, content = "some content")
-        val tp = new TemplatePosition(Option(file), Option(location))
+        val tp = new TemplatePosition(Option(sourceFile), Option(location))
 
         tp.toString must include("10")
       }
 
       "not have line when it is empty" in {
-        val file = new File("/some/path/file.scala.html")
-        val tp = new TemplatePosition(Option(file), None /* means no location for the error, then no line */)
+        val tp = new TemplatePosition(Option(sourceFile), None /* means no location for the error, then no line */)
 
-        tp.toString mustBe "/some/path/file.scala.html"
+        tp.toString mustBe sourceAbsolutePath
       }
 
       "have line content if present" in {
-        val file = new File("/some/path/file.scala.html")
         val location = TemplateMapping.Location(line = 10, column = 2, offset = 22, content = "some content")
-        val tp = new TemplatePosition(Option(file), Option(location))
+        val tp = new TemplatePosition(Option(sourceFile), Option(location))
 
         tp.toString must include("some content")
       }
 
       "not have line content when it is missing" in {
-        val file = new File("/some/path/file.scala.html")
-        val tp = new TemplatePosition(Option(file), None /* means no location for the error, then no offset */)
+        val tp = new TemplatePosition(Option(sourceFile), None /* means no location for the error, then no offset */)
 
-        tp.toString mustBe "/some/path/file.scala.html"
+        tp.toString mustBe sourceAbsolutePath
       }
 
       "not have line content when it is empty" in {
-        val file = new File("/some/path/file.scala.html")
         val location = TemplateMapping.Location(line = 10, column = 2, offset = 22, content = "")
-        val tp = new TemplatePosition(Option(file), Option(location))
+        val tp = new TemplatePosition(Option(sourceFile), Option(location))
 
-        tp.toString mustBe "/some/path/file.scala.html:10"
+        tp.toString mustBe sourceAbsolutePath + ":10"
       }
     }
   }
