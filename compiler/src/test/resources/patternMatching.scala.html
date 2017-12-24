@@ -24,3 +24,10 @@
 }
 
 @test.length match @@test.length
+
+@test match {
+    case "123" => {[123]}
+    case "12345" => {[12345]}
+    case "1234567" => {[1234567]}
+    case _ => {[_]}
+}

@@ -57,7 +57,25 @@ class CompilerSpec extends WordSpec with MustMatchers {
 @(test.length + 1)
 @(test.+(3))
 
-5 match @test.length"""))
+5 match @test.length
+
+[12345]"""))
+    }
+
+    "fail compilation for patternMatchingNoCase.scala.html" in {
+      val helper = newCompilerHelper
+      the[CompilationError] thrownBy helper.compile[(() => Html)]("patternMatchingNoCase.scala.html", "html.error") must have(
+        'line (3),
+        'column (29)
+      )
+    }
+
+    "fail compilation for patternMatchingInvalidContents.scala.html" in {
+      val helper = newCompilerHelper
+      the[TemplateCompilationError] thrownBy helper.compile[(() => Html)]("patternMatchingInvalidContents.scala.html", "html.error") must have(
+        'line (4),
+        'column (5)
+      )
     }
 
     "compile successfully (hello)" in {
@@ -171,7 +189,6 @@ class CompilerSpec extends WordSpec with MustMatchers {
         val template = helper.compile[String => Html]("injectComments.scala.html", "html.injectComments").inject("Hello", 10)
         template("world").body.trim mustBe "Hello 10 world"
       }
-
     }
   }
 
@@ -223,7 +240,6 @@ class CompilerSpec extends WordSpec with MustMatchers {
     hello.static("twirl", "play").toString.trim must include("""<header class="play-twirl">""")
     hello.static("twirl", "something-else").toString.trim must include("""<header class="twirl">""")
   }
-
 }
 
 object Helper {
@@ -309,6 +325,5 @@ object Helper {
 
       new CompiledTemplate[T](className)
     }
-
   }
 }
