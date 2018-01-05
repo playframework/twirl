@@ -3,6 +3,7 @@ dist: trusty
 sudo: false
 group: beta
 script:
+# Keep the commands here in sync with .appveyor.yml
 - sbt +test
 - sbt +publishLocal
 - sbt 'project plugin' +test
