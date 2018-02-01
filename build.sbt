@@ -10,7 +10,6 @@ val commonSettings = Seq(
 lazy val twirl = project
     .in(file("."))
     .enablePlugins(PlayRootProject)
-    .enablePlugins(CrossPerProjectPlugin)
     .settings(commonSettings: _*)
     .settings(releaseCrossBuild := false)
     .aggregate(apiJvm, apiJs, parser, compiler, plugin)
