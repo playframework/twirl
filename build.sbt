@@ -17,6 +17,7 @@ lazy val twirl = project
 lazy val api = crossProject
     .in(file("api"))
     .enablePlugins(PlayLibrary, Playdoc)
+    .configs(Docs)
     .settings(commonSettings: _*)
     .settings(
       name := "twirl-api",
