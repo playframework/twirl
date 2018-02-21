@@ -6,7 +6,7 @@ object Test extends App {
     assert(template.body == expected, s"Found '$template' but expected '$expected'")
   }
 
-  test(a.b.html.c.render("world"), "\nHello, world.\n")
+  test(a.b.html.c.render("world"), "Hello, world.\n")
 
-  test(html.template.render("42"), "\nAnswer: 42\n")
+  test(html.template.render("42"), "Answer: 42\n")
 }

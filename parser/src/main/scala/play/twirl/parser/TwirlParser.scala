@@ -902,8 +902,13 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       input.regress(1)
       val p = input.offset()
       val args = templateArgs()
-      if (args != null) Some(position(PosString(args), p))
-      else None
+      if (args != null) {
+        val result = position(PosString(args), p)
+        check("\n")
+        Some(result)
+      } else {
+        None
+      }
     } else None
   }
 
