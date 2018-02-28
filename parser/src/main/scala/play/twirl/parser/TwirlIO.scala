@@ -1,11 +1,14 @@
 package play.twirl.parser
 
 import java.io._
+
 import scala.io.Codec
 import java.net.URL
 
+import scala.util.Properties
+
 /**
- * IO utilites for Twirl.
+ * IO utilities for Twirl.
  *
  * This is intentionally not public API.
  */
@@ -49,7 +52,9 @@ private[twirl] object TwirlIO {
    * Does not close the stream.
    */
   def readStreamAsString(stream: InputStream, codec: Codec = defaultCodec): String = {
-    new String(readStream(stream), codec.name)
+    // We need to do a replace of the line separator because in Windows, the line
+    // separator is '\n\r' while in other platforms it is '\n' only.
+    new String(readStream(stream), codec.name).replace(Properties.lineSeparator, "\n")
   }
 
   /**
