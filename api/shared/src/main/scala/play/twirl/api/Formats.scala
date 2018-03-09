@@ -10,7 +10,7 @@ object MimeTypes {
   val TEXT       = "text/plain"
   val HTML       = "text/html"
   val XML        = "application/xml"
-  val JAVASCRIPT = "application/javascript"
+  val JAVASCRIPT = "text/javascript"
 }
 
 object Formats {
