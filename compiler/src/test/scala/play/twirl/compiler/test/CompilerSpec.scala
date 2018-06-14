@@ -10,6 +10,8 @@ import org.scalatest.{ MustMatchers, WordSpec }
 import play.twirl.api.Html
 import play.twirl.parser.TwirlIO
 
+import scala.reflect.internal.util.NoPosition
+
 class CompilerSpec extends WordSpec with MustMatchers {
 
   import Helper._
@@ -266,8 +268,9 @@ object Helper {
       }
 
       val compiler = new Global(settings, new ConsoleReporter(settings) {
-        override def printMessage(pos: Position, msg: String) = {
-          compileErrors.append(CompilationError(msg, pos.line, pos.point))
+        override def printMessage(pos: Position, msg: String) = pos match {
+          case NoPosition => compileErrors.append(CompilationError(msg, 0, 0))
+          case _ => compileErrors.append(CompilationError(msg, pos.line, pos.point))
         }
       })
 
