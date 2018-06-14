@@ -1,12 +1,10 @@
 import interplay.ScalaVersions._
 
-val scalatest = "3.0.5-M1"
-
-val scala213Version = "2.13.0-M3"
+val scalatest = "3.0.5"
 
 val commonSettings = Seq(
   scalaVersion := scala210,
-  crossScalaVersions := Seq(scalaVersion.value, scala211, scala212, scala213Version)
+  crossScalaVersions := Seq(scalaVersion.value, scala211, scala212, scala213)
 )
 
 lazy val twirl = project
@@ -99,7 +97,7 @@ def scalaParserCombinators(scalaVersion: String) =
   whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0" % "optional")
 
 def scalaXml(scalaVersion: String) =
-  whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-xml" % "1.0.6")
+  whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-xml" % "1.1.0")
 
 def whenAtLeast(version: String, major: Int, minor: Int, module: ModuleID): Seq[ModuleID] = {
   CrossVersion.partialVersion(version) match {
