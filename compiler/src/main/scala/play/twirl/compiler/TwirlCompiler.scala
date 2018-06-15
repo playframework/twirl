@@ -387,8 +387,7 @@ package """ :+ packageName :+ """
     // make them synchronized.
 
     import java.io.File
-    import scala.tools.nsc.interactive.{ Response, Global }
-    import scala.tools.nsc.io.AbstractFile
+    import scala.tools.nsc.interactive.Global
     import scala.reflect.internal.util.{ SourceFile, Position, BatchSourceFile }
     import scala.tools.nsc.Settings
     import scala.tools.nsc.reporters.ConsoleReporter

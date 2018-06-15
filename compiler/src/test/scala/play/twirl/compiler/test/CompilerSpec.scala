@@ -10,7 +10,7 @@ import org.scalatest.{ MustMatchers, WordSpec }
 import play.twirl.api.Html
 import play.twirl.parser.TwirlIO
 
-import scala.reflect.internal.util.NoPosition
+import scala.reflect.internal.util.OffsetPosition
 
 class CompilerSpec extends WordSpec with MustMatchers {
 
@@ -240,7 +240,8 @@ object Helper {
     import scala.collection.mutable
     import scala.reflect.internal.util.Position
     import scala.tools.nsc.reporters.ConsoleReporter
-    import scala.tools.nsc.{ Global, Settings }
+    import scala.tools.nsc.Settings
+    import scala.tools.nsc.interactive.Global
 
     val twirlCompiler = TwirlCompiler
 
@@ -267,12 +268,18 @@ object Helper {
         settings.outdir.value = generatedClasses.getAbsolutePath
       }
 
-      val compiler = new Global(settings, new ConsoleReporter(settings) {
+      val consoleReporter = new ConsoleReporter(settings) {
         override def printMessage(pos: Position, msg: String) = pos match {
-          case NoPosition => compileErrors.append(CompilationError(msg, 0, 0))
-          case _ => compileErrors.append(CompilationError(msg, pos.line, pos.point))
+          case p: OffsetPosition =>
+            compileErrors.append(CompilationError(msg, p.line, p.point))
+          case p =>
+            compileErrors.append(CompilationError(msg, p.safeLine, p.pointOrElse(0)))
         }
-      })
+      }
+
+      val compiler = new Global(settings, consoleReporter) {
+        override def forInteractive = false
+      }
 
       compiler
     }
@@ -302,11 +309,12 @@ object Helper {
 
       val mapper = GeneratedSource(generated)
 
-      val run = new compiler.Run
-
       compileErrors.clear()
 
-      run.compile(List(generated.getAbsolutePath))
+      compiler.ask { () =>
+        val run = new compiler.Run
+        run.compile(List(generated.getAbsolutePath))
+      }
 
       compileErrors.headOption.foreach {
         case CompilationError(msg, line, column) => {
