@@ -99,7 +99,7 @@ def scalaParserCombinators(scalaVersion: String) =
   whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0" % "optional")
 
 def scalaXml(scalaVersion: String) =
-  whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-xml" % "1.0.6")
+  whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-xml" % "1.1.0")
 
 def whenAtLeast(version: String, major: Int, minor: Int, module: ModuleID): Seq[ModuleID] = {
   CrossVersion.partialVersion(version) match {
