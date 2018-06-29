@@ -1,4 +1,5 @@
 import interplay.ScalaVersions._
+import sbtcrossproject.crossProject
 
 val scalatest = "3.0.5-M1"
 
@@ -17,7 +18,7 @@ lazy val twirl = project
     .settings(releaseCrossBuild := false)
     .aggregate(apiJvm, apiJs, parser, compiler, plugin)
 
-lazy val api = crossProject
+lazy val api = crossProject(JVMPlatform, JSPlatform)
     .in(file("api"))
     .enablePlugins(PlayLibrary, Playdoc)
     .settings(commonSettings: _*)
