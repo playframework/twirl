@@ -135,7 +135,7 @@ case class GeneratedSource(file: File, codec: Codec = TwirlIO.defaultCodec) exte
     }
   }
 
-  def sync() {
+  def sync(): Unit = {
     if (file.exists && !source.isDefined) {
       file.delete()
     }
@@ -145,7 +145,7 @@ case class GeneratedSource(file: File, codec: Codec = TwirlIO.defaultCodec) exte
 
 case class GeneratedSourceVirtual(path: String) extends AbstractGeneratedSource {
   var _content = ""
-  def setContent(newContent: String) {
+  def setContent(newContent: String): Unit = {
     this._content = newContent
   }
   def content = _content
@@ -548,7 +548,7 @@ package """ :+ packageName :+ """
     object PresentationCompiler extends TreeCreationMethods {
       val global = CompilerInstance.compiler
 
-      def shutdown() {
+      def shutdown(): Unit = {
         global.askShutdown()
       }
     }
@@ -589,7 +589,7 @@ object Source {
           """
   }
 
-  private def serialize(parts: Seq[Any], source: StringBuilder, positions: ListBuffer[(Int, Int)], lines: ListBuffer[(Int, Int)]) {
+  private def serialize(parts: Seq[Any], source: StringBuilder, positions: ListBuffer[(Int, Int)], lines: ListBuffer[(Int, Int)]): Unit = {
     parts.foreach {
       case s: String => source.append(s)
       case Source(code, pos @ OffsetPosition(_, offset)) => {

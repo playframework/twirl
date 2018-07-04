@@ -36,7 +36,7 @@ class Html private[api] (elements: immutable.Seq[Html], text: String, escape: Bo
    * of Strings, if it doesn't, performance actually goes down (measured 10%), due to the fact that the JVM can't
    * optimise the invocation of buildString as well because there are two different possible implementations.
    */
-  override protected def buildString(builder: StringBuilder) {
+  override protected def buildString(builder: StringBuilder): Unit = {
     if (elements.nonEmpty) {
       elements.foreach { e =>
         e.buildString(builder)

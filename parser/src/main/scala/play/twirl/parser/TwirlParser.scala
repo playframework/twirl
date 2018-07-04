@@ -161,7 +161,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     def source(): String = source_
 
     /** Reset the input to have the given contents */
-    def reset(source: String) {
+    def reset(source: String): Unit = {
       offset_ = 0
       source_ = source
       length_ = source.length()
@@ -957,13 +957,13 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
   }
 
-  def mkRegressionStatisticsString() {
+  def mkRegressionStatisticsString(): Unit = {
     val a = input.regressionStatistics.toArray.sortBy { case (_, (c, _)) => c }
     a.mkString("\n")
   }
 
   // TODO - only for debugging purposes, remove before release
-  def setSource(source: String) {
+  def setSource(source: String): Unit = {
     input.reset(source)
   }
 }

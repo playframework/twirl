@@ -33,7 +33,7 @@ trait Content {
  * @tparam A self-type
  */
 abstract class BufferedContent[A <: BufferedContent[A]](protected val elements: immutable.Seq[A], protected val text: String) extends Appendable[A] with Content { this: A =>
-  protected def buildString(builder: StringBuilder) {
+  protected def buildString(builder: StringBuilder): Unit = {
     if (!elements.isEmpty) {
       elements.foreach { e =>
         e.buildString(builder)

@@ -109,7 +109,7 @@ private[twirl] object TwirlIO {
   /**
    * Delete the given directory recursively.
    */
-  def deleteRecursively(dir: File) {
+  def deleteRecursively(dir: File): Unit = {
     if (dir.isDirectory) {
       dir.listFiles().foreach(deleteRecursively)
     }
