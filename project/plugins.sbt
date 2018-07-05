@@ -1,7 +1,7 @@
 addSbtPlugin("com.typesafe.play" % "interplay" % sys.props.get("interplay.version").getOrElse("2.0.2"))
 
 // For the Cross Build
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.23")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.24")
 
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "0.5.0")
 

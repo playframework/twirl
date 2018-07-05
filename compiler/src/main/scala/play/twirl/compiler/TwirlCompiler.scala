@@ -11,7 +11,7 @@ import play.twirl.parser.{TwirlIO, TwirlParser}
 
 object Hash {
 
-  def apply(bytes: Array[Byte], imports: Seq[String]): String = {
+  def apply(bytes: Array[Byte], imports: collection.Seq[String]): String = {
     import java.security.MessageDigest
     val digest = MessageDigest.getInstance("SHA-1")
     digest.reset()
@@ -111,7 +111,7 @@ case class GeneratedSource(file: File, codec: Codec = TwirlIO.defaultCodec) exte
 
   def content = TwirlIO.readFileAsString(file, codec)
 
-  def needRecompilation(imports: Seq[String]): Boolean = !file.exists ||
+  def needRecompilation(imports: collection.Seq[String]): Boolean = !file.exists ||
     // A generated source already exist but
     source.isDefined && ((source.get.lastModified > file.lastModified) || // the source has been modified
       (meta("HASH") != Hash(TwirlIO.readFile(source.get), imports))) // or the hash don't match
@@ -165,7 +165,7 @@ object TwirlCompiler {
   import play.twirl.parser.TreeNodes._
 
   def compile(source: File, sourceDirectory: File, generatedDirectory: File, formatterType: String,
-    additionalImports: Seq[String] = Nil, constructorAnnotations: Seq[String] = Nil, codec: Codec = TwirlIO.defaultCodec,
+    additionalImports: collection.Seq[String] = Nil, constructorAnnotations: collection.Seq[String] = Nil, codec: Codec = TwirlIO.defaultCodec,
     inclusiveDot: Boolean = false) = {
     val resultType = formatterType + ".Appendable"
     val (templateName, generatedSource) = generatedFile(source, codec, sourceDirectory, generatedDirectory, inclusiveDot)
@@ -180,7 +180,7 @@ object TwirlCompiler {
   }
 
   def compileVirtual(content: String, source: File, sourceDirectory: File, resultType: String, formatterType: String,
-    additionalImports: Seq[String] = Nil, constructorAnnotations: Seq[String] = Nil,
+    additionalImports: collection.Seq[String] = Nil, constructorAnnotations: collection.Seq[String] = Nil,
     codec: Codec = TwirlIO.defaultCodec, inclusiveDot: Boolean = false) = {
     val (templateName, generatedSource) = generatedFileVirtual(source, sourceDirectory, inclusiveDot)
     val generated = parseAndGenerateCode(templateName, content.getBytes(codec.charSet), codec, source.getAbsolutePath,
@@ -190,7 +190,7 @@ object TwirlCompiler {
   }
 
   def parseAndGenerateCode(templateName: Array[String], content: Array[Byte], codec: Codec, absolutePath: String,
-    resultType: String, formatterType: String, additionalImports: Seq[String], constructorAnnotations: Seq[String],
+    resultType: String, formatterType: String, additionalImports: collection.Seq[String], constructorAnnotations: collection.Seq[String],
     inclusiveDot: Boolean) = {
     val templateParser = new TwirlParser(inclusiveDot)
     templateParser.parse(new String(content, codec.charSet)) match {
@@ -256,7 +256,7 @@ object TwirlCompiler {
     }
   }
 
-  protected def displayVisitedChildren(children: Seq[Any]): Seq[Any] = {
+  protected def displayVisitedChildren(children: collection.Seq[Any]): collection.Seq[Any] = {
     children.size match {
       case 0 => Nil
       case 1 => Nil :+ "_display_(" :+ children :+ ")"
@@ -271,11 +271,11 @@ object TwirlCompiler {
   private val escapedTripleQuote = "\\\"" * 3
   private val doubleEscapedTripleQuote = "\\\\\"" * 3
   private val tripleQuoteReplacement = escapedTripleQuote + " + \\\"" + doubleEscapedTripleQuote + "\\\" + " + escapedTripleQuote
-  private def quoteAndEscape(text: String): Seq[String] = {
+  private def quoteAndEscape(text: String): collection.Seq[String] = {
     Seq(tripleQuote, text.replaceAll(tripleQuote, tripleQuoteReplacement), tripleQuote)
   }
 
-  def visit(elem: Seq[TemplateTree], previous: Seq[Any]): Seq[Any] = {
+  def visit(elem: collection.Seq[TemplateTree], previous: collection.Seq[Any]): collection.Seq[Any] = {
     elem.toList match {
       case head :: tail =>
         visit(tail, head match {
@@ -300,7 +300,7 @@ object TwirlCompiler {
     }
   }
 
-  def templateCode(template: Template, resultType: String): Seq[Any] = {
+  def templateCode(template: Template, resultType: String): collection.Seq[Any] = {
 
     val defs = (template.sub ++ template.defs).map { i =>
       i match {
@@ -320,7 +320,7 @@ object TwirlCompiler {
   }
 
   def generateCode(packageName: String, name: String, root: Template, resultType: String, formatterType: String,
-    additionalImports: Seq[String], constructorAnnotations: Seq[String]): Seq[Any] = {
+    additionalImports: collection.Seq[String], constructorAnnotations: collection.Seq[String]): collection.Seq[Any] = {
     val (renderCall, f, templateType) = TemplateAsFunctionCompiler.getFunctionMapping(
       root.params.str,
       resultType)
@@ -366,13 +366,13 @@ package """ :+ packageName :+ """
     generated
   }
 
-  def formatImports(imports: Seq[Simple]): Seq[Any] = {
+  def formatImports(imports: collection.Seq[Simple]): collection.Seq[Any] = {
     imports.map(i => Seq(Source(i.code, i.pos), "\n"))
   }
 
   def generateFinalTemplate(absolutePath: String, contents: Array[Byte], packageName: String, name: String,
-    root: Template, resultType: String, formatterType: String, additionalImports: Seq[String],
-    constructorAnnotations: Seq[String]): String = {
+    root: Template, resultType: String, formatterType: String, additionalImports: collection.Seq[String],
+    constructorAnnotations: collection.Seq[String]): String = {
     val generated = generateCode(packageName, name, root, resultType, formatterType, additionalImports,
       constructorAnnotations)
 
@@ -567,7 +567,7 @@ object Source {
 
   import scala.collection.mutable.ListBuffer
 
-  def finalSource(absolutePath: String, contents: Array[Byte], generatedTokens: Seq[Any], hash: String): String = {
+  def finalSource(absolutePath: String, contents: Array[Byte], generatedTokens: collection.Seq[Any], hash: String): String = {
     val scalaCode = new StringBuilder
     val positions = ListBuffer.empty[(Int, Int)]
     val lines = ListBuffer.empty[(Int, Int)]
@@ -589,7 +589,7 @@ object Source {
           """
   }
 
-  private def serialize(parts: Seq[Any], source: StringBuilder, positions: ListBuffer[(Int, Int)], lines: ListBuffer[(Int, Int)]): Unit = {
+  private def serialize(parts: collection.Seq[Any], source: StringBuilder, positions: ListBuffer[(Int, Int)], lines: ListBuffer[(Int, Int)]): Unit = {
     parts.foreach {
       case s: String => source.append(s)
       case Source(code, pos @ OffsetPosition(_, offset)) => {
@@ -599,7 +599,7 @@ object Source {
         source.append(code)
       }
       case Source(code, NoPosition) => source.append(code)
-      case s: Seq[any] => serialize(s, source, positions, lines)
+      case s: collection.Seq[any] => serialize(s, source, positions, lines)
     }
   }
 

@@ -22,8 +22,8 @@ case class BaseScalaTemplate[T <: Appendable[T], F <: Format[T]](format: F) {
       case None => format.empty
       case Some(v) => _display_(v)
       case escapeds: immutable.Seq[_] => format.fill(escapeds.map(_display_))
-      case escapeds: TraversableOnce[_] => format.fill(escapeds.map(_display_).to[immutable.Seq])
-      case escapeds: Array[_] => format.fill(escapeds.view.map(_display_).to[immutable.Seq])
+      case escapeds: TraversableOnce[_] => format.fill(escapeds.map(_display_).toList)
+      case escapeds: Array[_] => format.fill(escapeds.view.map(_display_).toList)
       case string: String => format.escape(string)
       case v if v != null => format.escape(v.toString)
       case _ => format.empty

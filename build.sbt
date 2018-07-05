@@ -1,9 +1,9 @@
 import interplay.ScalaVersions._
 import sbtcrossproject.crossProject
 
-val scalatest = "3.0.5-M1"
+val scalatest = "3.0.6-SNAP1"
 
-val scala213Version = "2.13.0-M3"
+val scala213Version = "2.13.0-M4"
 
 val commonSettings = Seq(
   scalaVersion := scala210,
@@ -97,7 +97,7 @@ def generateVersionFile = Def.task {
 def scalaCompiler(version: String) = "org.scala-lang" % "scala-compiler" % version
 
 def scalaParserCombinators(scalaVersion: String) =
-  whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0" % "optional")
+  whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1" % "optional")
 
 def scalaXml(scalaVersion: String) =
   whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-xml" % "1.1.0")
