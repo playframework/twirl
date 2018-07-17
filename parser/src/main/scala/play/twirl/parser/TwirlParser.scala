@@ -827,7 +827,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     null
   }
 
-  def templateContent(): (Seq[Simple], Seq[Def], Seq[Template], Seq[TemplateTree]) = {
+  def templateContent(): (collection.Seq[Simple], collection.Seq[Def], collection.Seq[Template], collection.Seq[TemplateTree]) = {
     val imports = new ArrayBuffer[Simple]
     val localDefs = new ArrayBuffer[Def]
     val templates = new ArrayBuffer[Template]
@@ -860,7 +860,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     (imports, localDefs, templates, mixeds)
   }
 
-  def extraImports(): Seq[Simple] = {
+  def extraImports(): collection.Seq[Simple] = {
     var resetPosition = input.offset()
     val imports = new ArrayBuffer[Simple]
 

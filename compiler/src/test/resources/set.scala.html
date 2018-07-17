@@ -1,5 +1,5 @@
 @(test: Set[String])
 
-@for(p <- test) {
+@for(p <- test.toSeq.sorted) {
   @p
 } 
