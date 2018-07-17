@@ -3,11 +3,9 @@ import sbtcrossproject.crossProject
 
 val scalatest = "3.0.6-SNAP1"
 
-val scala213Version = "2.13.0-M4"
-
 val commonSettings = Seq(
   scalaVersion := scala210,
-  crossScalaVersions := Seq(scalaVersion.value, scala211, scala212, scala213Version)
+  crossScalaVersions := Seq(scalaVersion.value, scala211, scala212, scala213)
 )
 
 lazy val twirl = project
