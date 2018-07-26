@@ -160,6 +160,8 @@ You can put a comment on the first line to document your template into the Scala
 
 By default, dynamic content parts are escaped according to the template type’s (e.g. HTML or XML) rules. If you want to output a raw content fragment, wrap it in the template content type.
 
+> **Note:** When using this feature, consider the security implications of outputting raw HTML if there is any possibility that the user can control the content. This technique is a common cause of Cross Site Scripting (XSS) vulnerabilities and is dangerous if not used with caution.
+
 For example to output raw HTML:
 
 @[raw-html](code/scalaguide/templates/snippets.scala.html)
@@ -172,7 +174,7 @@ The template engine can be used as a [string interpolator](http://docs.scala-lan
 
 ## Displaying Scala types
 
-Twirl typically renders values of Scala types by calling `toString` method on them. However, if values are wrapped inside `Option` or collections (`Seq`, `Array`, `TraversableOnce`), Twirl first unwraps the values  and then calls `toString`. 
+Twirl typically renders values of Scala types by calling `toString` method on them. However, if values are wrapped inside `Option` or collections (`Seq`, `Array`, `TraversableOnce`), Twirl first unwraps the values  and then calls `toString`.
 
 For example,
 
