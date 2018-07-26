@@ -242,7 +242,9 @@ You can put a comment on the first line to document your template into the Scala
 
 ## Escaping
 
-By default, dynamic content parts are escaped according to the template type’s (e.g. HTML or XML) rules. If you want to output a raw content fragment, wrap it in the template content type.
+By default, dynamic content parts are escaped according to the template type’s (e.g. HTML or XML) rules. If you want to output a raw content fragment, wrap it in the template content type
+
+> **Note:** When using this feature, consider the security implications of outputting raw HTML if there is any possibility that the user can control the content. This technique is a common cause of Cross Site Scripting (XSS) vulnerabilities and is dangerous if not used with caution.
 
 For example to output raw HTML:
 
