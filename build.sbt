@@ -22,11 +22,8 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
     .settings(commonSettings: _*)
     .settings(
       name := "twirl-api",
+      libraryDependencies ++= scalaXml.value,
       libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
-    )
-    .jvmSettings(
-      // scala-xml can't work under ScalaJS
-      libraryDependencies ++= scalaXml(scalaVersion.value)
     )
 
 lazy val apiJvm = api.jvm
@@ -97,8 +94,14 @@ def scalaCompiler(version: String) = "org.scala-lang" % "scala-compiler" % versi
 def scalaParserCombinators(scalaVersion: String) =
   whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1" % "optional")
 
-def scalaXml(scalaVersion: String) =
-  whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-xml" % "1.1.0")
+def scalaXml = Def.setting {
+  CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((x, y)) if x > 2 || (x == 2 && y >= 11) =>
+      Seq("org.scala-lang.modules" %%% "scala-xml" % "1.1.0")
+    case _ =>
+      Seq.empty
+  }
+}
 
 def whenAtLeast(version: String, major: Int, minor: Int, module: ModuleID): Seq[ModuleID] = {
   CrossVersion.partialVersion(version) match {

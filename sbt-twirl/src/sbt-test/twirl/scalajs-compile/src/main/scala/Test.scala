@@ -9,4 +9,6 @@ object Test extends App {
   test(a.b.html.c.render("world"), "Hello, world.\n")
 
   test(html.template.render("42"), "Answer: 42\n")
+
+  test(html.xml_test.render(<a>foo</a>), "hello xml: <a>foo</a>\n")
 }
