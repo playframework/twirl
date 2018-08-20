@@ -5,6 +5,7 @@ package play.twirl.api
 
 import play.twirl.api.utils.StringEscapeUtils
 import scala.collection.immutable
+import java.lang.{StringBuilder => jStringBuilder}
 
 object MimeTypes {
   val TEXT       = "text/plain"
@@ -36,28 +37,38 @@ class Html private[api] (elements: immutable.Seq[Html], text: String, escape: Bo
    * of Strings, if it doesn't, performance actually goes down (measured 10%), due to the fact that the JVM can't
    * optimise the invocation of buildString as well because there are two different possible implementations.
    */
-  override protected def buildString(builder: StringBuilder): Unit = {
-    if (elements.nonEmpty) {
+  override protected def buildString(sb: jStringBuilder): Unit = {
+    if (!elements.isEmpty) {
       elements.foreach { e =>
-        e.buildString(builder)
+        e.buildString(sb)
       }
     } else if (escape) {
       // Using our own algorithm here because commons lang escaping wasn't designed for protecting against XSS, and there
       // don't seem to be any other good generic escaping tools out there.
+      val len = text.length
+      var copyIdx = 0
       var i = 0
-      while (i < text.length) {
+      while (i < len) {
         text.charAt(i) match {
-          case '<' => builder.append("&lt;")
-          case '>' => builder.append("&gt;")
-          case '"' => builder.append("&quot;")
-          case '\'' => builder.append("&#x27;")
-          case '&' => builder.append("&amp;")
-          case c => builder += c
+          case '<' | '>' | '"' | '\'' | '&' => {
+            sb.append(text, copyIdx, i)
+            text.charAt(i) match {
+              case '<' => sb.append("&lt;")
+              case '>' => sb.append("&gt;")
+              case '"' => sb.append("&quot;")
+              case '\'' => sb.append("&#x27;")
+              case '&' => sb.append("&amp;")
+            }
+            copyIdx = i + 1
+          }
+          case _ => ()
         }
         i += 1
       }
+      if (copyIdx == 0) sb.append(text)
+      else sb.append(text, copyIdx, len)
     } else {
-      builder.append(text)
+      sb.append(text)
     }
   }
 
