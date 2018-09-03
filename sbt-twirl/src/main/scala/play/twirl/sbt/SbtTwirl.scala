@@ -51,7 +51,12 @@ object SbtTwirl extends AutoPlugin {
       excludeFilter in compileTemplates
     ).value,
 
-    watchSources in Defaults.ConfigGlobal ++= (sources in compileTemplates).value,
+    watchSources in Defaults.ConfigGlobal += 
+      WatchSource(
+        (sourceDirectory in compileTemplates).value,
+        (includeFilter in compileTemplates).value,
+        (excludeFilter in compileTemplates).value
+      ),
 
     target in compileTemplates := crossTarget.value / "twirl" / Defaults.nameForSrc(configuration.value.name),
 
