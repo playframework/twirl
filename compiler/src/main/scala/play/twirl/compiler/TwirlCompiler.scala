@@ -505,7 +505,7 @@ package """ :+ packageName :+ """
         }
 
         val compiler = new Global(settings, new ConsoleReporter(settings) {
-          override def printMessage(pos: Position, msg: String) = ()
+          override def display(pos: Position, msg: String, severity: Severity): Unit = ()
         })
 
         // Everything must be done on the compiler thread, because the presentation compiler is a fussy piece of work.
