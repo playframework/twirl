@@ -1,11 +1,9 @@
 import interplay.ScalaVersions._
 import sbtcrossproject.crossProject
 
-val scalatest = "3.0.6-SNAP1"
-
 val commonSettings = Seq(
   scalaVersion := scala210,
-  crossScalaVersions := Seq(scalaVersion.value, scala211, scala212, scala213)
+  crossScalaVersions := Seq(scalaVersion.value, scala211, scala212, "2.13.0-M3", "2.13.0-M4", "2.13.0-M5")
 )
 
 lazy val twirl = project
@@ -23,7 +21,7 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
     .settings(
       name := "twirl-api",
       libraryDependencies ++= scalaXml.value,
-      libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
+      libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest(scalaVersion.value) % "test"
     )
 
 lazy val apiJvm = api.jvm
@@ -37,7 +35,7 @@ lazy val parser = project
       name := "twirl-parser",
       libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
       libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test",
-      libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
+      libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest(scalaVersion.value) % "test"
     )
 
 lazy val compiler = project
@@ -59,7 +57,7 @@ lazy val plugin = project
     .settings(
       name := "sbt-twirl",
       organization := "com.typesafe.sbt",
-      libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test",
+      libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest(scalaVersion.value) % "test",
       resourceGenerators in Compile += generateVersionFile.taskValue,
       scriptedDependencies := {
         scriptedDependencies.value
@@ -89,10 +87,23 @@ def generateVersionFile = Def.task {
 
 // Dependencies
 
+def scalatest(scalaV: String): String = scalaV match {
+  case "2.13.0-M3" => "3.0.5-M1"
+  case "2.13.0-M4" => "3.0.6-SNAP2"
+  case _ => "3.0.6-SNAP4"
+}
+
 def scalaCompiler(version: String) = "org.scala-lang" % "scala-compiler" % version
 
-def scalaParserCombinators(scalaVersion: String) =
-  whenAtLeast(scalaVersion, 2, 11, "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1" % "optional")
+def scalaParserCombinators(scalaVersion: String): Seq[ModuleID] = scalaVersion match {
+  case interplay.ScalaVersions.scala210 => Seq.empty
+  case "2.13.0-M3" => Seq(
+    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0" % "optional"
+  )
+  case _ => Seq(
+    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1" % "optional"
+  )
+}
 
 def scalaXml = Def.setting {
   CrossVersion.partialVersion(scalaVersion.value) match {
@@ -100,12 +111,5 @@ def scalaXml = Def.setting {
       Seq("org.scala-lang.modules" %%% "scala-xml" % "1.1.0")
     case _ =>
       Seq.empty
-  }
-}
-
-def whenAtLeast(version: String, major: Int, minor: Int, module: ModuleID): Seq[ModuleID] = {
-  CrossVersion.partialVersion(version) match {
-    case Some((x, y)) if x > major || (x == major && y >= minor) => Seq(module)
-    case _ => Seq.empty
   }
 }

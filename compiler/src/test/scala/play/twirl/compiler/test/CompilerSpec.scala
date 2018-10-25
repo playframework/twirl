@@ -266,8 +266,11 @@ object Helper {
       }
 
       val compiler = new Global(settings, new ConsoleReporter(settings) {
-        override def printMessage(pos: Position, msg: String) = {
-          compileErrors.append(CompilationError(msg, pos.line, pos.point))
+        override def display(pos: Position, msg: String, severity: Severity): Unit = {
+          pos match {
+            case scala.reflect.internal.util.NoPosition => // do nothing
+            case _ => compileErrors.append(CompilationError(msg, pos.line, pos.point))
+          }
         }
       })
 
