@@ -25,7 +25,6 @@ object Import {
 object SbtTwirl extends AutoPlugin {
 
   import Import.TwirlKeys._
-  import sbt.KeyRanks.BSetting
 
   val autoImport = Import
 
@@ -40,7 +39,7 @@ object SbtTwirl extends AutoPlugin {
         positionSettings ++
         dependencySettings
 
-  def twirlSettings: Seq[Setting[_]] = Seq(
+  def twirlSettings: Seq[Setting[_]] = SbtTwirlCompat.watchSourcesSettings ++ Seq(
     includeFilter in compileTemplates := "*.scala.*",
     excludeFilter in compileTemplates := HiddenFileFilter,
     sourceDirectories in compileTemplates := Seq(sourceDirectory.value / "twirl"),
@@ -50,8 +49,6 @@ object SbtTwirl extends AutoPlugin {
       includeFilter in compileTemplates,
       excludeFilter in compileTemplates
     ).value,
-
-    watchSources in Defaults.ConfigGlobal ++= (sources in compileTemplates).value,
 
     target in compileTemplates := crossTarget.value / "twirl" / Defaults.nameForSrc(configuration.value.name),
 
