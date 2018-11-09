@@ -1,5 +1,6 @@
 import interplay.ScalaVersions._
 import sbtcrossproject.crossProject
+import org.scalajs.jsenv.nodejs.NodeJSEnv
 
 val commonSettings = Seq(
   scalaVersion := scala210,
@@ -14,12 +15,21 @@ lazy val twirl = project
     .settings(releaseCrossBuild := false)
     .aggregate(apiJvm, apiJs, parser, compiler, plugin)
 
+
+lazy val nodeJs = {
+  if (System.getProperty("NODE_PATH") != null)
+    new NodeJSEnv(NodeJSEnv.Config().withExecutable(System.getProperty("NODE_PATH")))
+  else
+    new NodeJSEnv()
+}
+
 lazy val api = crossProject(JVMPlatform, JSPlatform)
     .in(file("api"))
     .enablePlugins(PlayLibrary, Playdoc)
     .settings(commonSettings: _*)
     .settings(
       name := "twirl-api",
+      jsEnv := nodeJs,
       libraryDependencies ++= scalaXml.value,
       libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest(scalaVersion.value) % "test"
     )
