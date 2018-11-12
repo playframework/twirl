@@ -78,6 +78,13 @@ object Html {
   def apply(text: String): Html = {
     new Html(text)
   }
+
+  /**
+    * Creates an HTML fragment with initial content specified. Uses an empty String if None is passed.
+    */
+  def apply(text: Option[String]): Html = {
+    apply(text.getOrElse(""))
+  }
 }
 
 /**
