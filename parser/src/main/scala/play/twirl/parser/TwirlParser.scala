@@ -490,9 +490,13 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   def blockArgs(): PosString = {
+    def noCurlyBraces(result: String): Boolean = !result.contains("{") && !result.contains("}")
+    def noOpeningParenthesis(result: String): Boolean = !result.contains("(") ||
+      (result.trim.startsWith("(") && result.stripSuffix("=>").trim.endsWith(")") && result.count(_ == '(') == 1)
+
     val p = input.offset()
     val result = anyUntil("=>", inclusive = true)
-    if (result.endsWith("=>") && !result.contains("\n"))
+    if (result.endsWith("=>") && !result.contains("\n") && noCurlyBraces(result) && noOpeningParenthesis(result))
       position(PosString(result), p)
     else {
       input.regress(result.length())
@@ -500,12 +504,12 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     }
   }
 
-  def block(): Block = {
+  def block(blockArgsAllowed: Boolean): Block = {
     var result: Block = null
     val p = input.offset()
     val ws = whitespaceNoBreak()
     if (check("{")) {
-      val blkArgs = Option(blockArgs())
+      val blkArgs = if(blockArgsAllowed) Option(blockArgs()) else None
       val mixeds = several[ListBuffer[TemplateTree], ListBuffer[ListBuffer[TemplateTree]]] { () => mixed() }
       accept("}")
       // TODO - not use flatten here (if it's a performance problem)
@@ -525,7 +529,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     val p = input.offset()
     if (check("case ")) {
       val pattern = position(Simple("case " + anyUntil("=>", inclusive = true)), p)
-      val blk = block()
+      val blk = block(blockArgsAllowed = true)
       if (blk != null) {
         result = ScalaExp(ListBuffer(pattern, blk))
         whitespace()
@@ -556,7 +560,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       val ws = whitespaceNoBreak()
       if (check("match")) {
         val m = position(Simple(ws + "match"), mpos)
-        val blk = block()
+        val blk = block(blockArgsAllowed = false)
         if (blk != null) {
           exprs.append(m)
           exprs.append(blk)
@@ -578,7 +582,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     if (check("@for")) {
       val parens = parentheses()
       if (parens != null) {
-        val blk = block()
+        val blk = block(blockArgsAllowed = true)
         if (blk != null) {
           result = Display(ScalaExp(ListBuffer(position(Simple("for" + parens + " yield "), p+1), blk))) // don't include pos of @
         }
@@ -627,7 +631,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       val pos = input.offset()
       val code = methodCall()
       if (code != null) {
-        val parts = several[ScalaExpPart, ListBuffer[ScalaExpPart]] { () => expressionPart() }
+        val parts = several[ScalaExpPart, ListBuffer[ScalaExpPart]] { () => expressionPart(blockArgsAllowed = true) }
         parts.prepend(position(Simple(code), pos))
         result = Display(ScalaExp(parts))
       } else input.regressTo(pos - 1) // don't consume the @
@@ -646,7 +650,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     } else null
   }
 
-  def expressionPart(): ScalaExpPart = {
+  def expressionPart(blockArgsAllowed: Boolean): ScalaExpPart = {
     def simpleParens() = {
       val p = input.offset()
       val parens = parentheses()
@@ -663,7 +667,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     }
 
     chainedMethods() match {
-      case null => block() match {
+      case null => block(blockArgsAllowed) match {
         case null => wsThenScalaBlockChained() match {
           case null => elseIfCall() match {
             case null => elseCall() match {
