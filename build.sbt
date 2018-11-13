@@ -4,7 +4,7 @@ import org.scalajs.jsenv.nodejs.NodeJSEnv
 
 val commonSettings = Seq(
   scalaVersion := scala210,
-  crossScalaVersions := Seq(scalaVersion.value, scala211, scala212, "2.13.0-M3", "2.13.0-M4", "2.13.0-M5")
+  crossScalaVersions := Seq(scalaVersion.value, scala211, scala212, scala213, "2.13.0-M3")
 )
 
 lazy val twirl = project
