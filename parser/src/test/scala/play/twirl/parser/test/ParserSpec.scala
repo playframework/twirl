@@ -98,6 +98,49 @@ class ParserSpec extends WordSpec with MustMatchers with Inside {
         parseTemplateString("@importIdentifier").topImports mustBe empty
       }
 
+      "code block containing => of another statement with curly braces in first line" in {
+        val tmpl = parseTemplateString("""@if(attrs!=null){@attrs.map{ v => @v._1 }}""") // "@attrs.map{ v =>" should not be handled as block args
+        val ifExpressions = tmpl.content(0).asInstanceOf[Display].exp.parts
+        ifExpressions.head must be (Simple("if(attrs!=null)"))
+        val ifBlockBody = ifExpressions(1).asInstanceOf[Block].content(0).asInstanceOf[Display].exp.parts
+        ifBlockBody.head must be (Simple("attrs"))
+        ifBlockBody(1) must be (Simple(".map"))
+        val mapBlock = ifBlockBody(2).asInstanceOf[Block]
+        mapBlock.args.map(_.toString) mustBe Some(" v =>")
+        var mapBlockBody = ifBlockBody(2).asInstanceOf[Block].content(1).asInstanceOf[Display].exp.parts
+        mapBlockBody.head must be (Simple("v"))
+        mapBlockBody(1) must be (Simple("._1"))
+      }
+
+      "code block containing => of another statement with parentheses in first line" in {
+        val tmpl = parseTemplateString("""@if(attrs!=null){@attrs.map( v => @v._1 )}""") // "@attrs.map( v =>" should not be handled as block args
+        val ifExpressions = tmpl.content(0).asInstanceOf[Display].exp.parts
+        ifExpressions.head must be (Simple("if(attrs!=null)"))
+        val ifBlockBody = ifExpressions(1).asInstanceOf[Block].content(0).asInstanceOf[Display].exp.parts
+        ifBlockBody.head must be (Simple("attrs"))
+        ifBlockBody(1) must be (Simple(".map( v => @v._1 )"))
+      }
+
+      "code block containing (...) => in first line" in {
+        val tmpl = parseTemplateString("""@if(attrs!=null){( arg1, arg2 ) => @arg1.toString }""") // "( arg1, arg2 ) =>" should be handled as block args
+        val ifExpressions = tmpl.content(0).asInstanceOf[Display].exp.parts
+        ifExpressions.head must be (Simple("if(attrs!=null)"))
+        val ifBlock = ifExpressions(1).asInstanceOf[Block]
+        ifBlock.args.map(_.toString) mustBe Some("( arg1, arg2 ) =>")
+        val ifBlockBody = ifBlock.content(1).asInstanceOf[Display].exp.parts
+        ifBlockBody.head must be (Simple("arg1"))
+        ifBlockBody(1) must be (Simple(".toString"))
+      }
+
+      "text outside of code block on same line containing =>" in {
+        val tmpl = parseTemplateString("""@if(attrs!=null){blockbody}Some plain text with => inside""") // "blockbody}Some plain text with =>" should not be handled as block args
+        val ifExpressions = tmpl.content(0).asInstanceOf[Display].exp.parts
+        ifExpressions.head must be (Simple("if(attrs!=null)"))
+        val ifBlockBody = ifExpressions(1).asInstanceOf[Block].content(0).asInstanceOf[Plain]
+        ifBlockBody.text mustBe "blockbody"
+        val outsideIf = tmpl.content(1).asInstanceOf[Plain]
+        outsideIf.text mustBe "Some plain text with => inside"
+      }
     }
 
     "handle string literals within parentheses" when {

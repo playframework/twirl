@@ -490,9 +490,13 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   def blockArgs(): PosString = {
+    def noCurlyBraces(result: String): Boolean = !result.contains("{") && !result.contains("}")
+    def noOpeningParenthesis(result: String): Boolean = !result.contains("(") ||
+      (result.trim.startsWith("(") && result.stripSuffix("=>").trim.endsWith(")") && result.count(_ == '(') == 1)
+
     val p = input.offset()
     val result = anyUntil("=>", inclusive = true)
-    if (result.endsWith("=>") && !result.contains("\n"))
+    if (result.endsWith("=>") && !result.contains("\n") && noCurlyBraces(result) && noOpeningParenthesis(result))
       position(PosString(result), p)
     else {
       input.regress(result.length())
