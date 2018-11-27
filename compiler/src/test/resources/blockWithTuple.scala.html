@@ -1,0 +1,5 @@
+@(args: Seq[(String, String)])
+
+@args.map { case (k, v) =>
+    @k => @v
+}
