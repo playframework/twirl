@@ -225,6 +225,16 @@ class CompilerSpec extends WordSpec with MustMatchers {
     hello.static("twirl", "something-else").toString.trim must include("""<header class="twirl">""")
   }
 
+  "compile successfully (block with tuple)" in {
+    val helper = newCompilerHelper
+    val hello = helper.compile[(Seq[(String, String)] => Html)]("blockWithTuple.scala.html", "html.blockWithTuple")
+
+    val args = Seq[(String, String)](
+      "the-key" -> "the-value"
+    )
+    hello.static(args).toString.trim must be("the-key => the-value")
+  }
+
 }
 
 object Helper {
