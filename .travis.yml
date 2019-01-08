@@ -23,11 +23,16 @@ matrix:
     # can allow failures here too.
     - env: TRAVIS_JDK=adopt@1.11.0-1
 
+scala:
+  - 2.12.8
+  - 2.11.12
+  - 2.10.7
+
 script:
-  - sbt +test
-  - sbt +publishLocal
-  - sbt 'project plugin' +test
-  - sbt 'project plugin' +scripted
+  - sbt ++$TRAVIS_SCALA_VERSION test
+  - sbt ++$TRAVIS_SCALA_VERSION publishLocal
+  - sbt ++$TRAVIS_SCALA_VERSION 'project plugin' test
+  - sbt ++$TRAVIS_SCALA_VERSION 'project plugin' scripted
   - cd docs && sbt test validateDocs
 
 cache:
