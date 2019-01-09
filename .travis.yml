@@ -30,7 +30,7 @@ scala:
 
 script:
   - sbt "+++ $TRAVIS_SCALA_VERSION test"
-  - sbt "+++ $TRAVIS_SCALA_VERSION publishLocal"
+  - sbt +publishLocal
   - sbt 'project plugin' test
   - sbt 'project plugin' scripted
   - cd docs && sbt ++$TRAVIS_SCALA_VERSION test validateDocs
