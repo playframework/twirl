@@ -106,7 +106,7 @@ object ScalaTemplatesSpec extends Specification {
     {
       val body = html.snippets(Seq(Product("p1", "1"), Product("p2", "2")), User("John", "Doe"), Article("<foo>")).body
       def segment(name: String) = {
-        body.lines.dropWhile(_ != "<span class=\"" + name + "\">").drop(1).takeWhile(_ != "</span>").mkString("\n")
+        body.linesIterator.dropWhile(_ != "<span class=\"" + name + "\">").drop(1).takeWhile(_ != "</span>").mkString("\n")
       }
 
       "allow escaping the @ character" in {
