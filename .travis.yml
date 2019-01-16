@@ -31,6 +31,7 @@ scala:
 script:
   - sbt "+++ $TRAVIS_SCALA_VERSION test"
   - sbt +publishLocal
+  - sbt +mimaReportBinaryIssues
   - sbt 'project plugin' test
   - sbt 'project plugin' scripted
   - cd docs && sbt test validateDocs
