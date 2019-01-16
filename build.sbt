@@ -2,6 +2,13 @@ import interplay.ScalaVersions._
 import sbtcrossproject.crossProject
 import org.scalajs.jsenv.nodejs.NodeJSEnv
 
+// Binary compatibility is this version
+val previousVersion = "1.4.0"
+
+val binaryCompatibilitySettings = Seq(
+  mimaPreviousArtifacts := Set(organization.value % s"${moduleName.value}_${scalaBinaryVersion.value}" % previousVersion)
+)
+
 val commonSettings = Seq(
   scalaVersion := scala210,
   crossScalaVersions := Seq(scalaVersion.value, scala211, scala212, scala213, "2.13.0-M3")
@@ -27,6 +34,7 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
     .in(file("api"))
     .enablePlugins(PlayLibrary, Playdoc)
     .settings(commonSettings: _*)
+    .settings(binaryCompatibilitySettings: _*)
     .settings(
       name := "twirl-api",
       jsEnv := nodeJs,
@@ -41,6 +49,7 @@ lazy val parser = project
     .in(file("parser"))
     .enablePlugins(PlayLibrary)
     .settings(commonSettings: _*)
+    .settings(binaryCompatibilitySettings: _*)
     .settings(
       name := "twirl-parser",
       libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
@@ -53,6 +62,7 @@ lazy val compiler = project
     .enablePlugins(PlayLibrary)
     .dependsOn(apiJvm, parser % "compile;test->test")
     .settings(commonSettings: _*)
+    .settings(binaryCompatibilitySettings: _*)
     .settings(
       name := "twirl-compiler",
       libraryDependencies += scalaCompiler(scalaVersion.value),
