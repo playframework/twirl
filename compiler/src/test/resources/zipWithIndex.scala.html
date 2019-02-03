@@ -1,0 +1,5 @@
+@(names:Seq[String])
+
+@names.zipWithIndex.map { case (name, ix) =>
+<h1>@ix Hello @name!</h1>
+}

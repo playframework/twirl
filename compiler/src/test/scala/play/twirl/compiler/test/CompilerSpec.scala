@@ -72,6 +72,12 @@ class CompilerSpec extends WordSpec with MustMatchers {
       hello must be("<h1>Hello !</h1>")
     }
 
+    "compile successfully (zipWithIndex)" in {
+      val helper = newCompilerHelper
+      val output = helper.compile[((Seq[String]) => Html)]("zipWithIndex.scala.html", "html.zipWithIndex").static(Seq("Alice", "Bob", "Charlie")).toString.trim.replace("\n", "")
+      output must be("<h1>0 Hello Alice!</h1><h1>1 Hello Bob!</h1><h1>2 Hello Charlie!</h1>")
+    }
+
     "compile successfully (set)" in {
       val helper = newCompilerHelper
       val set = helper.compile[((collection.immutable.Set[String]) => Html)]("set.scala.html", "html.set").static(Set("first", "second", "third")).toString.trim.replace("\n", "").replaceAll("\\s+", "")
