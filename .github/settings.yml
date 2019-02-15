@@ -3,7 +3,7 @@ repository:
   topics: playframework, twirl, template-engine, template-language, template-library, scala, sbt-plugin
   private: false
   has_issues: true
-  has_projects: true
+  has_projects: false
   # We don't need wiki since the documentation lives in playframework.com
   has_wiki: false
   has_downloads: true
