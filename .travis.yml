@@ -29,11 +29,11 @@ scala:
   - 2.10.7
 
 script:
-  - sbt "+++ $TRAVIS_SCALA_VERSION test"
-  - sbt +publishLocal
-  - sbt 'project plugin' test
-  - sbt 'project plugin' scripted
-  - cd docs && sbt test validateDocs
+  - sbt "+++ $TRAVIS_SCALA_VERSION test" || travis_terminate 1
+  - sbt +publishLocal                    || travis_terminate 1
+  - sbt 'project plugin' test            || travis_terminate 1
+  - sbt 'project plugin' scripted        || travis_terminate 1
+  - cd docs && sbt test validateDocs     || travis_terminate 1
 
 cache:
   directories:
