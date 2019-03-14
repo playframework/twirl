@@ -3,15 +3,15 @@ import sbtcrossproject.crossProject
 import org.scalajs.jsenv.nodejs.NodeJSEnv
 
 val commonSettings = Seq(
-  scalaVersion := scala210,
-  crossScalaVersions := Seq(scalaVersion.value, scala211, scala212, scala213, "2.13.0-M3")
+  scalaVersion := scala212,
+  crossScalaVersions := Seq(scala210, scala211, scala212, scala213, "2.13.0-M3")
 )
 
 lazy val twirl = project
     .in(file("."))
     .enablePlugins(PlayRootProject)
-    .enablePlugins(CrossPerProjectPlugin)
     .settings(commonSettings: _*)
+    .settings(crossScalaVersions := Nil) // workaround so + uses project-defined variants
     .settings(releaseCrossBuild := false)
     .aggregate(apiJvm, apiJs, parser, compiler, plugin)
 
@@ -26,6 +26,7 @@ lazy val nodeJs = {
 lazy val api = crossProject(JVMPlatform, JSPlatform)
     .in(file("api"))
     .enablePlugins(PlayLibrary, Playdoc)
+    .configs(Docs)
     .settings(commonSettings: _*)
     .settings(
       name := "twirl-api",
@@ -62,7 +63,7 @@ lazy val compiler = project
 
 lazy val plugin = project
     .in(file("sbt-twirl"))
-    .enablePlugins(PlaySbtPlugin)
+    .enablePlugins(PlaySbtPlugin, SbtPlugin)
     .dependsOn(compiler)
     .settings(
       name := "sbt-twirl",
