@@ -18,8 +18,8 @@ val commonSettings = Seq(
 lazy val twirl = project
     .in(file("."))
     .enablePlugins(PlayRootProject)
-    .enablePlugins(CrossPerProjectPlugin)
     .settings(commonSettings: _*)
+    .settings(crossScalaVersions := Nil) // workaround so + uses project-defined variants
     .settings(releaseCrossBuild := false)
     .aggregate(apiJvm, apiJs, parser, compiler, plugin)
 
@@ -34,6 +34,7 @@ lazy val nodeJs = {
 lazy val api = crossProject(JVMPlatform, JSPlatform)
     .in(file("api"))
     .enablePlugins(PlayLibrary, Playdoc)
+    .configs(Docs)
     .settings(commonSettings: _*)
     .settings(mimaPreviousArtifacts := binaryCompatibilitySettings(organization.value, moduleName.value, scalaBinaryVersion.value))
     .settings(
@@ -73,7 +74,7 @@ lazy val compiler = project
 
 lazy val plugin = project
     .in(file("sbt-twirl"))
-    .enablePlugins(PlaySbtPlugin)
+    .enablePlugins(PlaySbtPlugin, SbtPlugin)
     .dependsOn(compiler)
     .settings(
       name := "sbt-twirl",
