@@ -17,7 +17,7 @@ matrix:
 before_install: curl -Ls https://git.io/jabba | bash && . ~/.jabba/jabba.sh
 install: jabba install "$TRAVIS_JDK" && jabba use "$_" && java -Xmx32m -version
 script:
-  - sbt "+++ $TRAVIS_SCALA_VERSION test" || travis_terminate 1
+  - sbt "++ $TRAVIS_SCALA_VERSION test"  || travis_terminate 1
   - sbt +publishLocal                    || travis_terminate 1
   - sbt plugin/test                      || travis_terminate 1
   - sbt plugin/scripted                  || travis_terminate 1
