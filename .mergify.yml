@@ -12,17 +12,7 @@ pull_request_rules:
       merge:
         method: squash
         strict: smart
-
-  - name: Merge scala-steward's PRs
-    conditions:
-      - author=scala-steward
-      - status-success=Travis CI - Pull Request
-      - label!=status:block-merge
-    actions:
-      merge:
-        method: squash
-        strict: smart
-
+        
   - name: Delete the PR branch after merge
     conditions:
       - merged
