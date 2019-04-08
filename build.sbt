@@ -11,7 +11,7 @@ val binaryCompatibilitySettings = Seq(
 
 val commonSettings = Seq(
   scalaVersion := scala210,
-  crossScalaVersions := Seq(scalaVersion.value, scala211, scala212, scala213, "2.13.0-M3")
+  crossScalaVersions := Seq(scala210, "2.11.12", scala212, scala213)
 )
 
 lazy val twirl = project
@@ -77,6 +77,7 @@ lazy val plugin = project
     .settings(
       name := "sbt-twirl",
       organization := "com.typesafe.sbt",
+      scalaVersion := scala212,
       libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest(scalaVersion.value) % "test",
       resourceGenerators in Compile += generateVersionFile.taskValue,
       scriptedDependencies := {
@@ -108,27 +109,22 @@ def generateVersionFile = Def.task {
 // Dependencies
 
 def scalatest(scalaV: String): String = scalaV match {
-  case "2.13.0-M3" => "3.0.5-M1"
-  case "2.13.0-M4" => "3.0.6-SNAP2"
-  case _ => "3.0.6-SNAP4"
+  case _ => "3.0.8-RC2"
 }
 
 def scalaCompiler(version: String) = "org.scala-lang" % "scala-compiler" % version
 
 def scalaParserCombinators(scalaVersion: String): Seq[ModuleID] = scalaVersion match {
   case interplay.ScalaVersions.scala210 => Seq.empty
-  case "2.13.0-M3" => Seq(
-    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0" % "optional"
-  )
   case _ => Seq(
-    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1" % "optional"
+    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2" % "optional"
   )
 }
 
 def scalaXml = Def.setting {
   CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((x, y)) if x > 2 || (x == 2 && y >= 11) =>
-      Seq("org.scala-lang.modules" %%% "scala-xml" % "1.1.0")
+      Seq("org.scala-lang.modules" %%% "scala-xml" % "1.2.0")
     case _ =>
       Seq.empty
   }
