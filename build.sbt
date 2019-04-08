@@ -68,6 +68,7 @@ lazy val plugin = project
     .settings(
       name := "sbt-twirl",
       organization := "com.typesafe.sbt",
+      scalaVersion := scala212,
       libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest(scalaVersion.value) % "test",
       resourceGenerators in Compile += generateVersionFile.taskValue,
       scriptedDependencies := {
