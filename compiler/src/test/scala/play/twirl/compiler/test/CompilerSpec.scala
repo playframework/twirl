@@ -14,8 +14,6 @@ class CompilerSpec extends WordSpec with MustMatchers {
 
   import Helper._
 
-  val testName = "Twirl compiler"
-
   val sourceDir = new File("compiler/src/test/resources")
 
   def newCompilerHelper = {
@@ -28,7 +26,7 @@ class CompilerSpec extends WordSpec with MustMatchers {
     new CompilerHelper(sourceDir, generatedDir, generatedClasses)
   }
 
-  testName should {
+  "Twirl compiler" should {
 
     "compile successfully (real)" in {
       val helper = newCompilerHelper
@@ -174,65 +172,48 @@ class CompilerSpec extends WordSpec with MustMatchers {
 
 
     }
-  }
 
-  "StringGrouper" should {
-    val beer = "\uD83C\uDF7A"
-    val line = "abcde" + beer + "fg"
-
-    "split before a surrogate pair" in {
-      StringGrouper(line, 5) must contain allOf ("abcde", beer + "fg")
+    "compile successfully (elseIf)" when {
+      "input is in if clause" in {
+        val helper = newCompilerHelper
+        val hello = helper.compile[((Int) => Html)]("elseIf.scala.html", "html.elseIf").static(0).toString.trim
+        hello must be("hello")
+      }
+      "input is in else if clause" in {
+        val helper = newCompilerHelper
+        val hello = helper.compile[((Int) => Html)]("elseIf.scala.html", "html.elseIf").static(1).toString.trim
+        hello must be("world")
+      }
+      "input is in else clause" in {
+        val helper = newCompilerHelper
+        val hello = helper.compile[((Int) => Html)]("elseIf.scala.html", "html.elseIf").static(25).toString.trim
+        hello must be("fail!")
+      }
     }
 
-    "not split a surrogate pair" in {
-      StringGrouper(line, 6) must contain allOf("abcde" + beer, "fg")
-    }
-
-    "split after a surrogate pair" in {
-      StringGrouper(line, 7) must contain allOf("abcde" + beer, "fg")
-    }
-  }
-
-  "compile successfully (elseIf)" when {
-    "input is in if clause" in {
+    "compile successfully (if without brackets)" in {
       val helper = newCompilerHelper
-      val hello = helper.compile[((Int) => Html)]("elseIf.scala.html", "html.elseIf").static(0).toString.trim
-      hello must be("hello")
+      val hello = helper.compile[((String, String) => Html)]("ifWithoutBrackets.scala.html", "html.ifWithoutBrackets")
+      hello.static("twirl", "play").toString.trim must be("twirl-play")
+      hello.static("twirl", "something-else").toString.trim must be("twirl")
     }
-    "input is in else if clause" in {
+
+    "compile successfully (complex if without brackets)" in {
       val helper = newCompilerHelper
-      val hello = helper.compile[((Int) => Html)]("elseIf.scala.html", "html.elseIf").static(1).toString.trim
-      hello must be("world")
+      val hello = helper.compile[((String, String) => Html)]("ifWithoutBracketsComplex.scala.html", "html.ifWithoutBracketsComplex")
+      hello.static("twirl", "play").toString.trim must include("""<header class="play-twirl">""")
+      hello.static("twirl", "something-else").toString.trim must include("""<header class="twirl">""")
     }
-    "input is in else clause" in {
+
+    "compile successfully (block with tuple)" in {
       val helper = newCompilerHelper
-      val hello = helper.compile[((Int) => Html)]("elseIf.scala.html", "html.elseIf").static(25).toString.trim
-      hello must be("fail!")
+      val hello = helper.compile[(Seq[(String, String)] => Html)]("blockWithTuple.scala.html", "html.blockWithTuple")
+
+      val args = Seq[(String, String)](
+        "the-key" -> "the-value"
+      )
+      hello.static(args).toString.trim must be("the-key => the-value")
     }
-  }
-
-  "compile successfully (if without brackets)" in {
-    val helper = newCompilerHelper
-    val hello = helper.compile[((String, String) => Html)]("ifWithoutBrackets.scala.html", "html.ifWithoutBrackets")
-    hello.static("twirl", "play").toString.trim must be("twirl-play")
-    hello.static("twirl", "something-else").toString.trim must be("twirl")
-  }
-
-  "compile successfully (complex if without brackets)" in {
-    val helper = newCompilerHelper
-    val hello = helper.compile[((String, String) => Html)]("ifWithoutBracketsComplex.scala.html", "html.ifWithoutBracketsComplex")
-    hello.static("twirl", "play").toString.trim must include("""<header class="play-twirl">""")
-    hello.static("twirl", "something-else").toString.trim must include("""<header class="twirl">""")
-  }
-
-  "compile successfully (block with tuple)" in {
-    val helper = newCompilerHelper
-    val hello = helper.compile[(Seq[(String, String)] => Html)]("blockWithTuple.scala.html", "html.blockWithTuple")
-
-    val args = Seq[(String, String)](
-      "the-key" -> "the-value"
-    )
-    hello.static(args).toString.trim must be("the-key => the-value")
   }
 
 }
