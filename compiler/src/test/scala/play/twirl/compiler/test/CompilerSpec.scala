@@ -250,7 +250,8 @@ object Helper {
       if (scalaObjectSource != null) {
         val compilerPath = Class.forName("scala.tools.nsc.Interpreter").getProtectionDomain.getCodeSource.getLocation
         val libPath = scalaObjectSource.getLocation
-        val pathList = List(compilerPath, libPath)
+        val scalaXmlPath = Option(Class.forName("scala.xml.NodeSeq").getProtectionDomain.getCodeSource).map(_.getLocation).toList
+        val pathList = List(compilerPath, libPath) ++ scalaXmlPath
         val origBootclasspath = settings.bootclasspath.value
         settings.bootclasspath.value = ((origBootclasspath :: pathList) ::: additionalClassPathEntry.toList) mkString File.pathSeparator
         settings.outdir.value = generatedClasses.getAbsolutePath
