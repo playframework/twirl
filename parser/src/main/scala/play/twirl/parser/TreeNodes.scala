@@ -14,7 +14,7 @@ object TreeNodes {
   case class Template(name: PosString, constructor: Option[Constructor], comment: Option[Comment], params: PosString, topImports: collection.Seq[Simple],
     imports: collection.Seq[Simple], defs: collection.Seq[Def], sub: collection.Seq[Template], content: collection.Seq[TemplateTree]) extends Positional
   case class PosString(str: String) extends Positional {
-    override def toString = str
+    override def toString: String = str
   }
   case class Def(name: PosString, params: PosString, code: Simple) extends Positional
   case class Plain(text: String) extends TemplateTree with Positional
