@@ -829,7 +829,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
         val paramspos = input.offset()
         val types = Option(squareBrackets()) getOrElse PosString("")
         val args = several[String, ArrayBuffer[String]] { () => parentheses() }
-        val params = position(PosString(types + args.mkString), paramspos)
+        val params = position(PosString(types.toString + args.mkString), paramspos)
         if (params != null)
           return (name, params)
       } else input.regress(1) // don't consume @
