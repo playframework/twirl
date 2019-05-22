@@ -3,11 +3,14 @@ import sbtcrossproject.crossProject
 import org.scalajs.jsenv.nodejs.NodeJSEnv
 
 // Binary compatibility is this version
-val previousVersion = "1.4.0"
+val previousVersion: Option[String] = None
 
 def binaryCompatibilitySettings(org: String, moduleName: String, scalaBinVersion: String): Set[ModuleID] = {
   if (scalaBinVersion.equals(scala213)) Set.empty
-  else Set(org % s"${moduleName}_${scalaBinVersion}" % previousVersion)
+  else previousVersion match {
+    case None     => Set.empty
+    case Some(pv) => Set(org % s"${moduleName}_${scalaBinVersion}" % pv)
+  }
 }
 
 val commonSettings = Seq(
