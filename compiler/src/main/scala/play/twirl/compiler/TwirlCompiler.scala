@@ -4,6 +4,8 @@
 package play.twirl.compiler
 
 import java.io.File
+import java.time.LocalDateTime
+
 import scala.annotation.tailrec
 import scala.io.Codec
 import scala.reflect.internal.Flags
@@ -302,15 +304,13 @@ object TwirlCompiler {
 
   def templateCode(template: Template, resultType: String): collection.Seq[Any] = {
 
-    val defs = (template.sub ++ template.defs).map { i =>
-      i match {
-        case t: Template if t.name == "" => templateCode(t, resultType)
-        case t: Template => {
-          Nil :+ (if (t.name.str.startsWith("implicit")) "implicit def " else "def ") :+ Source(t.name.str, t.name.pos) :+ Source(t.params.str, t.params.pos) :+ ":" :+ resultType :+ " = {_display_(" :+ templateCode(t, resultType) :+ ")};"
-        }
-        case Def(name, params, block) => {
-          Nil :+ (if (name.str.startsWith("implicit")) "implicit def " else "def ") :+ Source(name.str, name.pos) :+ Source(params.str, params.pos) :+ " = {" :+ block.code :+ "};"
-        }
+    val defs = (template.sub ++ template.defs).map {
+      case t: Template if t.name.toString == "" => templateCode(t, resultType)
+      case t: Template => {
+        Nil :+ (if (t.name.str.startsWith("implicit")) "implicit def " else "def ") :+ Source(t.name.str, t.name.pos) :+ Source(t.params.str, t.params.pos) :+ ":" :+ resultType :+ " = {_display_(" :+ templateCode(t, resultType) :+ ")};"
+      }
+      case Def(name, params, block) => {
+        Nil :+ (if (name.str.startsWith("implicit")) "implicit def " else "def ") :+ Source(name.str, name.pos) :+ Source(params.str, params.pos) :+ " = {" :+ block.code :+ "};"
       }
     }
 
@@ -572,18 +572,14 @@ object Source {
     val positions = ListBuffer.empty[(Int, Int)]
     val lines = ListBuffer.empty[(Int, Int)]
     serialize(generatedTokens, scalaCode, positions, lines)
-    scalaCode + """
+    scalaCode.toString + s"""
               /*
                   -- GENERATED --
-                  DATE: """ + new java.util.Date + """
-                  SOURCE: """ + absolutePath.replace(File.separator, "/") + """
-                  HASH: """ + hash + """
-                  MATRIX: """ + positions.map { pos =>
-      pos._1 + "->" + pos._2
-    }.mkString("|") + """
-                  LINES: """ + lines.map { line =>
-      line._1 + "->" + line._2
-    }.mkString("|") + """
+                  DATE: ${LocalDateTime.now()}
+                  SOURCE: ${absolutePath.replace(File.separator, "/")}
+                  HASH: $hash
+                  MATRIX: ${positions.map(pos => s"${pos._1}->${pos._2}").mkString("|")}
+                  LINES: ${lines.map(line => s"${line._1}->${line._2}").mkString("|")}
                   -- GENERATED --
               */
           """
