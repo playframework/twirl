@@ -2,6 +2,14 @@ import interplay.ScalaVersions._
 import sbtcrossproject.crossProject
 import org.scalajs.jsenv.nodejs.NodeJSEnv
 
+// Binary compatibility is this version
+val previousVersion = "1.4.0"
+
+def binaryCompatibilitySettings(org: String, moduleName: String, scalaBinVersion: String): Set[ModuleID] = {
+  if (scalaBinVersion.equals(scala213)) Set.empty
+  else Set(org % s"${moduleName}_${scalaBinVersion}" % previousVersion)
+}
+
 val commonSettings = Seq(
   scalaVersion := scala212,
   crossScalaVersions := Seq(scala210, scala212, scala213)
@@ -28,6 +36,7 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
     .enablePlugins(PlayLibrary, Playdoc)
     .configs(Docs)
     .settings(commonSettings: _*)
+    .settings(mimaPreviousArtifacts := binaryCompatibilitySettings(organization.value, moduleName.value, scalaBinaryVersion.value))
     .settings(
       name := "twirl-api",
       jsEnv := nodeJs,
@@ -42,6 +51,7 @@ lazy val parser = project
     .in(file("parser"))
     .enablePlugins(PlayLibrary)
     .settings(commonSettings: _*)
+    .settings(mimaPreviousArtifacts := binaryCompatibilitySettings(organization.value, moduleName.value, scalaBinaryVersion.value))
     .settings(
       name := "twirl-parser",
       libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
@@ -54,6 +64,7 @@ lazy val compiler = project
     .enablePlugins(PlayLibrary)
     .dependsOn(apiJvm, parser % "compile;test->test")
     .settings(commonSettings: _*)
+    .settings(mimaPreviousArtifacts := binaryCompatibilitySettings(organization.value, moduleName.value, scalaBinaryVersion.value))
     .settings(
       name := "twirl-compiler",
       libraryDependencies += scalaCompiler(scalaVersion.value),

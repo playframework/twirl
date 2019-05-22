@@ -4,3 +4,5 @@ addSbtPlugin("com.typesafe.play" % "interplay" % sys.props.get("interplay.versio
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.27")
 
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "0.6.0")
+
+addSbtPlugin("com.typesafe" % "sbt-mima-plugin" % "0.3.0")
