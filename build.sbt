@@ -13,15 +13,46 @@ def binaryCompatibilitySettings(org: String, moduleName: String, scalaBinVersion
   }
 }
 
-val commonSettings = Seq(
+val javacParameters = Seq(
+  "-source", "1.8",
+  "-target", "1.8",
+  "-Xlint:deprecation",
+  "-Xlint:unchecked"
+)
+
+val scalacBasicParams = Seq(
+  "-target:jvm-1.8",
+)
+
+val scalacExtraParams = scalacBasicParams ++ Seq(
+  "-Ywarn-unused:imports",
+  "-Xlint:nullary-unit",
+
+  "-Xlint",
+  "-Ywarn-dead-code",
+)
+
+val javaCompilerSettings = Seq(
+  javacOptions in Compile ++= javacParameters,
+  javacOptions in Test ++= javacParameters,
+)
+
+def scalacCompilerSettings(scalaVer: String) = if (scalaVer.equals(scala210)) {
+  scalacBasicParams
+} else {
+  scalacExtraParams
+}
+
+val commonSettings = javaCompilerSettings ++ Seq(
   scalaVersion := scala212,
-  crossScalaVersions := Seq(scala210, scala212, scala213)
+  crossScalaVersions := Seq(scala210, scala212, scala213),
+  scalacOptions ++= scalacCompilerSettings(scalaVersion.value),
 )
 
 lazy val twirl = project
     .in(file("."))
     .enablePlugins(PlayRootProject)
-    .settings(commonSettings: _*)
+    .settings(commonSettings)
     .settings(crossScalaVersions := Nil) // workaround so + uses project-defined variants
     .settings(releaseCrossBuild := false)
     .aggregate(apiJvm, apiJs, parser, compiler, plugin)
@@ -38,7 +69,7 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
     .in(file("api"))
     .enablePlugins(PlayLibrary, Playdoc)
     .configs(Docs)
-    .settings(commonSettings: _*)
+    .settings(commonSettings)
     .settings(mimaPreviousArtifacts := binaryCompatibilitySettings(organization.value, moduleName.value, scalaBinaryVersion.value))
     .settings(
       name := "twirl-api",
@@ -53,7 +84,7 @@ lazy val apiJs = api.js
 lazy val parser = project
     .in(file("parser"))
     .enablePlugins(PlayLibrary)
-    .settings(commonSettings: _*)
+    .settings(commonSettings)
     .settings(mimaPreviousArtifacts := binaryCompatibilitySettings(organization.value, moduleName.value, scalaBinaryVersion.value))
     .settings(
       name := "twirl-parser",
@@ -66,7 +97,7 @@ lazy val compiler = project
     .in(file("compiler"))
     .enablePlugins(PlayLibrary)
     .dependsOn(apiJvm, parser % "compile;test->test")
-    .settings(commonSettings: _*)
+    .settings(commonSettings)
     .settings(mimaPreviousArtifacts := binaryCompatibilitySettings(organization.value, moduleName.value, scalaBinaryVersion.value))
     .settings(
       name := "twirl-compiler",
@@ -79,6 +110,7 @@ lazy val plugin = project
     .in(file("sbt-twirl"))
     .enablePlugins(PlaySbtPlugin, SbtPlugin)
     .dependsOn(compiler)
+    .settings(javaCompilerSettings)
     .settings(
       name := "sbt-twirl",
       organization := "com.typesafe.sbt",
@@ -90,7 +122,8 @@ lazy val plugin = project
         publishLocal.all(ScopeFilter(
           inDependencies(compiler)
         )).value
-      }
+      },
+      scalacOptions ++= scalacCompilerSettings(scalaVersion.value),
     )
 
 playBuildRepoName in ThisBuild := "twirl"
