@@ -10,7 +10,7 @@ pull_request_rules:
       - label!=status:block-merge
     actions:
       merge:
-        method: squash
+        method: merge
         strict: smart
         
   - name: Delete the PR branch after merge
