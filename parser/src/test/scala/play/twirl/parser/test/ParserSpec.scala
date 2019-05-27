@@ -107,7 +107,7 @@ class ParserSpec extends WordSpec with MustMatchers with Inside {
         ifBlockBody(1) must be (Simple(".map"))
         val mapBlock = ifBlockBody(2).asInstanceOf[Block]
         mapBlock.args.map(_.toString) mustBe Some(" v =>")
-        var mapBlockBody = ifBlockBody(2).asInstanceOf[Block].content(1).asInstanceOf[Display].exp.parts
+        val mapBlockBody = ifBlockBody(2).asInstanceOf[Block].content(1).asInstanceOf[Display].exp.parts
         mapBlockBody.head must be (Simple("v"))
         mapBlockBody(1) must be (Simple("._1"))
       }
