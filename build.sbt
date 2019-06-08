@@ -2,16 +2,58 @@ import interplay.ScalaVersions._
 import sbtcrossproject.crossProject
 import org.scalajs.jsenv.nodejs.NodeJSEnv
 
-val commonSettings = Seq(
-  scalaVersion := scala210,
-  crossScalaVersions := Seq(scalaVersion.value, scala211, scala212, scala213, "2.13.0-M3")
+// Binary compatibility is this version
+val previousVersion: Option[String] = None
+
+def binaryCompatibilitySettings(org: String, moduleName: String, scalaBinVersion: String): Set[ModuleID] = {
+  if (scalaBinVersion.equals(scala213)) Set.empty
+  else previousVersion match {
+    case None     => Set.empty
+    case Some(pv) => Set(org % s"${moduleName}_${scalaBinVersion}" % pv)
+  }
+}
+
+val javacParameters = Seq(
+  "-source", "1.8",
+  "-target", "1.8",
+  "-Xlint:deprecation",
+  "-Xlint:unchecked"
+)
+
+val scalacBasicParams = Seq(
+  "-target:jvm-1.8",
+)
+
+val scalacExtraParams = scalacBasicParams ++ Seq(
+  "-Ywarn-unused:imports",
+  "-Xlint:nullary-unit",
+
+  "-Xlint",
+  "-Ywarn-dead-code",
+)
+
+val javaCompilerSettings = Seq(
+  javacOptions in Compile ++= javacParameters,
+  javacOptions in Test ++= javacParameters,
+)
+
+def scalacCompilerSettings(scalaVer: String) = if (scalaVer.equals(scala210)) {
+  scalacBasicParams
+} else {
+  scalacExtraParams
+}
+
+val commonSettings = javaCompilerSettings ++ Seq(
+  scalaVersion := scala212,
+  crossScalaVersions := Seq(scala210, scala212, scala213),
+  scalacOptions ++= scalacCompilerSettings(scalaVersion.value),
 )
 
 lazy val twirl = project
     .in(file("."))
     .enablePlugins(PlayRootProject)
-    .enablePlugins(CrossPerProjectPlugin)
-    .settings(commonSettings: _*)
+    .settings(commonSettings)
+    .settings(crossScalaVersions := Nil) // workaround so + uses project-defined variants
     .settings(releaseCrossBuild := false)
     .aggregate(apiJvm, apiJs, parser, compiler, plugin)
 
@@ -26,7 +68,9 @@ lazy val nodeJs = {
 lazy val api = crossProject(JVMPlatform, JSPlatform)
     .in(file("api"))
     .enablePlugins(PlayLibrary, Playdoc)
-    .settings(commonSettings: _*)
+    .configs(Docs)
+    .settings(commonSettings)
+    .settings(mimaPreviousArtifacts := binaryCompatibilitySettings(organization.value, moduleName.value, scalaBinaryVersion.value))
     .settings(
       name := "twirl-api",
       jsEnv := nodeJs,
@@ -40,7 +84,8 @@ lazy val apiJs = api.js
 lazy val parser = project
     .in(file("parser"))
     .enablePlugins(PlayLibrary)
-    .settings(commonSettings: _*)
+    .settings(commonSettings)
+    .settings(mimaPreviousArtifacts := binaryCompatibilitySettings(organization.value, moduleName.value, scalaBinaryVersion.value))
     .settings(
       name := "twirl-parser",
       libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
@@ -52,7 +97,8 @@ lazy val compiler = project
     .in(file("compiler"))
     .enablePlugins(PlayLibrary)
     .dependsOn(apiJvm, parser % "compile;test->test")
-    .settings(commonSettings: _*)
+    .settings(commonSettings)
+    .settings(mimaPreviousArtifacts := binaryCompatibilitySettings(organization.value, moduleName.value, scalaBinaryVersion.value))
     .settings(
       name := "twirl-compiler",
       libraryDependencies += scalaCompiler(scalaVersion.value),
@@ -62,11 +108,13 @@ lazy val compiler = project
 
 lazy val plugin = project
     .in(file("sbt-twirl"))
-    .enablePlugins(PlaySbtPlugin)
+    .enablePlugins(PlaySbtPlugin, SbtPlugin)
     .dependsOn(compiler)
+    .settings(javaCompilerSettings)
     .settings(
       name := "sbt-twirl",
       organization := "com.typesafe.sbt",
+      scalaVersion := scala212,
       libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest(scalaVersion.value) % "test",
       resourceGenerators in Compile += generateVersionFile.taskValue,
       scriptedDependencies := {
@@ -74,7 +122,8 @@ lazy val plugin = project
         publishLocal.all(ScopeFilter(
           inDependencies(compiler)
         )).value
-      }
+      },
+      scalacOptions ++= scalacCompilerSettings(scalaVersion.value),
     )
 
 playBuildRepoName in ThisBuild := "twirl"
@@ -98,27 +147,22 @@ def generateVersionFile = Def.task {
 // Dependencies
 
 def scalatest(scalaV: String): String = scalaV match {
-  case "2.13.0-M3" => "3.0.5-M1"
-  case "2.13.0-M4" => "3.0.6-SNAP2"
-  case _ => "3.0.6-SNAP4"
+  case _ => "3.0.8-RC4"
 }
 
 def scalaCompiler(version: String) = "org.scala-lang" % "scala-compiler" % version
 
 def scalaParserCombinators(scalaVersion: String): Seq[ModuleID] = scalaVersion match {
   case interplay.ScalaVersions.scala210 => Seq.empty
-  case "2.13.0-M3" => Seq(
-    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0" % "optional"
-  )
   case _ => Seq(
-    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1" % "optional"
+    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2" % "optional"
   )
 }
 
 def scalaXml = Def.setting {
   CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((x, y)) if x > 2 || (x == 2 && y >= 11) =>
-      Seq("org.scala-lang.modules" %%% "scala-xml" % "1.1.0")
+      Seq("org.scala-lang.modules" %%% "scala-xml" % "1.2.0")
     case _ =>
       Seq.empty
   }

@@ -129,8 +129,8 @@ class CompilerSpec extends WordSpec with MustMatchers {
     "fail compilation for error.scala.html" in {
       val helper = newCompilerHelper
       the[CompilationError] thrownBy helper.compile[(() => Html)]("error.scala.html", "html.error") must have(
-        'line (2),
-        'column (12)
+        Symbol("line") (2),
+        Symbol("column") (12)
       )
     }
 
