@@ -147,7 +147,7 @@ def generateVersionFile = Def.task {
 // Dependencies
 
 def scalatest(scalaV: String): String = scalaV match {
-  case _ => "3.0.8-RC4"
+  case _ => "3.0.8"
 }
 
 def scalaCompiler(version: String) = "org.scala-lang" % "scala-compiler" % version
