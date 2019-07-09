@@ -496,9 +496,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
       val startsWithParenthesis = result.trim.startsWith("(") || result.trim.stripPrefix("case").trim.startsWith("(")
       val endsWithParenthesis = result.stripSuffix("=>").trim.endsWith(")")
-      val exactOneOpenParenthesis = result.count(_ == '(') == 1
 
-      noContainsOpenParenthesis || (startsWithParenthesis && endsWithParenthesis && exactOneOpenParenthesis)
+      noContainsOpenParenthesis || (startsWithParenthesis && endsWithParenthesis)
     }
 
     val p = input.offset()

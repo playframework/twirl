@@ -1,0 +1,5 @@
+@(args: Seq[(String, String)])
+
+@args.zipWithIndex.map { case ((k, v), index) =>
+    @k => @v
+}
