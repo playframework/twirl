@@ -25,8 +25,8 @@ private[twirl] object TwirlIO {
    */
   def readStream(stream: InputStream): Array[Byte] = {
     val buffer = new Array[Byte](8192)
-    var len = stream.read(buffer)
-    val out = new ByteArrayOutputStream()
+    var len    = stream.read(buffer)
+    val out    = new ByteArrayOutputStream()
     while (len != -1) {
       out.write(buffer, 0, len)
       len = stream.read(buffer)

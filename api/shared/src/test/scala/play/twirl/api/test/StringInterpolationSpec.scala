@@ -8,7 +8,8 @@ import java.util.ArrayList
 import java.util.Optional
 import java.util.{ List => JList }
 
-import org.scalatest.{ MustMatchers, WordSpec }
+import org.scalatest.MustMatchers
+import org.scalatest.WordSpec
 
 class StringInterpolationSpec extends WordSpec with MustMatchers {
 
@@ -19,11 +20,11 @@ class StringInterpolationSpec extends WordSpec with MustMatchers {
     }
     "escape interpolated arguments" in {
       val arg = "<"
-      val p = html"<p>$arg</p>"
+      val p   = html"<p>$arg</p>"
       p.body mustBe "<p>&lt;</p>"
     }
     "leave nested templates untouched" in {
-      val p = html"<p></p>"
+      val p   = html"<p></p>"
       val div = html"<div>$p</div>"
       div.body mustBe "<div><p></p></div>"
     }

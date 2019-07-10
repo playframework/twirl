@@ -6,8 +6,8 @@ package play.twirl.api
 import scala.language.implicitConversions
 
 /**
-  * Imports for useful Twirl helpers.
-  */
+ * Imports for useful Twirl helpers.
+ */
 object TwirlHelperImports {
 
   /** Allows Java collections to be used as if they were Scala collections. */
@@ -30,7 +30,7 @@ object TwirlHelperImports {
 
     def when(predicate: => Boolean): String = {
       predicate match {
-        case true => string
+        case true  => string
         case false => ""
       }
     }

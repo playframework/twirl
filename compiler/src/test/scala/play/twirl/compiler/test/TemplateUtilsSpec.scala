@@ -4,7 +4,8 @@
 package play.twirl.compiler
 package test
 
-import org.scalatest.{ MustMatchers, WordSpec }
+import org.scalatest.MustMatchers
+import org.scalatest.WordSpec
 import play.twirl.api._
 
 import scala.collection.immutable
@@ -26,9 +27,9 @@ class TemplateUtilsSpec extends WordSpec with MustMatchers {
         }
 
         object HtmlFormat extends Format[Html] {
-          def raw(text: String) = Html(text)
-          def escape(text: String) = Html(text.replace("<", "&lt;"))
-          def empty = Html("")
+          def raw(text: String)                   = Html(text)
+          def escape(text: String)                = Html(text.replace("<", "&lt;"))
+          def empty                               = Html("")
           def fill(elements: immutable.Seq[Html]) = Html("")
         }
 
@@ -44,9 +45,9 @@ class TemplateUtilsSpec extends WordSpec with MustMatchers {
         }
 
         object TextFormat extends Format[Text] {
-          def raw(text: String) = Text(text)
-          def escape(text: String) = Text(text)
-          def empty = Text("")
+          def raw(text: String)                   = Text(text)
+          def escape(text: String)                = Text(text)
+          def empty                               = Text("")
           def fill(elements: immutable.Seq[Text]) = Text("")
         }
 

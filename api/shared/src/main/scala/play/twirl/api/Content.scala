@@ -32,7 +32,11 @@ trait Content {
  * @param text Formatted content
  * @tparam A self-type
  */
-abstract class BufferedContent[A <: BufferedContent[A]](protected val elements: immutable.Seq[A], protected val text: String) extends Appendable[A] with Content { this: A =>
+abstract class BufferedContent[A <: BufferedContent[A]](
+    protected val elements: immutable.Seq[A],
+    protected val text: String
+) extends Appendable[A]
+    with Content { this: A =>
   protected def buildString(builder: StringBuilder): Unit = {
     if (!elements.isEmpty) {
       elements.foreach { e =>
@@ -59,7 +63,7 @@ abstract class BufferedContent[A <: BufferedContent[A]](protected val elements: 
 
   override def equals(obj: Any): Boolean = obj match {
     case other: BufferedContent[_] if this.getClass == other.getClass => body == other.body
-    case _ => false
+    case _                                                            => false
   }
 
   override def hashCode(): Int = this.getClass.hashCode() + body.hashCode()

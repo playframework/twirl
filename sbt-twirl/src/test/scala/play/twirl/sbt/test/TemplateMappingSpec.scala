@@ -4,7 +4,9 @@
 package play.twirl.sbt
 package test
 
-import org.scalatest.{ Inspectors, MustMatchers, WordSpec }
+import org.scalatest.Inspectors
+import org.scalatest.MustMatchers
+import org.scalatest.WordSpec
 import play.twirl.sbt.TemplateProblem.TemplateMapping
 import play.twirl.sbt.TemplateProblem.TemplateMapping.Location
 
@@ -33,7 +35,7 @@ class TemplateMappingSpec extends WordSpec with MustMatchers with Inspectors {
         Location(4, 1, 7, "d")
       )
 
-      forAll (testLocations) { location =>
+      forAll(testLocations) { location =>
         mapping.location(location.offset) mustBe Some(location)
         mapping.location(location.line, location.column) mustBe Some(location)
       }
@@ -47,8 +49,9 @@ class TemplateMappingSpec extends WordSpec with MustMatchers with Inspectors {
         10 -> Location(4, 1, 7, "d")
       )
 
-      forAll(testOffsets) { case (offset, location) =>
-        mapping.location(offset) mustBe Some(location)
+      forAll(testOffsets) {
+        case (offset, location) =>
+          mapping.location(offset) mustBe Some(location)
       }
 
       val testPositions = Seq(
@@ -61,8 +64,9 @@ class TemplateMappingSpec extends WordSpec with MustMatchers with Inspectors {
         (5, 0)  -> Location(4, 1, 7, "d")
       )
 
-      forAll(testPositions) { case ((line, column), location) =>
-        mapping.location(line, column) mustBe Some(location)
+      forAll(testPositions) {
+        case ((line, column), location) =>
+          mapping.location(line, column) mustBe Some(location)
       }
     }
   }

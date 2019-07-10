@@ -4,7 +4,9 @@
 package play.twirl.parser
 package test
 
-import org.scalatest.{Inside, MustMatchers, WordSpec}
+import org.scalatest.Inside
+import org.scalatest.MustMatchers
+import org.scalatest.WordSpec
 import play.twirl.parser.TreeNodes._
 
 class ParserSpec extends WordSpec with MustMatchers with Inside {
@@ -70,23 +72,25 @@ class ParserSpec extends WordSpec with MustMatchers with Inside {
       }
 
       "elseIf.scala.html" in {
-        val template = parseTemplate("elseIf.scala.html")
-        val node = template.content(1)
+        val template    = parseTemplate("elseIf.scala.html")
+        val node        = template.content(1)
         val expressions = node.asInstanceOf[Display].exp.parts
-        expressions.head must be (Simple("if(input == 5)"))
+        expressions.head must be(Simple("if(input == 5)"))
         expressions(1).asInstanceOf[Block]
-        expressions(2) must be (Simple("else if(input == 6)"))
+        expressions(2) must be(Simple("else if(input == 6)"))
         expressions(3).asInstanceOf[Block]
-        expressions(4) must be (Simple("else if(input == 8)"))
+        expressions(4) must be(Simple("else if(input == 8)"))
         expressions(5).asInstanceOf[Block]
-        expressions(6) must be (Simple("else"))
+        expressions(6) must be(Simple("else"))
       }
 
       "imports.scala.html" in {
-        parseTemplate("imports.scala.html").topImports must be (Seq(
-          Simple("import java.io.File"),
-          Simple("import java.net.URL")
-        ))
+        parseTemplate("imports.scala.html").topImports must be(
+          Seq(
+            Simple("import java.io.File"),
+            Simple("import java.net.URL")
+          )
+        )
       }
 
       "case.scala.js" in {
@@ -94,48 +98,48 @@ class ParserSpec extends WordSpec with MustMatchers with Inside {
       }
 
       "import expressions" in {
-        parseTemplateString("@import identifier").topImports must be (Seq(Simple("import identifier")))
+        parseTemplateString("@import identifier").topImports must be(Seq(Simple("import identifier")))
         parseTemplateString("@importIdentifier").topImports mustBe empty
       }
 
       "code block containing => of another statement with curly braces in first line" in {
-        val tmpl = parseTemplateString("""@if(attrs!=null){@attrs.map{ v => @v._1 }}""") // "@attrs.map{ v =>" should not be handled as block args
+        val tmpl          = parseTemplateString("""@if(attrs!=null){@attrs.map{ v => @v._1 }}""") // "@attrs.map{ v =>" should not be handled as block args
         val ifExpressions = tmpl.content(0).asInstanceOf[Display].exp.parts
-        ifExpressions.head must be (Simple("if(attrs!=null)"))
+        ifExpressions.head must be(Simple("if(attrs!=null)"))
         val ifBlockBody = ifExpressions(1).asInstanceOf[Block].content(0).asInstanceOf[Display].exp.parts
-        ifBlockBody.head must be (Simple("attrs"))
-        ifBlockBody(1) must be (Simple(".map"))
+        ifBlockBody.head must be(Simple("attrs"))
+        ifBlockBody(1) must be(Simple(".map"))
         val mapBlock = ifBlockBody(2).asInstanceOf[Block]
         mapBlock.args.map(_.toString) mustBe Some(" v =>")
         val mapBlockBody = ifBlockBody(2).asInstanceOf[Block].content(1).asInstanceOf[Display].exp.parts
-        mapBlockBody.head must be (Simple("v"))
-        mapBlockBody(1) must be (Simple("._1"))
+        mapBlockBody.head must be(Simple("v"))
+        mapBlockBody(1) must be(Simple("._1"))
       }
 
       "code block containing => of another statement with parentheses in first line" in {
-        val tmpl = parseTemplateString("""@if(attrs!=null){@attrs.map( v => @v._1 )}""") // "@attrs.map( v =>" should not be handled as block args
+        val tmpl          = parseTemplateString("""@if(attrs!=null){@attrs.map( v => @v._1 )}""") // "@attrs.map( v =>" should not be handled as block args
         val ifExpressions = tmpl.content(0).asInstanceOf[Display].exp.parts
-        ifExpressions.head must be (Simple("if(attrs!=null)"))
+        ifExpressions.head must be(Simple("if(attrs!=null)"))
         val ifBlockBody = ifExpressions(1).asInstanceOf[Block].content(0).asInstanceOf[Display].exp.parts
-        ifBlockBody.head must be (Simple("attrs"))
-        ifBlockBody(1) must be (Simple(".map( v => @v._1 )"))
+        ifBlockBody.head must be(Simple("attrs"))
+        ifBlockBody(1) must be(Simple(".map( v => @v._1 )"))
       }
 
       "code block containing (...) => in first line" in {
-        val tmpl = parseTemplateString("""@if(attrs!=null){( arg1, arg2 ) => @arg1.toString }""") // "( arg1, arg2 ) =>" should be handled as block args
+        val tmpl          = parseTemplateString("""@if(attrs!=null){( arg1, arg2 ) => @arg1.toString }""") // "( arg1, arg2 ) =>" should be handled as block args
         val ifExpressions = tmpl.content(0).asInstanceOf[Display].exp.parts
-        ifExpressions.head must be (Simple("if(attrs!=null)"))
+        ifExpressions.head must be(Simple("if(attrs!=null)"))
         val ifBlock = ifExpressions(1).asInstanceOf[Block]
         ifBlock.args.map(_.toString) mustBe Some("( arg1, arg2 ) =>")
         val ifBlockBody = ifBlock.content(1).asInstanceOf[Display].exp.parts
-        ifBlockBody.head must be (Simple("arg1"))
-        ifBlockBody(1) must be (Simple(".toString"))
+        ifBlockBody.head must be(Simple("arg1"))
+        ifBlockBody(1) must be(Simple(".toString"))
       }
 
       "text outside of code block on same line containing =>" in {
-        val tmpl = parseTemplateString("""@if(attrs!=null){blockbody}Some plain text with => inside""") // "blockbody}Some plain text with =>" should not be handled as block args
+        val tmpl          = parseTemplateString("""@if(attrs!=null){blockbody}Some plain text with => inside""") // "blockbody}Some plain text with =>" should not be handled as block args
         val ifExpressions = tmpl.content(0).asInstanceOf[Display].exp.parts
-        ifExpressions.head must be (Simple("if(attrs!=null)"))
+        ifExpressions.head must be(Simple("if(attrs!=null)"))
         val ifBlockBody = ifExpressions(1).asInstanceOf[Block].content(0).asInstanceOf[Plain]
         ifBlockBody.text mustBe "blockbody"
         val outsideIf = tmpl.content(1).asInstanceOf[Plain]
@@ -143,20 +147,22 @@ class ParserSpec extends WordSpec with MustMatchers with Inside {
       }
 
       "match statement not allowed to have block arguments" in {
-        val tmpl = parseTemplateString("""@fooVariable match { case x: String => { Nice string } case _ => { Not a nice string } }""") // " case x: String =>" should not be handled as block args of the match block
+        val tmpl = parseTemplateString(
+          """@fooVariable match { case x: String => { Nice string } case _ => { Not a nice string } }"""
+        ) // " case x: String =>" should not be handled as block args of the match block
         val matchExpressions = tmpl.content(0).asInstanceOf[Display].exp.parts
-        matchExpressions.head must be (Simple("fooVariable"))
-        matchExpressions(1) must be (Simple(" match"))
+        matchExpressions.head must be(Simple("fooVariable"))
+        matchExpressions(1) must be(Simple(" match"))
 
         val matchBlock = matchExpressions(2).asInstanceOf[Block].content
 
         val firstCaseBlock = matchBlock.head.asInstanceOf[ScalaExp].parts
-        firstCaseBlock.head must be (Simple("case x: String =>"))
+        firstCaseBlock.head must be(Simple("case x: String =>"))
         val firstCaseBlockBody = firstCaseBlock(1).asInstanceOf[Block]
         firstCaseBlockBody.content(1).asInstanceOf[Plain].text mustBe "Nice string "
 
         val secondCaseBlock = matchBlock(1).asInstanceOf[ScalaExp].parts
-        secondCaseBlock.head must be (Simple("case _ =>"))
+        secondCaseBlock.head must be(Simple("case _ =>"))
         val secondCaseBlockBody = secondCaseBlock(1).asInstanceOf[Block]
         secondCaseBlockBody.content(1).asInstanceOf[Plain].text mustBe "Not a nice string "
       }
@@ -197,4 +203,3 @@ class ParserSpec extends WordSpec with MustMatchers with Inside {
   }
 
 }
-
