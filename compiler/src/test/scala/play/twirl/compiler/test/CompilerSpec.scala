@@ -241,6 +241,16 @@ class CompilerSpec extends WordSpec with MustMatchers {
     hello.static(args).toString.trim must be("the-key => the-value")
   }
 
+  "compile successfully (block with nested tuples)" in {
+    val helper = newCompilerHelper
+    val hello = helper.compile[(Seq[(String, String)] => Html)]("blockWithNestedTuple.scala.html", "html.blockWithNestedTuple")
+
+    val args = Seq[(String, String)](
+      "the-key" -> "the-value"
+    )
+    hello.static(args).toString.trim must be("the-key => the-value")
+  }
+
 }
 
 object Helper {
