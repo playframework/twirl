@@ -438,7 +438,7 @@ package """ :+ packageName :+ """
           }.mkString(",") + ")",
           returnType,
           params.map(group => "(" + group.map { p =>
-            p.name.toString + Option(p.tpt.toString).filter(_.startsWith("_root_.scala.<repeated>")).map(_ => ":_*").getOrElse("")
+            p.name.toString + Option(p.tpt.toString).filter(_.startsWith("_root_.scala.<repeated>")).map(_ => ".toIndexedSeq:_*").getOrElse("")
           }.mkString(",") + ")").mkString)
 
         val templateType = "_root_.play.twirl.api.Template%s[%s%s]".format(
@@ -453,7 +453,7 @@ package """ :+ packageName :+ """
           functionType,
           params.map(group => "(" + group.map(_.name.toString).mkString(",") + ")").mkString(" => "),
           params.map(group => "(" + group.map { p =>
-            p.name.toString + Option(p.tpt.toString).filter(_.startsWith("_root_.scala.<repeated>")).map(_ => ":_*").getOrElse("")
+            p.name.toString + Option(p.tpt.toString).filter(_.startsWith("_root_.scala.<repeated>")).map(_ => ".toIndexedSeq:_*").getOrElse("")
           }.mkString(",") + ")").mkString)
 
         (renderCall, f, templateType)
