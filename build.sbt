@@ -43,7 +43,17 @@ def scalacCompilerSettings(scalaVer: String) = if (scalaVer.equals(scala210)) {
   scalacExtraParams
 }
 
-val commonSettings = javaCompilerSettings ++ Seq(
+val headerSettings = Seq(
+  headerLicense := {
+    val currentYear = java.time.Year.now(java.time.Clock.systemUTC).getValue
+    Some(HeaderLicense.Custom(
+      s"Copyright (C) 2009-$currentYear Lightbend Inc. <https://www.lightbend.com>"
+    ))
+  },
+  headerEmptyLine := false
+)
+
+val commonSettings = javaCompilerSettings ++ headerSettings ++ Seq(
   scalaVersion := scala212,
   crossScalaVersions := Seq(scala210, scala212, scala213),
   scalacOptions ++= scalacCompilerSettings(scalaVersion.value),
@@ -111,6 +121,7 @@ lazy val plugin = project
     .enablePlugins(PlaySbtPlugin, SbtPlugin)
     .dependsOn(compiler)
     .settings(javaCompilerSettings)
+    .settings(headerSettings)
     .settings(
       name := "sbt-twirl",
       organization := "com.typesafe.sbt",
@@ -167,3 +178,5 @@ def scalaXml = Def.setting {
       Seq.empty
   }
 }
+
+addCommandAlias("validateCode", ";headerCheck;test:headerCheck")
