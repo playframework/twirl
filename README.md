@@ -8,14 +8,12 @@ stand-alone without any dependency on Play.
 See the Play [documentation for the template engine][docs] for more information
 about the template syntax.
 
-
-sbt-twirl
----------
+## sbt-twirl
 
 Twirl can also be used outside of Play. An sbt plugin is provided for easy
 integration with Scala or Java projects.
 
-*sbt-twirl requires sbt 0.13.5 or higher*
+> sbt-twirl requires sbt 0.13.5 or higher.
 
 To add the sbt plugin to your project add the sbt plugin dependency in
 `project/plugins.sbt`:
@@ -71,9 +69,7 @@ sources alongside Scala or Java source files:
 sourceDirectories in (Compile, TwirlKeys.compileTemplates) := (unmanagedSourceDirectories in Compile).value
 ```
 
-
-Credits
--------
+## Credits
 
 The name *twirl* was thought up by the [Spray team][spray] and refers to the
 magic `@` character in the template language, which is sometimes called "twirl".
@@ -82,7 +78,6 @@ The first stand-alone version of Twirl was created by the [Spray team][spray].
 
 An optimized version of the Twirl parser was contributed by the
 [Scala IDE team][scala-ide].
-
 
 [play-site]: http://www.playframework.com
 [docs]: http://www.playframework.com/documentation/latest/ScalaTemplates

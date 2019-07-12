@@ -117,3 +117,5 @@ def whenAtLeast(version: String, major: Int, minor: Int, module: ModuleID): Seq[
     case _ => Seq.empty
   }
 }
+
+addCommandAlias("validateCode", ";headerCheck;test:headerCheck")
