@@ -9,7 +9,14 @@ lazy val docs = project
     libraryDependencies += component("play-test") % "test",
     libraryDependencies += component("play-specs2") % "test",
     PlayDocsKeys.javaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "javaGuide" ** "code").get,
-    PlayDocsKeys.scalaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "scalaGuide" ** "code").get
+    PlayDocsKeys.scalaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "scalaGuide" ** "code").get,
+    headerLicense := {
+      val currentYear = java.time.Year.now(java.time.Clock.systemUTC).getValue
+      Some(HeaderLicense.Custom(
+        s"Copyright (C) 2009-$currentYear Lightbend Inc. <https://www.lightbend.com>"
+      ))
+    },
+    headerEmptyLine := false
   ).settings(overrideTwirlSettings: _*)
   .dependsOn(twirlApi)
 
