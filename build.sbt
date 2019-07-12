@@ -8,7 +8,17 @@ def binaryCompatibilitySettings(org: String, moduleName: String, scalaBinVersion
   else Set(artifact % "1.4.0")
 }
 
-val commonSettings = Seq(
+val headerSettings = Seq(
+  headerLicense := {
+    val currentYear = java.time.Year.now(java.time.Clock.systemUTC).getValue
+    Some(HeaderLicense.Custom(
+      s"Copyright (C) 2009-$currentYear Lightbend Inc. <https://www.lightbend.com>"
+    ))
+  },
+  headerEmptyLine := false
+)
+
+val commonSettings = headerSettings ++ Seq(
   scalaVersion := scala212,
   crossScalaVersions := Seq(scala210, "2.11.12", scala212, scala213)
 )
@@ -74,6 +84,7 @@ lazy val plugin = project
     .in(file("sbt-twirl"))
     .enablePlugins(PlaySbtPlugin, SbtPlugin)
     .dependsOn(compiler)
+    .settings(headerSettings)
     .settings(
       name := "sbt-twirl",
       organization := "com.typesafe.sbt",
