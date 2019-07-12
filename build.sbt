@@ -4,7 +4,17 @@ val scalatest = "3.0.5-M1"
 
 val scala213Version = "2.13.0-M3"
 
-val commonSettings = Seq(
+val headerSettings = Seq(
+  headerLicense := {
+    val currentYear = java.time.Year.now(java.time.Clock.systemUTC).getValue
+    Some(HeaderLicense.Custom(
+      s"Copyright (C) 2009-$currentYear Lightbend Inc. <https://www.lightbend.com>"
+    ))
+  },
+  headerEmptyLine := false
+)
+
+val commonSettings = headerSettings ++ Seq(
   scalaVersion := scala210,
   crossScalaVersions := Seq(scalaVersion.value, scala211, scala212, scala213Version)
 )
