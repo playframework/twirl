@@ -3,8 +3,7 @@
  */
 package play.twirl.parser
 
-import scala.annotation.{elidable, tailrec}
-import scala.annotation.elidable._
+import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
@@ -136,17 +135,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     def regress(decrement: Int): Unit = offset_ -= decrement
 
     /** Backtrack to a known offset */
-    def regressTo(offset: Int): Unit = {
-      @noinline @elidable(INFO)
-      def updateRegressionStatistics() = {
-        val distance = offset_ - offset
-        val methodName = Thread.currentThread().getStackTrace()(2).getMethodName
-        val (count, charAccum) = regressionStatistics.getOrElse(methodName, (0, 0))
-        regressionStatistics(methodName) = (count + 1, charAccum + distance)
-      }
-
-      offset_ = offset
-    }
+    def regressTo(offset: Int): Unit = offset_ = offset
 
     def isPastEOF(len: Int): Boolean = (offset_ + len-1) >= length_
 
