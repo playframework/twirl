@@ -140,3 +140,5 @@ def scalaXml = Def.setting {
       Seq.empty
   }
 }
+
+addCommandAlias("validateCode", ";headerCheck;test:headerCheck")

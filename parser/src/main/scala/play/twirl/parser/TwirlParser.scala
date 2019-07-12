@@ -11,7 +11,7 @@ import scala.collection.mutable.ListBuffer
 import scala.util.parsing.input.OffsetPosition
 
 /**
- * TwirlParser is a recursive descent parser for a modified grammar of the Play2 template language as loosely defined [[http://www.playframework.com/documentation/2.1.x/ here]] and more rigorously defined by the original template parser, `play.templates.ScalaTemplateCompiler.TemplateParser`.
+ * TwirlParser is a recursive descent parser for a modified grammar of the Play2 template language as loosely defined [[http://www.playframework.com/documentation/latest/Home here]] and more rigorously defined by the original template parser, `play.templates.ScalaTemplateCompiler.TemplateParser`.
  * TwirlParser is meant to be a near drop in replacement for `play.templates.ScalaTemplateCompiler.TemplateParser`.
  *
  * The original grammar, as reversed-engineered from `play.templates.ScalaTemplateCompiler.TemplateParser`, is defined as follows:
