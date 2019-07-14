@@ -4,8 +4,8 @@ import org.scalajs.jsenv.nodejs.NodeJSEnv
 
 def binaryCompatibilitySettings(org: String, moduleName: String, scalaBinVersion: String): Set[ModuleID] = {
   val artifact = org % s"${moduleName}_${scalaBinVersion}"
-  if (scalaBinVersion.equals(scala213)) Set(artifact % "1.4.2")
-  else Set(artifact                                  % "1.4.0")
+  if (scala213.startsWith(scalaBinVersion)) Set(artifact % "1.4.2")
+  else Set(artifact                                      % "1.4.0")
 }
 
 val headerSettings = Seq(
@@ -28,9 +28,12 @@ val commonSettings = headerSettings ++ Seq(
 lazy val twirl = project
   .in(file("."))
   .enablePlugins(PlayRootProject)
-  .settings(commonSettings: _*)
-  .settings(crossScalaVersions := Nil) // workaround so + uses project-defined variants
-  .settings(releaseCrossBuild := false)
+  .settings(commonSettings)
+  .settings(
+    crossScalaVersions := Nil, // workaround so + uses project-defined variants
+    releaseCrossBuild := false,
+    mimaFailOnNoPrevious := false
+  )
   .aggregate(apiJvm, apiJs, parser, compiler, plugin)
 
 lazy val nodeJs = {
@@ -46,13 +49,15 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
   .configs(Docs)
   .settings(commonSettings: _*)
   .settings(
-    mimaPreviousArtifacts := binaryCompatibilitySettings(organization.value, moduleName.value, scalaBinaryVersion.value)
-  )
-  .settings(
     name := "twirl-api",
     jsEnv := nodeJs,
     libraryDependencies ++= scalaXml.value,
-    libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest(scalaVersion.value) % "test"
+    libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest(scalaVersion.value) % "test",
+    mimaPreviousArtifacts := binaryCompatibilitySettings(
+      organization.value,
+      moduleName.value,
+      scalaBinaryVersion.value
+    ),
   )
 
 lazy val apiJvm = api.jvm
@@ -63,13 +68,11 @@ lazy val parser = project
   .enablePlugins(PlayLibrary)
   .settings(commonSettings: _*)
   .settings(
-    mimaPreviousArtifacts := binaryCompatibilitySettings(organization.value, moduleName.value, scalaBinaryVersion.value)
-  )
-  .settings(
     name := "twirl-parser",
     libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
     libraryDependencies += "com.novocode"  % "junit-interface" % "0.11"                        % "test",
-    libraryDependencies += "org.scalatest" %%% "scalatest"     % scalatest(scalaVersion.value) % "test"
+    libraryDependencies += "org.scalatest" %%% "scalatest"     % scalatest(scalaVersion.value) % "test",
+    mimaPreviousArtifacts := binaryCompatibilitySettings(organization.value, moduleName.value, scalaBinaryVersion.value)
   )
 
 lazy val compiler = project
@@ -78,13 +81,15 @@ lazy val compiler = project
   .dependsOn(apiJvm, parser % "compile;test->test")
   .settings(commonSettings: _*)
   .settings(
-    mimaPreviousArtifacts := binaryCompatibilitySettings(organization.value, moduleName.value, scalaBinaryVersion.value)
-  )
-  .settings(
     name := "twirl-compiler",
     libraryDependencies += scalaCompiler(scalaVersion.value),
     libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
-    fork in run := true
+    fork in run := true,
+    mimaPreviousArtifacts := binaryCompatibilitySettings(
+      organization.value,
+      moduleName.value,
+      scalaBinaryVersion.value
+    ),
   )
 
 lazy val plugin = project
@@ -107,7 +112,8 @@ lazy val plugin = project
           )
         )
         .value
-    }
+    },
+    mimaFailOnNoPrevious := false,
   )
 
 playBuildRepoName in ThisBuild := "twirl"
