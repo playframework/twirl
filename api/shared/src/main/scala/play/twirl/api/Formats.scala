@@ -23,7 +23,8 @@ object Formats {
  * This has 3 states, either it's a tree of elements, or a leaf, if it's a leaf, it's either safe text, or unsafe text
  * that needs to be escaped when written out.
  */
-class Html private[api] (elements: immutable.Seq[Html], text: String, escape: Boolean) extends BufferedContent[Html](elements, text) {
+class Html private[api] (elements: immutable.Seq[Html], text: String, escape: Boolean)
+    extends BufferedContent[Html](elements, text) {
   def this(text: String) = this(Nil, Formats.safe(text), false)
   def this(elements: immutable.Seq[Html]) = this(elements, "", false)
 
@@ -36,7 +37,7 @@ class Html private[api] (elements: immutable.Seq[Html], text: String, escape: Bo
    * of Strings, if it doesn't, performance actually goes down (measured 10%), due to the fact that the JVM can't
    * optimise the invocation of buildString as well because there are two different possible implementations.
    */
-  override protected def buildString(builder: StringBuilder): Unit = {
+  protected override def buildString(builder: StringBuilder): Unit = {
     if (elements.nonEmpty) {
       elements.foreach { e =>
         e.buildString(builder)
@@ -47,12 +48,12 @@ class Html private[api] (elements: immutable.Seq[Html], text: String, escape: Bo
       var i = 0
       while (i < text.length) {
         text.charAt(i) match {
-          case '<' => builder.append("&lt;")
-          case '>' => builder.append("&gt;")
-          case '"' => builder.append("&quot;")
+          case '<'  => builder.append("&lt;")
+          case '>'  => builder.append("&gt;")
+          case '"'  => builder.append("&quot;")
           case '\'' => builder.append("&#x27;")
-          case '&' => builder.append("&amp;")
-          case c => builder += c
+          case '&'  => builder.append("&amp;")
+          case c    => builder += c
         }
         i += 1
       }
@@ -80,8 +81,8 @@ object Html {
   }
 
   /**
-    * Creates an HTML fragment with initial content specified. Uses an empty String if None is passed.
-    */
+   * Creates an HTML fragment with initial content specified. Uses an empty String if None is passed.
+   */
   def apply(text: Option[String]): Html = {
     apply(text.getOrElse(""))
   }
@@ -227,7 +228,8 @@ object XmlFormat extends Format[Xml] {
 /**
  * Type used in default JavaScript templates.
  */
-class JavaScript private (elements: immutable.Seq[JavaScript], text: String) extends BufferedContent[JavaScript](elements, text) {
+class JavaScript private (elements: immutable.Seq[JavaScript], text: String)
+    extends BufferedContent[JavaScript](elements, text) {
   def this(text: String) = this(Nil, Formats.safe(text))
   def this(elements: immutable.Seq[JavaScript]) = this(elements, "")
 
@@ -241,6 +243,7 @@ class JavaScript private (elements: immutable.Seq[JavaScript], text: String) ext
  * Helper for JavaScript utility methods.
  */
 object JavaScript {
+
   /**
    * Creates a JavaScript fragment with initial content specified
    */
@@ -253,6 +256,7 @@ object JavaScript {
  * Formatter for JavaScript content.
  */
 object JavaScriptFormat extends Format[JavaScript] {
+
   /**
    * Integrate `text` without performing any escaping process.
    * @param text Text to integrate

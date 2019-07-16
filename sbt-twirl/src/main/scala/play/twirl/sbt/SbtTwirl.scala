@@ -11,14 +11,19 @@ import scala.io.Codec
 
 object Import {
   object TwirlKeys {
-    val twirlVersion = SettingKey[String]("twirl-version", "Twirl version used for twirl-api dependency")
+    val twirlVersion    = SettingKey[String]("twirl-version", "Twirl version used for twirl-api dependency")
     val templateFormats = SettingKey[Map[String, String]]("twirl-template-formats", "Defined twirl template formats")
     val templateImports = SettingKey[Seq[String]]("twirl-template-imports", "Extra imports for twirl templates")
-    val constructorAnnotations = SettingKey[Seq[String]]("twirl-constructor-annotations", "Annotations added to constructors in injectable templates")
+    val constructorAnnotations = SettingKey[Seq[String]](
+      "twirl-constructor-annotations",
+      "Annotations added to constructors in injectable templates"
+    )
     @deprecated("No longer supported", "1.2.0")
     val useOldParser = SettingKey[Boolean]("twirl-use-old-parser", "No longer supported")
-    val sourceEncoding = TaskKey[String]("twirl-source-encoding", "Source encoding for template files and generated scala files")
-    val compileTemplates = TaskKey[Seq[File]]("twirl-compile-templates", "Compile twirl templates into scala source files")
+    val sourceEncoding =
+      TaskKey[String]("twirl-source-encoding", "Source encoding for template files and generated scala files")
+    val compileTemplates =
+      TaskKey[Seq[File]]("twirl-compile-templates", "Compile twirl templates into scala source files")
   }
 }
 
@@ -34,26 +39,24 @@ object SbtTwirl extends AutoPlugin {
 
   override def projectSettings: Seq[Setting[_]] =
     inConfig(Compile)(twirlSettings) ++
-        inConfig(Test)(twirlSettings) ++
-        defaultSettings ++
-        positionSettings ++
-        dependencySettings
+      inConfig(Test)(twirlSettings) ++
+      defaultSettings ++
+      positionSettings ++
+      dependencySettings
 
   def twirlSettings: Seq[Setting[_]] = SbtTwirlCompat.watchSourcesSettings ++ Seq(
     includeFilter in compileTemplates := "*.scala.*",
     excludeFilter in compileTemplates := HiddenFileFilter,
     sourceDirectories in compileTemplates := Seq(sourceDirectory.value / "twirl"),
-
-    sources in compileTemplates := Defaults.collectFiles(
-      sourceDirectories in compileTemplates,
-      includeFilter in compileTemplates,
-      excludeFilter in compileTemplates
-    ).value,
-
+    sources in compileTemplates := Defaults
+      .collectFiles(
+        sourceDirectories in compileTemplates,
+        includeFilter in compileTemplates,
+        excludeFilter in compileTemplates
+      )
+      .value,
     target in compileTemplates := crossTarget.value / "twirl" / Defaults.nameForSrc(configuration.value.name),
-
     compileTemplates := compileTemplatesTask.value,
-
     sourceGenerators += compileTemplates.taskValue,
     managedSourceDirectories += (target in compileTemplates).value
   )
@@ -75,11 +78,11 @@ object SbtTwirl extends AutoPlugin {
       val crossVer = crossVersion.value
       val isScalaJS = CrossVersion(crossVer, scalaVersion.value, scalaBinaryVersion.value) match {
         case Some(f) => f("").contains("_sjs0.6") // detect ScalaJS CrossVersion
-        case None => false
+        case None    => false
       }
       // TODO: use %%% from sbt-crossproject when we add support for scalajs 1.0
       val baseModuleID = "com.typesafe.play" %% "twirl-api" % twirlVersion.value
-      if (isScalaJS) baseModuleID cross crossVer else baseModuleID
+      if (isScalaJS) baseModuleID.cross(crossVer) else baseModuleID
     }
   )
 
@@ -90,9 +93,9 @@ object SbtTwirl extends AutoPlugin {
 
   def defaultFormats = Map(
     "html" -> "play.twirl.api.HtmlFormat",
-    "txt" -> "play.twirl.api.TxtFormat",
-    "xml" -> "play.twirl.api.XmlFormat",
-    "js" -> "play.twirl.api.JavaScriptFormat"
+    "txt"  -> "play.twirl.api.TxtFormat",
+    "xml"  -> "play.twirl.api.XmlFormat",
+    "js"   -> "play.twirl.api.JavaScriptFormat"
   )
 
   def compileTemplatesTask = Def.task {
@@ -110,15 +113,13 @@ object SbtTwirl extends AutoPlugin {
   }
 
   def readResourceProperty(resource: String, property: String): String = {
-    val props = new java.util.Properties
+    val props  = new java.util.Properties
     val stream = getClass.getClassLoader.getResourceAsStream(resource)
     try {
       props.load(stream)
-    }
-    catch {
+    } catch {
       case e: Exception =>
-    }
-    finally {
+    } finally {
       if (stream ne null) stream.close
     }
     props.getProperty(property)

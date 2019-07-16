@@ -19,8 +19,8 @@ object TemplateMagic {
   // --- IF
 
   implicit def iterableToBoolean(x: Iterable[_]) = x != null && !x.isEmpty
-  implicit def optionToBoolean(x: Option[_]) = x != null && x.isDefined
-  implicit def stringToBoolean(x: String) = x != null && !x.isEmpty
+  implicit def optionToBoolean(x: Option[_])     = x != null && x.isDefined
+  implicit def stringToBoolean(x: String)        = x != null && !x.isEmpty
 
   // --- JAVA
 
@@ -33,12 +33,12 @@ object TemplateMagic {
 
   case class Default(default: Any) {
     def ?:(x: Any) = x match {
-      case "" => default
-      case Nil => default
+      case ""    => default
+      case Nil   => default
       case false => default
-      case 0 => default
-      case None => default
-      case _ => x
+      case 0     => default
+      case None  => default
+      case _     => x
     }
   }
 
@@ -62,7 +62,7 @@ object TemplateMagic {
 
     def when(predicate: => Boolean) = {
       predicate match {
-        case true => string
+        case true  => string
         case false => ""
       }
     }
