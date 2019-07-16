@@ -1,17 +1,17 @@
 /*
- * Copyright (C) 2009-2014 Typesafe Inc. <http://www.typesafe.com>
+ * Copyright (C) 2009-2019 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package play.twirl.parser
 
-import scala.annotation.{elidable, tailrec}
-import scala.annotation.elidable._
+import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
 import scala.util.parsing.input.OffsetPosition
 
 /**
- * TwirlParser is a recursive descent parser for a modified grammar of the Play2 template language as loosely defined [[http://www.playframework.com/documentation/2.1.x/ here]] and more rigorously defined by the original template parser, `play.templates.ScalaTemplateCompiler.TemplateParser`.
+ * TwirlParser is a recursive descent parser for a modified grammar of the Play2 template language as loosely defined [[http://www.playframework.com/documentation/latest/Home here]] and more rigorously defined by the original template parser, `play.templates.ScalaTemplateCompiler.TemplateParser`.
  * TwirlParser is meant to be a near drop in replacement for `play.templates.ScalaTemplateCompiler.TemplateParser`.
  *
  * The original grammar, as reversed-engineered from `play.templates.ScalaTemplateCompiler.TemplateParser`, is defined as follows:
@@ -136,17 +136,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     def regress(decrement: Int): Unit = offset_ -= decrement
 
     /** Backtrack to a known offset */
-    def regressTo(offset: Int): Unit = {
-      @noinline @elidable(INFO)
-      def updateRegressionStatistics() = {
-        val distance = offset_ - offset
-        val methodName = Thread.currentThread().getStackTrace()(2).getMethodName
-        val (count, charAccum) = regressionStatistics.getOrElse(methodName, (0, 0))
-        regressionStatistics(methodName) = (count + 1, charAccum + distance)
-      }
-
-      offset_ = offset
-    }
+    def regressTo(offset: Int): Unit = offset_ = offset
 
     def isPastEOF(len: Int): Boolean = (offset_ + len-1) >= length_
 

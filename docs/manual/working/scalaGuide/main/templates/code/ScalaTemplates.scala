@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2009-2013 Typesafe Inc. <http://www.typesafe.com>
+ * Copyright (C) 2009-2019 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package scalaguide.templates
 
 import org.specs2.mutable.Specification

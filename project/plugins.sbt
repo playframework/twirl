@@ -4,3 +4,4 @@ addSbtPlugin("com.typesafe.play" % "interplay" % sys.props.get("interplay.versio
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.26")
 
 addSbtPlugin("com.eed3si9n" % "sbt-doge" % "0.1.5")
+addSbtPlugin("de.heikoseeberger" % "sbt-header" % "5.0.0")

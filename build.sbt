@@ -4,7 +4,16 @@ val scalatest = "3.0.5-M1"
 
 val scala213Version = "2.13.0-M3"
 
-val commonSettings = Seq(
+val headerSettings = Seq(
+  headerLicense := {
+    val currentYear = java.time.Year.now(java.time.Clock.systemUTC).getValue
+    Some(HeaderLicense.Custom(
+      s"Copyright (C) 2009-$currentYear Lightbend Inc. <https://www.lightbend.com>"
+    ))
+  }
+)
+
+val commonSettings = headerSettings ++ Seq(
   scalaVersion := scala210,
   crossScalaVersions := Seq(scalaVersion.value, scala211, scala212, scala213Version)
 )
@@ -60,6 +69,7 @@ lazy val plugin = project
     .in(file("sbt-twirl"))
     .enablePlugins(PlaySbtPlugin)
     .dependsOn(compiler)
+    .settings(headerSettings: _*)
     .settings(
       name := "sbt-twirl",
       organization := "com.typesafe.sbt",
@@ -107,3 +117,5 @@ def whenAtLeast(version: String, major: Int, minor: Int, module: ModuleID): Seq[
     case _ => Seq.empty
   }
 }
+
+addCommandAlias("validateCode", ";headerCheck;test:headerCheck")
