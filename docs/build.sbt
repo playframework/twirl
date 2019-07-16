@@ -15,8 +15,7 @@ lazy val docs = project
       Some(HeaderLicense.Custom(
         s"Copyright (C) 2009-$currentYear Lightbend Inc. <https://www.lightbend.com>"
       ))
-    },
-    headerEmptyLine := false
+    }
   ).settings(overrideTwirlSettings: _*)
   .dependsOn(twirlApi)
 

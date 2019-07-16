@@ -10,8 +10,7 @@ val headerSettings = Seq(
     Some(HeaderLicense.Custom(
       s"Copyright (C) 2009-$currentYear Lightbend Inc. <https://www.lightbend.com>"
     ))
-  },
-  headerEmptyLine := false
+  }
 )
 
 val commonSettings = headerSettings ++ Seq(
@@ -70,6 +69,7 @@ lazy val plugin = project
     .in(file("sbt-twirl"))
     .enablePlugins(PlaySbtPlugin)
     .dependsOn(compiler)
+    .settings(headerSettings: _*)
     .settings(
       name := "sbt-twirl",
       organization := "com.typesafe.sbt",
