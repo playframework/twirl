@@ -4,6 +4,7 @@
 package play.twirl.api
 
 import scala.collection.immutable
+import java.lang.{StringBuilder => jStringBuilder}
 
 /**
  * Generic type representing content to be sent over an HTTP response.
@@ -33,13 +34,13 @@ trait Content {
  * @tparam A self-type
  */
 abstract class BufferedContent[A <: BufferedContent[A]](protected val elements: immutable.Seq[A], protected val text: String) extends Appendable[A] with Content { this: A =>
-  protected def buildString(builder: StringBuilder): Unit = {
+  protected def buildString(sb: jStringBuilder): Unit = {
     if (!elements.isEmpty) {
       elements.foreach { e =>
-        e.buildString(builder)
+        e.buildString(sb)
       }
     } else {
-      builder.append(text)
+      sb.append(text)
     }
   }
 
@@ -48,9 +49,9 @@ abstract class BufferedContent[A <: BufferedContent[A]](protected val elements: 
    * to avoid unneeded memory allocation.
    */
   private lazy val builtBody = {
-    val builder = new StringBuilder()
-    buildString(builder)
-    builder.toString
+    val sb = new jStringBuilder()
+    buildString(sb)
+    sb.toString
   }
 
   override def toString = builtBody

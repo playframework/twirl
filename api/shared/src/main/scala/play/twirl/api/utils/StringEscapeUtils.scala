@@ -3,11 +3,13 @@
  */
 package play.twirl.api.utils
 
+import java.lang.{StringBuilder => jStringBuilder}
+
 object StringEscapeUtils {
 
   def escapeEcmaScript(input: String): String = {
-    val s = new StringBuilder()
     val len = input.length
+    val s = new jStringBuilder(len)
     var pos = 0
     while (pos < len) {
       input.charAt(pos) match {
@@ -36,8 +38,8 @@ object StringEscapeUtils {
   def escapeXml11(input: String): String = {
     // Implemented per XML spec:
     // http://www.w3.org/International/questions/qa-controls
-    val s = new StringBuilder()
     val len = input.length
+    val s = new jStringBuilder(len)
     var pos = 0
 
     while (pos < len) {
