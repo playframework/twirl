@@ -565,7 +565,7 @@ package """ :+ packageName :+ """
                     .map { p =>
                       p.name.toString + Option(p.tpt.toString)
                         .filter(_.startsWith("_root_.scala.<repeated>"))
-                        .map(_ => ":_*")
+                        .map(_ => ".toIndexedSeq:_*")
                         .getOrElse("")
                     }
                     .mkString(",") + ")"
@@ -594,7 +594,7 @@ package """ :+ packageName :+ """
                     .map { p =>
                       p.name.toString + Option(p.tpt.toString)
                         .filter(_.startsWith("_root_.scala.<repeated>"))
-                        .map(_ => ":_*")
+                        .map(_ => ".toIndexedSeq:_*")
                         .getOrElse("")
                     }
                     .mkString(",") + ")"
