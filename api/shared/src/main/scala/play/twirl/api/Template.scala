@@ -72,25 +72,113 @@ trait Template16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Result] {
 }
 
 trait Template17[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, Result] {
-  def render(a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P, q: Q): Result
+  def render(a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P, q: Q)
+      : Result
 }
 
 trait Template18[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, Result] {
-  def render(a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P, q: Q, r: R): Result
+  def render(a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P, q: Q, r: R)
+      : Result
 }
 
 trait Template19[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, Result] {
-  def render(a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P, q: Q, r: R, s: S): Result
+  def render(
+      a: A,
+      b: B,
+      c: C,
+      d: D,
+      e: E,
+      f: F,
+      g: G,
+      h: H,
+      i: I,
+      j: J,
+      k: K,
+      l: L,
+      m: M,
+      n: N,
+      o: O,
+      p: P,
+      q: Q,
+      r: R,
+      s: S
+  ): Result
 }
 
 trait Template20[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, Result] {
-  def render(a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P, q: Q, r: R, s: S, t: T): Result
+  def render(
+      a: A,
+      b: B,
+      c: C,
+      d: D,
+      e: E,
+      f: F,
+      g: G,
+      h: H,
+      i: I,
+      j: J,
+      k: K,
+      l: L,
+      m: M,
+      n: N,
+      o: O,
+      p: P,
+      q: Q,
+      r: R,
+      s: S,
+      t: T
+  ): Result
 }
 
 trait Template21[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, Result] {
-  def render(a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P, q: Q, r: R, s: S, t: T, u: U): Result
+  def render(
+      a: A,
+      b: B,
+      c: C,
+      d: D,
+      e: E,
+      f: F,
+      g: G,
+      h: H,
+      i: I,
+      j: J,
+      k: K,
+      l: L,
+      m: M,
+      n: N,
+      o: O,
+      p: P,
+      q: Q,
+      r: R,
+      s: S,
+      t: T,
+      u: U
+  ): Result
 }
 
 trait Template22[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, Result] {
-  def render(a: A, b: B, c: C, d: D, e: E, f: F, g: G, h: H, i: I, j: J, k: K, l: L, m: M, n: N, o: O, p: P, q: Q, r: R, s: S, t: T, u: U, v: V): Result
+  def render(
+      a: A,
+      b: B,
+      c: C,
+      d: D,
+      e: E,
+      f: F,
+      g: G,
+      h: H,
+      i: I,
+      j: J,
+      k: K,
+      l: L,
+      m: M,
+      n: N,
+      o: O,
+      p: P,
+      q: Q,
+      r: R,
+      s: S,
+      t: T,
+      u: U,
+      v: V
+  ): Result
 }

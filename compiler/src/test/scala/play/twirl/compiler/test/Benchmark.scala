@@ -15,10 +15,9 @@ import play.twirl.parser.TwirlIO
  */
 object Benchmark extends App {
 
-  val sourceDir = new File("src/test/resources")
-  val generatedDir = new File("target/test/benchmark-templates")
+  val sourceDir        = new File("src/test/resources")
+  val generatedDir     = new File("target/test/benchmark-templates")
   val generatedClasses = new File("target/test/benchmark-classes")
-
 
   TwirlIO.deleteRecursively(generatedDir)
   TwirlIO.deleteRecursively(generatedClasses)
@@ -28,7 +27,7 @@ object Benchmark extends App {
 
   println("Compiling template...")
   val template = helper.compile[((String, List[String]) => (Int) => Html)]("real.scala.html", "html.real").static
-  val input = (1 to 100).map(_.toString).toList
+  val input    = (1 to 100).map(_.toString).toList
 
   val text = "world " * 100
 

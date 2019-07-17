@@ -9,7 +9,8 @@ import java.time.LocalDateTime
 import scala.annotation.tailrec
 import scala.io.Codec
 import scala.reflect.internal.Flags
-import play.twirl.parser.{TwirlIO, TwirlParser}
+import play.twirl.parser.TwirlIO
+import play.twirl.parser.TwirlParser
 
 object Hash {
 
@@ -24,7 +25,8 @@ object Hash {
 
 }
 
-case class TemplateCompilationError(source: File, message: String, line: Int, column: Int) extends RuntimeException(message)
+case class TemplateCompilationError(source: File, message: String, line: Int, column: Int)
+    extends RuntimeException(message)
 
 object MaybeGeneratedSource {
 
@@ -45,17 +47,22 @@ sealed trait AbstractGeneratedSource {
   def content: String
 
   lazy val meta: Map[String, String] = {
-    val Meta = """([A-Z]+): (.*)""".r
+    val Meta          = """([A-Z]+): (.*)""".r
     val UndefinedMeta = """([A-Z]+):""".r
     Map.empty[String, String] ++ {
       try {
-        content.split("-- GENERATED --")(1).trim.split('\n').map { m =>
-          m.trim match {
-            case Meta(key, value) => (key -> value)
-            case UndefinedMeta(key) => (key -> "")
-            case _ => ("UNDEFINED", "")
+        content
+          .split("-- GENERATED --")(1)
+          .trim
+          .split('\n')
+          .map { m =>
+            m.trim match {
+              case Meta(key, value)   => (key -> value)
+              case UndefinedMeta(key) => (key -> "")
+              case _                  => ("UNDEFINED", "")
+            }
           }
-        }.toMap
+          .toMap
       } catch {
         case _: Exception => Map.empty[String, String]
       }
@@ -65,19 +72,19 @@ sealed trait AbstractGeneratedSource {
   lazy val matrix: Seq[(Int, Int)] = {
     for (pos <- meta("MATRIX").split('|'); c = pos.split("->"))
       yield try {
-      Integer.parseInt(c(0)) -> Integer.parseInt(c(1))
-    } catch {
-      case _: Exception => (0, 0) // Skip if MATRIX meta is corrupted
-    }
+        Integer.parseInt(c(0)) -> Integer.parseInt(c(1))
+      } catch {
+        case _: Exception => (0, 0) // Skip if MATRIX meta is corrupted
+      }
   }
 
   lazy val lines: Seq[(Int, Int)] = {
     for (pos <- meta("LINES").split('|'); c = pos.split("->"))
       yield try {
-      Integer.parseInt(c(0)) -> Integer.parseInt(c(1))
-    } catch {
-      case _: Exception => (0, 0) // Skip if LINES meta is corrupted
-    }
+        Integer.parseInt(c(0)) -> Integer.parseInt(c(1))
+      } catch {
+        case _: Exception => (0, 0) // Skip if LINES meta is corrupted
+      }
   }
 
   def mapPosition(generatedPosition: Int): Int = {
@@ -113,15 +120,16 @@ case class GeneratedSource(file: File, codec: Codec = TwirlIO.defaultCodec) exte
 
   def content = TwirlIO.readFileAsString(file, codec)
 
-  def needRecompilation(imports: collection.Seq[String]): Boolean = !file.exists ||
-    // A generated source already exist but
-    source.isDefined && ((source.get.lastModified > file.lastModified) || // the source has been modified
-      (meta("HASH") != Hash(TwirlIO.readFile(source.get), imports))) // or the hash don't match
+  def needRecompilation(imports: collection.Seq[String]): Boolean =
+    !file.exists ||
+      // A generated source already exist but
+      source.isDefined && ((source.get.lastModified > file.lastModified) || // the source has been modified
+        (meta("HASH") != Hash(TwirlIO.readFile(source.get), imports)))      // or the hash don't match
 
   def toSourcePosition(marker: Int): (Int, Int) = {
     try {
       val targetMarker = mapPosition(marker)
-      val line = TwirlIO.readFileAsString(source.get, codec).substring(0, targetMarker).split('\n').size
+      val line         = TwirlIO.readFileAsString(source.get, codec).substring(0, targetMarker).split('\n').size
       (line, targetMarker)
     } catch {
       case _: Exception => (0, 0)
@@ -166,14 +174,31 @@ object TwirlCompiler {
 
   import play.twirl.parser.TreeNodes._
 
-  def compile(source: File, sourceDirectory: File, generatedDirectory: File, formatterType: String,
-    additionalImports: collection.Seq[String] = Nil, constructorAnnotations: collection.Seq[String] = Nil, codec: Codec = TwirlIO.defaultCodec,
-    inclusiveDot: Boolean = false) = {
+  def compile(
+      source: File,
+      sourceDirectory: File,
+      generatedDirectory: File,
+      formatterType: String,
+      additionalImports: collection.Seq[String] = Nil,
+      constructorAnnotations: collection.Seq[String] = Nil,
+      codec: Codec = TwirlIO.defaultCodec,
+      inclusiveDot: Boolean = false
+  ) = {
     val resultType = formatterType + ".Appendable"
-    val (templateName, generatedSource) = generatedFile(source, codec, sourceDirectory, generatedDirectory, inclusiveDot)
+    val (templateName, generatedSource) =
+      generatedFile(source, codec, sourceDirectory, generatedDirectory, inclusiveDot)
     if (generatedSource.needRecompilation(additionalImports)) {
-      val generated = parseAndGenerateCode(templateName, TwirlIO.readFile(source), codec, source.getAbsolutePath,
-        resultType, formatterType, additionalImports, constructorAnnotations, inclusiveDot)
+      val generated = parseAndGenerateCode(
+        templateName,
+        TwirlIO.readFile(source),
+        codec,
+        source.getAbsolutePath,
+        resultType,
+        formatterType,
+        additionalImports,
+        constructorAnnotations,
+        inclusiveDot
+      )
       TwirlIO.writeStringToFile(generatedSource.file, generated.toString, codec)
       Some(generatedSource.file)
     } else {
@@ -181,23 +206,49 @@ object TwirlCompiler {
     }
   }
 
-  def compileVirtual(content: String, source: File, sourceDirectory: File, resultType: String, formatterType: String,
-    additionalImports: collection.Seq[String] = Nil, constructorAnnotations: collection.Seq[String] = Nil,
-    codec: Codec = TwirlIO.defaultCodec, inclusiveDot: Boolean = false) = {
+  def compileVirtual(
+      content: String,
+      source: File,
+      sourceDirectory: File,
+      resultType: String,
+      formatterType: String,
+      additionalImports: collection.Seq[String] = Nil,
+      constructorAnnotations: collection.Seq[String] = Nil,
+      codec: Codec = TwirlIO.defaultCodec,
+      inclusiveDot: Boolean = false
+  ) = {
     val (templateName, generatedSource) = generatedFileVirtual(source, sourceDirectory, inclusiveDot)
-    val generated = parseAndGenerateCode(templateName, content.getBytes(codec.charSet), codec, source.getAbsolutePath,
-      resultType, formatterType, additionalImports, constructorAnnotations, inclusiveDot)
+    val generated = parseAndGenerateCode(
+      templateName,
+      content.getBytes(codec.charSet),
+      codec,
+      source.getAbsolutePath,
+      resultType,
+      formatterType,
+      additionalImports,
+      constructorAnnotations,
+      inclusiveDot
+    )
     generatedSource.setContent(generated)
     generatedSource
   }
 
-  def parseAndGenerateCode(templateName: Array[String], content: Array[Byte], codec: Codec, absolutePath: String,
-    resultType: String, formatterType: String, additionalImports: collection.Seq[String], constructorAnnotations: collection.Seq[String],
-    inclusiveDot: Boolean) = {
+  def parseAndGenerateCode(
+      templateName: Array[String],
+      content: Array[Byte],
+      codec: Codec,
+      absolutePath: String,
+      resultType: String,
+      formatterType: String,
+      additionalImports: collection.Seq[String],
+      constructorAnnotations: collection.Seq[String],
+      inclusiveDot: Boolean
+  ) = {
     val templateParser = new TwirlParser(inclusiveDot)
     templateParser.parse(new String(content, codec.charSet)) match {
       case templateParser.Success(parsed: Template, rest) if rest.atEnd => {
-        generateFinalTemplate(absolutePath,
+        generateFinalTemplate(
+          absolutePath,
           content,
           templateName.dropRight(1).mkString("."),
           templateName.takeRight(1).mkString,
@@ -213,14 +264,26 @@ object TwirlCompiler {
       }
       case templateParser.Error(_, rest, errors) => {
         val firstError = errors.head
-        throw new TemplateCompilationError(new File(absolutePath), firstError.str, firstError.pos.line, firstError.pos.column)
+        throw new TemplateCompilationError(
+          new File(absolutePath),
+          firstError.str,
+          firstError.pos.line,
+          firstError.pos.column
+        )
       }
     }
   }
 
-  def generatedFile(template: File, codec: Codec, sourceDirectory: File, generatedDirectory: File, inclusiveDot: Boolean) = {
+  def generatedFile(
+      template: File,
+      codec: Codec,
+      sourceDirectory: File,
+      generatedDirectory: File,
+      inclusiveDot: Boolean
+  ) = {
     val templateName = {
-      val name = source2TemplateName(template, sourceDirectory, template.getName.split('.').takeRight(1).head).split('.')
+      val name =
+        source2TemplateName(template, sourceDirectory, template.getName.split('.').takeRight(1).head).split('.')
       if (inclusiveDot) addInclusiveDotName(name) else name
     }
     templateName -> GeneratedSource(new File(generatedDirectory, templateName.mkString("/") + ".template.scala"), codec)
@@ -228,7 +291,8 @@ object TwirlCompiler {
 
   def generatedFileVirtual(template: File, sourceDirectory: File, inclusiveDot: Boolean) = {
     val templateName = {
-      val name = source2TemplateName(template, sourceDirectory, template.getName.split('.').takeRight(1).head).split('.')
+      val name =
+        source2TemplateName(template, sourceDirectory, template.getName.split('.').takeRight(1).head).split('.')
       if (inclusiveDot) addInclusiveDotName(name) else name
     }
     templateName -> GeneratedSourceVirtual(templateName.mkString("/") + ".template.scala")
@@ -242,19 +306,37 @@ object TwirlCompiler {
   }
 
   @tailrec
-  def source2TemplateName(f: File, sourceDirectory: File, ext: String, suffix: String = "", topDirectory: String = "views", setExt: Boolean = true): String = {
+  def source2TemplateName(
+      f: File,
+      sourceDirectory: File,
+      ext: String,
+      suffix: String = "",
+      topDirectory: String = "views",
+      setExt: Boolean = true
+  ): String = {
     val Name = """([a-zA-Z0-9_]+)[.]scala[.]([a-z]+)""".r
     (f, f.getName) match {
       case (f, _) if f == sourceDirectory => {
         if (setExt) {
           val parts = suffix.split('.')
-          Option(parts.dropRight(1).mkString(".")).filterNot(_.isEmpty).map(_ + ".").getOrElse("") + ext + "." + parts.takeRight(1).mkString
+          Option(parts.dropRight(1).mkString(".")).filterNot(_.isEmpty).map(_ + ".").getOrElse("") + ext + "." + parts
+            .takeRight(1)
+            .mkString
         } else suffix
       }
-      case (f, name) if name == topDirectory => source2TemplateName(f.getParentFile, sourceDirectory, ext, name + "." + ext + "." + suffix, topDirectory, false)
-      case (f, Name(name, _)) if f.isFile => source2TemplateName(f.getParentFile, sourceDirectory, ext, name, topDirectory, setExt)
-      case (f, name) if !f.isFile => source2TemplateName(f.getParentFile, sourceDirectory, ext, name + "." + suffix, topDirectory, setExt)
-      case (f, name) => throw TemplateCompilationError(f, "Invalid template name [" + name + "], filenames must only consist of alphanumeric characters and underscores or periods.", 0, 0)
+      case (f, name) if name == topDirectory =>
+        source2TemplateName(f.getParentFile, sourceDirectory, ext, name + "." + ext + "." + suffix, topDirectory, false)
+      case (f, Name(name, _)) if f.isFile =>
+        source2TemplateName(f.getParentFile, sourceDirectory, ext, name, topDirectory, setExt)
+      case (f, name) if !f.isFile =>
+        source2TemplateName(f.getParentFile, sourceDirectory, ext, name + "." + suffix, topDirectory, setExt)
+      case (f, name) =>
+        throw TemplateCompilationError(
+          f,
+          "Invalid template name [" + name + "], filenames must only consist of alphanumeric characters and underscores or periods.",
+          0,
+          0
+        )
     }
   }
 
@@ -270,9 +352,9 @@ object TwirlCompiler {
   // Scala doesn't offer a way to escape triple quoted strings inside triple quoted strings (to my knowledge), so we
   // have to escape them in this rather crude way
   // We need to double escape slashes, since it's a regex replacement
-  private val escapedTripleQuote = "\\\"" * 3
+  private val escapedTripleQuote       = "\\\"" * 3
   private val doubleEscapedTripleQuote = "\\\\\"" * 3
-  private val tripleQuoteReplacement = escapedTripleQuote + " + \\\"" + doubleEscapedTripleQuote + "\\\" + " + escapedTripleQuote
+  private val tripleQuoteReplacement   = escapedTripleQuote + " + \\\"" + doubleEscapedTripleQuote + "\\\" + " + escapedTripleQuote
   private def quoteAndEscape(text: String): collection.Seq[String] = {
     Seq(tripleQuote, text.replaceAll(tripleQuote, tripleQuoteReplacement), tripleQuote)
   }
@@ -280,24 +362,34 @@ object TwirlCompiler {
   def visit(elem: collection.Seq[TemplateTree], previous: collection.Seq[Any]): collection.Seq[Any] = {
     elem.toList match {
       case head :: tail =>
-        visit(tail, head match {
-          case p @ Plain(text) =>
-
-            // String literals may not be longer than 65536 bytes. They are encoded as UTF-8 in the classfile, each
-            // UTF-16 2 byte char could end up becoming up to 3 bytes, so that puts an upper limit of somewhere
-            // over 20000 characters. 20000 characters is a nice round number, use that.
-            val grouped = StringGrouper(text, 20000)
-            (if (previous.isEmpty) Nil else previous :+ ",") :+
-              "format.raw" :+ Source("(", p.pos) :+ quoteAndEscape(grouped.head) :+ ")" :+
-              grouped.tail.flatMap { t => Seq(",\nformat.raw(", quoteAndEscape(t), ")") }
-          case Comment(msg) => previous
-          case Display(exp) => (if (previous.isEmpty) Nil else previous :+ ",") :+ displayVisitedChildren(visit(Seq(exp), Nil))
-          case ScalaExp(parts) => previous :+ parts.map {
-            case s @ Simple(code) => Source(code, s.pos)
-            case b @ Block(whitespace, args, content) if (content.forall(_.isInstanceOf[ScalaExp])) => Nil :+ Source(whitespace + "{" + args.getOrElse(""), b.pos) :+ visit(content, Nil) :+ "}"
-            case b @ Block(whitespace, args, content) => Nil :+ Source(whitespace + "{" + args.getOrElse(""), b.pos) :+ displayVisitedChildren(visit(content, Nil)) :+ "}"
+        visit(
+          tail,
+          head match {
+            case p @ Plain(text) =>
+              // String literals may not be longer than 65536 bytes. They are encoded as UTF-8 in the classfile, each
+              // UTF-16 2 byte char could end up becoming up to 3 bytes, so that puts an upper limit of somewhere
+              // over 20000 characters. 20000 characters is a nice round number, use that.
+              val grouped = StringGrouper(text, 20000)
+              (if (previous.isEmpty) Nil else previous :+ ",") :+
+                "format.raw" :+ Source("(", p.pos) :+ quoteAndEscape(grouped.head) :+ ")" :+
+                grouped.tail.flatMap { t =>
+                  Seq(",\nformat.raw(", quoteAndEscape(t), ")")
+                }
+            case Comment(msg) => previous
+            case Display(exp) =>
+              (if (previous.isEmpty) Nil else previous :+ ",") :+ displayVisitedChildren(visit(Seq(exp), Nil))
+            case ScalaExp(parts) =>
+              previous :+ parts.map {
+                case s @ Simple(code) => Source(code, s.pos)
+                case b @ Block(whitespace, args, content) if (content.forall(_.isInstanceOf[ScalaExp])) =>
+                  Nil :+ Source(whitespace + "{" + args.getOrElse(""), b.pos) :+ visit(content, Nil) :+ "}"
+                case b @ Block(whitespace, args, content) =>
+                  Nil :+ Source(whitespace + "{" + args.getOrElse(""), b.pos) :+ displayVisitedChildren(
+                    visit(content, Nil)
+                  ) :+ "}"
+              }
           }
-        })
+        )
       case Nil => previous
     }
   }
@@ -307,10 +399,16 @@ object TwirlCompiler {
     val defs = (template.sub ++ template.defs).map {
       case t: Template if t.name.toString == "" => templateCode(t, resultType)
       case t: Template => {
-        Nil :+ (if (t.name.str.startsWith("implicit")) "implicit def " else "def ") :+ Source(t.name.str, t.name.pos) :+ Source(t.params.str, t.params.pos) :+ ":" :+ resultType :+ " = {_display_(" :+ templateCode(t, resultType) :+ ")};"
+        Nil :+ (if (t.name.str.startsWith("implicit")) "implicit def " else "def ") :+ Source(t.name.str, t.name.pos) :+ Source(
+          t.params.str,
+          t.params.pos
+        ) :+ ":" :+ resultType :+ " = {_display_(" :+ templateCode(t, resultType) :+ ")};"
       }
       case Def(name, params, block) => {
-        Nil :+ (if (name.str.startsWith("implicit")) "implicit def " else "def ") :+ Source(name.str, name.pos) :+ Source(params.str, params.pos) :+ " = {" :+ block.code :+ "};"
+        Nil :+ (if (name.str.startsWith("implicit")) "implicit def " else "def ") :+ Source(name.str, name.pos) :+ Source(
+          params.str,
+          params.pos
+        ) :+ " = {" :+ block.code :+ "};"
       }
     }
 
@@ -319,15 +417,19 @@ object TwirlCompiler {
     Nil :+ imports :+ "\n" :+ defs :+ "\n" :+ "Seq[Any](" :+ visit(template.content, Nil) :+ ")"
   }
 
-  def generateCode(packageName: String, name: String, root: Template, resultType: String, formatterType: String,
-    additionalImports: collection.Seq[String], constructorAnnotations: collection.Seq[String]): collection.Seq[Any] = {
-    val (renderCall, f, templateType) = TemplateAsFunctionCompiler.getFunctionMapping(
-      root.params.str,
-      resultType)
+  def generateCode(
+      packageName: String,
+      name: String,
+      root: Template,
+      resultType: String,
+      formatterType: String,
+      additionalImports: collection.Seq[String],
+      constructorAnnotations: collection.Seq[String]
+  ): collection.Seq[Any] = {
+    val (renderCall, f, templateType) = TemplateAsFunctionCompiler.getFunctionMapping(root.params.str, resultType)
 
     // Get the imports that we need to include, filtering out empty imports
-    val imports: Seq[Any] = Seq(additionalImports.map(i => Seq("import ", i, "\n")),
-      formatImports(root.topImports))
+    val imports: Seq[Any] = Seq(additionalImports.map(i => Seq("import ", i, "\n")), formatImports(root.topImports))
 
     val classDeclaration = root.constructor.fold[Seq[Any]](
       Seq("object ", name)
@@ -370,11 +472,19 @@ package """ :+ packageName :+ """
     imports.map(i => Seq(Source(i.code, i.pos), "\n"))
   }
 
-  def generateFinalTemplate(absolutePath: String, contents: Array[Byte], packageName: String, name: String,
-    root: Template, resultType: String, formatterType: String, additionalImports: collection.Seq[String],
-    constructorAnnotations: collection.Seq[String]): String = {
-    val generated = generateCode(packageName, name, root, resultType, formatterType, additionalImports,
-      constructorAnnotations)
+  def generateFinalTemplate(
+      absolutePath: String,
+      contents: Array[Byte],
+      packageName: String,
+      name: String,
+      root: Template,
+      resultType: String,
+      formatterType: String,
+      additionalImports: collection.Seq[String],
+      constructorAnnotations: collection.Seq[String]
+  ): String = {
+    val generated =
+      generateCode(packageName, name, root, resultType, formatterType, additionalImports, constructorAnnotations)
 
     Source.finalSource(absolutePath, contents, generated, Hash(contents, additionalImports))
   }
@@ -387,22 +497,26 @@ package """ :+ packageName :+ """
     // make them synchronized.
 
     import java.io.File
-    import scala.tools.nsc.interactive.{ Response, Global }
+    import scala.tools.nsc.interactive.Response
+    import scala.tools.nsc.interactive.Global
     import scala.tools.nsc.io.AbstractFile
-    import scala.reflect.internal.util.{ SourceFile, Position, BatchSourceFile }
+    import scala.reflect.internal.util.SourceFile
+    import scala.reflect.internal.util.Position
+    import scala.reflect.internal.util.BatchSourceFile
     import scala.tools.nsc.Settings
     import scala.tools.nsc.reporters.ConsoleReporter
 
-    type Tree = PresentationCompiler.global.Tree
-    type DefDef = PresentationCompiler.global.DefDef
+    type Tree    = PresentationCompiler.global.Tree
+    type DefDef  = PresentationCompiler.global.DefDef
     type TypeDef = PresentationCompiler.global.TypeDef
-    type ValDef = PresentationCompiler.global.ValDef
+    type ValDef  = PresentationCompiler.global.ValDef
 
     // For some reason they got rid of mods.isByNameParam
     object ByNameParam {
-      def unapply(param: ValDef): Option[(String, String)] = if (param.mods.hasFlag(Flags.BYNAMEPARAM)) {
-        Some((param.name.toString, param.tpt.children(1).toString))
-      } else None
+      def unapply(param: ValDef): Option[(String, String)] =
+        if (param.mods.hasFlag(Flags.BYNAMEPARAM)) {
+          Some((param.name.toString, param.tpt.children(1).toString))
+        } else None
     }
 
     /** The maximum time in milliseconds to wait for a compiler response to finish. */
@@ -410,54 +524,89 @@ package """ :+ packageName :+ """
 
     def getFunctionMapping(signature: String, returnType: String): (String, String, String) = synchronized {
 
-      def filterType(t: String) = t
-        .replace("_root_.scala.<repeated>", "Array")
-        .replace("<synthetic>", "")
+      def filterType(t: String) =
+        t.replace("_root_.scala.<repeated>", "Array")
+          .replace("<synthetic>", "")
 
       def findSignature(tree: Tree): Option[DefDef] = {
         tree match {
           case t: DefDef if t.name.toString == "signature" => Some(t)
-          case t: Tree => t.children.flatMap(findSignature).headOption
+          case t: Tree                                     => t.children.flatMap(findSignature).headOption
         }
       }
 
-      val params = findSignature(
-        PresentationCompiler.treeFrom("object FT { def signature" + signature + " }")).get.vparamss
+      val params =
+        findSignature(PresentationCompiler.treeFrom("object FT { def signature" + signature + " }")).get.vparamss
 
-      val resp = PresentationCompiler.global.askForResponse { () =>
+      val resp = PresentationCompiler.global
+        .askForResponse { () =>
+          val functionType = "(" + params
+            .map(
+              group =>
+                "(" + group
+                  .map {
+                    case ByNameParam(_, paramType) => " => " + paramType
+                    case a                         => filterType(a.tpt.toString)
+                  }
+                  .mkString(",") + ")"
+            )
+            .mkString(" => ") + " => " + returnType + ")"
 
-        val functionType = "(" + params.map(group => "(" + group.map {
-          case ByNameParam(_, paramType) => " => " + paramType
-          case a => filterType(a.tpt.toString)
-        }.mkString(",") + ")").mkString(" => ") + " => " + returnType + ")"
+          val renderCall = "def render%s: %s = apply%s".format(
+            "(" + params.flatten
+              .map {
+                case ByNameParam(name, paramType) => name + ":" + paramType
+                case a                            => a.name.toString + ":" + filterType(a.tpt.toString)
+              }
+              .mkString(",") + ")",
+            returnType,
+            params
+              .map(
+                group =>
+                  "(" + group
+                    .map { p =>
+                      p.name.toString + Option(p.tpt.toString)
+                        .filter(_.startsWith("_root_.scala.<repeated>"))
+                        .map(_ => ".toIndexedSeq:_*")
+                        .getOrElse("")
+                    }
+                    .mkString(",") + ")"
+              )
+              .mkString
+          )
 
-        val renderCall = "def render%s: %s = apply%s".format(
-          "(" + params.flatten.map {
-            case ByNameParam(name, paramType) => name + ":" + paramType
-            case a => a.name.toString + ":" + filterType(a.tpt.toString)
-          }.mkString(",") + ")",
-          returnType,
-          params.map(group => "(" + group.map { p =>
-            p.name.toString + Option(p.tpt.toString).filter(_.startsWith("_root_.scala.<repeated>")).map(_ => ".toIndexedSeq:_*").getOrElse("")
-          }.mkString(",") + ")").mkString)
+          val templateType = "_root_.play.twirl.api.Template%s[%s%s]".format(
+            params.flatten.size,
+            params.flatten
+              .map {
+                case ByNameParam(_, paramType) => paramType
+                case a                         => filterType(a.tpt.toString)
+              }
+              .mkString(","),
+            (if (params.flatten.isEmpty) "" else ",") + returnType
+          )
 
-        val templateType = "_root_.play.twirl.api.Template%s[%s%s]".format(
-          params.flatten.size,
-          params.flatten.map {
-            case ByNameParam(_, paramType) => paramType
-            case a => filterType(a.tpt.toString)
-          }.mkString(","),
-          (if (params.flatten.isEmpty) "" else ",") + returnType)
+          val f = "def f:%s = %s => apply%s".format(
+            functionType,
+            params.map(group => "(" + group.map(_.name.toString).mkString(",") + ")").mkString(" => "),
+            params
+              .map(
+                group =>
+                  "(" + group
+                    .map { p =>
+                      p.name.toString + Option(p.tpt.toString)
+                        .filter(_.startsWith("_root_.scala.<repeated>"))
+                        .map(_ => ".toIndexedSeq:_*")
+                        .getOrElse("")
+                    }
+                    .mkString(",") + ")"
+              )
+              .mkString
+          )
 
-        val f = "def f:%s = %s => apply%s".format(
-          functionType,
-          params.map(group => "(" + group.map(_.name.toString).mkString(",") + ")").mkString(" => "),
-          params.map(group => "(" + group.map { p =>
-            p.name.toString + Option(p.tpt.toString).filter(_.startsWith("_root_.scala.<repeated>")).map(_ => ".toIndexedSeq:_*").getOrElse("")
-          }.mkString(",") + ")").mkString)
-
-        (renderCall, f, templateType)
-      }.get(Timeout)
+          (renderCall, f, templateType)
+        }
+        .get(Timeout)
 
       resp match {
         case None =>
@@ -488,20 +637,24 @@ package """ :+ packageName :+ """
         if (scalaPredefSource != null) {
           import java.net.URL
           import java.security.CodeSource
-          def urlToFile(url: URL): File = try {
-            val file = new File(url.toURI)
-            if (file.exists) file else new File(url.getPath) // assume malformed URL
-          } catch {
-            case _: java.net.URISyntaxException =>
-              // malformed URL: fallback to using the URL path directly
-              new File(url.getPath)
-          }
+          def urlToFile(url: URL): File =
+            try {
+              val file = new File(url.toURI)
+              if (file.exists) file else new File(url.getPath) // assume malformed URL
+            } catch {
+              case _: java.net.URISyntaxException =>
+                // malformed URL: fallback to using the URL path directly
+                new File(url.getPath)
+            }
           def toAbsolutePath(cs: CodeSource): String = urlToFile(cs.getLocation).getAbsolutePath
-          val compilerPath = toAbsolutePath(Class.forName("scala.tools.nsc.Interpreter").getProtectionDomain.getCodeSource)
-          val libPath = toAbsolutePath(scalaPredefSource)
-          val pathList = List(compilerPath, libPath)
+          val compilerPath = toAbsolutePath(
+            Class.forName("scala.tools.nsc.Interpreter").getProtectionDomain.getCodeSource
+          )
+          val libPath           = toAbsolutePath(scalaPredefSource)
+          val pathList          = List(compilerPath, libPath)
           val origBootclasspath = settings.bootclasspath.value
-          settings.bootclasspath.value = ((origBootclasspath :: pathList) ::: additionalClassPathEntry.toList) mkString File.pathSeparator
+          settings.bootclasspath.value =
+            ((origBootclasspath :: pathList) ::: additionalClassPathEntry.toList).mkString(File.pathSeparator)
         }
 
         val compiler = new Global(settings, new ConsoleReporter(settings) {
@@ -559,7 +712,9 @@ package """ :+ packageName :+ """
 
 /* ------- */
 
-import scala.util.parsing.input.{ Position, OffsetPosition, NoPosition }
+import scala.util.parsing.input.Position
+import scala.util.parsing.input.OffsetPosition
+import scala.util.parsing.input.NoPosition
 
 case class Source(code: String, pos: Position = NoPosition)
 
@@ -567,10 +722,15 @@ object Source {
 
   import scala.collection.mutable.ListBuffer
 
-  def finalSource(absolutePath: String, contents: Array[Byte], generatedTokens: collection.Seq[Any], hash: String): String = {
+  def finalSource(
+      absolutePath: String,
+      contents: Array[Byte],
+      generatedTokens: collection.Seq[Any],
+      hash: String
+  ): String = {
     val scalaCode = new StringBuilder
     val positions = ListBuffer.empty[(Int, Int)]
-    val lines = ListBuffer.empty[(Int, Int)]
+    val lines     = ListBuffer.empty[(Int, Int)]
     serialize(generatedTokens, scalaCode, positions, lines)
     scalaCode.toString + s"""
               /*
@@ -585,17 +745,22 @@ object Source {
           """
   }
 
-  private def serialize(parts: collection.Seq[Any], source: StringBuilder, positions: ListBuffer[(Int, Int)], lines: ListBuffer[(Int, Int)]): Unit = {
+  private def serialize(
+      parts: collection.Seq[Any],
+      source: StringBuilder,
+      positions: ListBuffer[(Int, Int)],
+      lines: ListBuffer[(Int, Int)]
+  ): Unit = {
     parts.foreach {
       case s: String => source.append(s)
       case Source(code, pos @ OffsetPosition(_, offset)) => {
         source.append("/*" + pos + "*/")
-        positions += (source.length -> offset)
+        positions += (source.length                -> offset)
         lines += (source.toString.split('\n').size -> pos.line)
         source.append(code)
       }
       case Source(code, NoPosition) => source.append(code)
-      case s: collection.Seq[any] => serialize(s, source, positions, lines)
+      case s: collection.Seq[any]   => serialize(s, source, positions, lines)
     }
   }
 

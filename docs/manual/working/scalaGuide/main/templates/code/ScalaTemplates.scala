@@ -33,8 +33,7 @@ package html.utils {
 object ScalaTemplatesSpec extends Specification {
 
   val customer = Customer("mr customer")
-  val orders = List(Order("foo"), Order("bar"))
-
+  val orders   = List(Order("foo"), Order("bar"))
 
   "Scala templates" should {
     "support an example template" in {
@@ -57,7 +56,7 @@ object ScalaTemplatesSpec extends Specification {
       import play.twirl.api.StringInterpolation
 
       val name = "Martin"
-      val p = html"<p>Hello $name</p>"
+      val p    = html"<p>Hello $name</p>"
       //#string-interpolation
 
       p.body must_== "<p>Hello Martin</p>"
@@ -100,13 +99,17 @@ object ScalaTemplatesSpec extends Specification {
     "allow comments on the first line" in {
       val body = html.firstLineComment("blah").body
       body must contain("blah")
-      body must not contain("Home page")
+      body must not contain ("Home page")
     }
 
     {
       val body = html.snippets(Seq(Product("p1", "1"), Product("p2", "2")), User("John", "Doe"), Article("<foo>")).body
       def segment(name: String) = {
-        body.linesIterator.dropWhile(_ != "<span class=\"" + name + "\">").drop(1).takeWhile(_ != "</span>").mkString("\n")
+        body.linesIterator
+          .dropWhile(_ != "<span class=\"" + name + "\">")
+          .drop(1)
+          .takeWhile(_ != "</span>")
+          .mkString("\n")
       }
 
       "allow escaping the @ character" in {
@@ -140,7 +143,7 @@ object ScalaTemplatesSpec extends Specification {
       }
 
       "allow comments" in {
-        body must not contain("This is a comment")
+        body must not contain ("This is a comment")
       }
 
       "allow intering raw HTML" in {
@@ -153,9 +156,9 @@ object ScalaTemplatesSpec extends Specification {
 
       body must contain("User(Foo,Bar)")
       body must contain("value inside option")
-      body must not contain("Option(value inside option)")
+      body must not contain ("Option(value inside option)")
       body must contain("firstlast")
-      body must not contain("List")
+      body must not contain ("List")
       body must contain("helloUser(Foo,Bar)value inside optionfirstlast")
     }
   }

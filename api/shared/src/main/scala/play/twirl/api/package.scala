@@ -22,17 +22,17 @@ package object api {
    * Three interpolators are available: `html`, `xml` and `js`.
    */
   implicit class StringInterpolation(val sc: StringContext) extends AnyVal {
-  
+
     def html(args: Any*): Html = interpolate(args, HtmlFormat)
-    
+
     def xml(args: Any*): Xml = interpolate(args, XmlFormat)
 
     def js(args: Any*): JavaScript = interpolate(args, JavaScriptFormat)
 
-    def interpolate[A <: Appendable[A] : ClassTag](args: Seq[Any], format: Format[A]): A = {
+    def interpolate[A <: Appendable[A]: ClassTag](args: Seq[Any], format: Format[A]): A = {
       sc.checkLengths(args)
-      val array = Array.ofDim[Any](args.size + sc.parts.size)
-      val strings = sc.parts.iterator
+      val array       = Array.ofDim[Any](args.size + sc.parts.size)
+      val strings     = sc.parts.iterator
       val expressions = args.iterator
       array(0) = format.raw(strings.next())
       var i = 1
@@ -43,7 +43,7 @@ package object api {
       }
       new BaseScalaTemplate[A, Format[A]](format)._display_(array)
     }
-    
+
   }
 
 }

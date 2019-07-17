@@ -6,7 +6,8 @@ package test
 
 import java.io._
 
-import org.scalatest.{ MustMatchers, WordSpec }
+import org.scalatest.MustMatchers
+import org.scalatest.WordSpec
 import play.twirl.api.Html
 import play.twirl.parser.TwirlIO
 
@@ -19,8 +20,8 @@ class CompilerSpec extends WordSpec with MustMatchers {
   val sourceDir = new File("compiler/src/test/resources")
 
   def newCompilerHelper = {
-    val dirName = "twirl-parser"
-    val generatedDir = new File("compiler/target/test/" + dirName + "/generated-templates")
+    val dirName          = "twirl-parser"
+    val generatedDir     = new File("compiler/target/test/" + dirName + "/generated-templates")
     val generatedClasses = new File("compiler/target/test/" + dirName + "/generated-classes")
     TwirlIO.deleteRecursively(generatedDir)
     TwirlIO.deleteRecursively(generatedClasses)
@@ -32,23 +33,30 @@ class CompilerSpec extends WordSpec with MustMatchers {
 
     "compile successfully (real)" in {
       val helper = newCompilerHelper
-      val tmpl = helper.compile[((String, List[String]) => (Int) => Html)]("real.scala.html", "html.real")
-          .static("World", List("A", "B"))(4).toString.trim
+      val tmpl = helper
+        .compile[((String, List[String]) => (Int) => Html)]("real.scala.html", "html.real")
+        .static("World", List("A", "B"))(4)
+        .toString
+        .trim
 
-      tmpl must (include("<h1>Hello World</h1>") and include("You have 2 items") and include("EA") and include("EB"))
+      tmpl must (include("<h1>Hello World</h1>").and(include("You have 2 items")).and(include("EA")).and(include("EB")))
     }
 
     "compile successfully (static)" in {
       val helper = newCompilerHelper
       helper.compile[(() => Html)]("static.scala.html", "html.static").static().toString.trim must be(
-        "<h1>It works</h1>")
+        "<h1>It works</h1>"
+      )
     }
 
     "compile successfully (patternMatching)" in {
       val testParam = "12345"
-      val helper = newCompilerHelper
-      helper.compile[((String) => Html)]("patternMatching.scala.html", "html.patternMatching").static(testParam).toString.trim must be(
-        """@test
+      val helper    = newCompilerHelper
+      helper
+        .compile[((String) => Html)]("patternMatching.scala.html", "html.patternMatching")
+        .static(testParam)
+        .toString
+        .trim must be("""@test
 @test.length
 @test.length.toInt
 
@@ -62,75 +70,99 @@ class CompilerSpec extends WordSpec with MustMatchers {
 
     "compile successfully (hello)" in {
       val helper = newCompilerHelper
-      val hello = helper.compile[((String) => Html)]("hello.scala.html", "html.hello").static("World").toString.trim
+      val hello  = helper.compile[((String) => Html)]("hello.scala.html", "html.hello").static("World").toString.trim
       hello must be("<h1>Hello World!</h1><h1>xml</h1>")
     }
 
     "compile successfully (helloNull)" in {
       val helper = newCompilerHelper
-      val hello = helper.compile[((String) => Html)]("helloNull.scala.html", "html.helloNull").static(null).toString.trim
+      val hello =
+        helper.compile[((String) => Html)]("helloNull.scala.html", "html.helloNull").static(null).toString.trim
       hello must be("<h1>Hello !</h1>")
     }
 
     "compile successfully (set)" in {
       val helper = newCompilerHelper
-      val set = helper.compile[((collection.immutable.Set[String]) => Html)]("set.scala.html", "html.set").static(Set("first", "second", "third")).toString.trim.replace("\n", "").replaceAll("\\s+", "")
+      val set = helper
+        .compile[((collection.immutable.Set[String]) => Html)]("set.scala.html", "html.set")
+        .static(Set("first", "second", "third"))
+        .toString
+        .trim
+        .replace("\n", "")
+        .replaceAll("\\s+", "")
       set must be("firstsecondthird")
     }
 
     "compile successfully (arg imports)" in {
       val helper = newCompilerHelper
-      val result = helper.compile[((java.io.File, java.net.URL) => Html)]("argImports.scala.html", "html.argImports").static(new java.io.File("example"), new java.net.URL("http://example.org")).toString.trim
+      val result = helper
+        .compile[((java.io.File, java.net.URL) => Html)]("argImports.scala.html", "html.argImports")
+        .static(new java.io.File("example"), new java.net.URL("http://example.org"))
+        .toString
+        .trim
       result must be("<p>file: example, url: http://example.org</p>")
     }
 
     "compile successfully (default imports)" in {
       val helper = newCompilerHelper
-      val result = helper.compile[(() => Html)]("importsDefault.scala.html", "html.importsDefault").static().toString.trim
+      val result =
+        helper.compile[(() => Html)]("importsDefault.scala.html", "html.importsDefault").static().toString.trim
       result must be("foo")
     }
 
     "compile successfully (escape closing brace)" in {
       val helper = newCompilerHelper
-      val result = helper.compile[(Option[String] => Html)]("escapebrace.scala.html", "html.escapebrace").static(Some("foo")).toString.trim
+      val result = helper
+        .compile[(Option[String] => Html)]("escapebrace.scala.html", "html.escapebrace")
+        .static(Some("foo"))
+        .toString
+        .trim
       result must be("foo: }")
     }
 
     "compile successfully (utf8)" in {
       val helper = newCompilerHelper
-      val text = helper.compile[(() => Html)]("utf8.scala.html", "html.utf8").static().toString.trim
+      val text   = helper.compile[(() => Html)]("utf8.scala.html", "html.utf8").static().toString.trim
       text must be("€, ö, or ü")
     }
 
     "compile successfully (existential)" in {
       val helper = newCompilerHelper
-      val text = helper.compile[(List[_] => Html)]("existential.scala.html", "html.existential").static(List(1, 2, 3)).toString.trim
+      val text = helper
+        .compile[(List[_] => Html)]("existential.scala.html", "html.existential")
+        .static(List(1, 2, 3))
+        .toString
+        .trim
       text must be("123")
     }
 
     "compile successfully (triple quotes)" in {
       val helper = newCompilerHelper
-      val out = helper.compile[(() => Html)]("triplequotes.scala.html", "html.triplequotes").static().toString.trim
+      val out    = helper.compile[(() => Html)]("triplequotes.scala.html", "html.triplequotes").static().toString.trim
       out must be("\"\"\"\n\n\"\"\"\"\"\n\n\"\"\"\"\"\"")
     }
 
     "compile successfully (var args existential)" in {
       val helper = newCompilerHelper
-      val text = helper.compile[(Array[List[_]] => Html)]("varArgsExistential.scala.html", "html.varArgsExistential").static(Array(List(1, 2, 3), List(4, 5, 6))).toString.trim
+      val text = helper
+        .compile[(Array[List[_]] => Html)]("varArgsExistential.scala.html", "html.varArgsExistential")
+        .static(Array(List(1, 2, 3), List(4, 5, 6)))
+        .toString
+        .trim
       text must be("123456")
     }
 
     "fail compilation for error.scala.html" in {
       val helper = newCompilerHelper
       the[CompilationError] thrownBy helper.compile[(() => Html)]("error.scala.html", "html.error") must have(
-        Symbol("line") (2),
-        Symbol("column") (12)
+        Symbol("line")(2),
+        Symbol("column")(12)
       )
     }
 
     "compile templates that have contiguous strings > than 64k" in {
       val helper = newCompilerHelper
-      val input = TwirlIO.readFileAsString(new File(sourceDir, "long.scala.html"))
+      val input  = TwirlIO.readFileAsString(new File(sourceDir, "long.scala.html"))
       val result = helper.compile[(() => Html)]("long.scala.html", "html.long").static().toString
       result.length mustBe input.length
       result mustBe input
@@ -138,7 +170,9 @@ class CompilerSpec extends WordSpec with MustMatchers {
 
     "allow rendering a template twice" in {
       val helper = newCompilerHelper
-      val inner = helper.compile[((String, List[String]) => (Int) => Html)]("htmlInner.scala.html", "html.htmlInner").static("World", List("A", "B"))(4)
+      val inner = helper
+        .compile[((String, List[String]) => (Int) => Html)]("htmlInner.scala.html", "html.htmlInner")
+        .static("World", List("A", "B"))(4)
 
       val outer = helper.compile[Html => Html]("htmlParam.scala.html", "html.htmlParam").static
 
@@ -149,29 +183,31 @@ class CompilerSpec extends WordSpec with MustMatchers {
     "support injectable templates" when {
 
       "plain injected template" in {
-        val helper = newCompilerHelper
+        val helper   = newCompilerHelper
         val template = helper.compile[String => Html]("inject.scala.html", "html.inject").inject("Hello", 10)
         template("world").body.trim mustBe "Hello 10 world"
       }
 
       "with no args" in {
-        val helper = newCompilerHelper
+        val helper   = newCompilerHelper
         val template = helper.compile[String => Html]("injectNoArgs.scala.html", "html.injectNoArgs").inject()
         template("Hello").body.trim mustBe "Hello"
       }
 
       "with parameter groups" in {
         val helper = newCompilerHelper
-        val template = helper.compile[String => Html]("injectParamGroups.scala.html", "html.injectParamGroups").inject("Hello", 10, "my")
+        val template = helper
+          .compile[String => Html]("injectParamGroups.scala.html", "html.injectParamGroups")
+          .inject("Hello", 10, "my")
         template("world").body.trim mustBe "Hello 10 my world"
       }
 
       "with comments" in {
         val helper = newCompilerHelper
-        val template = helper.compile[String => Html]("injectComments.scala.html", "html.injectComments").inject("Hello", 10)
+        val template =
+          helper.compile[String => Html]("injectComments.scala.html", "html.injectComments").inject("Hello", 10)
         template("world").body.trim mustBe "Hello 10 world"
       }
-
 
     }
   }
@@ -181,53 +217,54 @@ class CompilerSpec extends WordSpec with MustMatchers {
     val line = "abcde" + beer + "fg"
 
     "split before a surrogate pair" in {
-      StringGrouper(line, 5) must contain allOf ("abcde", beer + "fg")
+      (StringGrouper(line, 5) must contain).allOf("abcde", beer + "fg")
     }
 
     "not split a surrogate pair" in {
-      StringGrouper(line, 6) must contain allOf("abcde" + beer, "fg")
+      (StringGrouper(line, 6) must contain).allOf("abcde" + beer, "fg")
     }
 
     "split after a surrogate pair" in {
-      StringGrouper(line, 7) must contain allOf("abcde" + beer, "fg")
+      (StringGrouper(line, 7) must contain).allOf("abcde" + beer, "fg")
     }
   }
 
   "compile successfully (elseIf)" when {
     "input is in if clause" in {
       val helper = newCompilerHelper
-      val hello = helper.compile[((Int) => Html)]("elseIf.scala.html", "html.elseIf").static(0).toString.trim
+      val hello  = helper.compile[((Int) => Html)]("elseIf.scala.html", "html.elseIf").static(0).toString.trim
       hello must be("hello")
     }
     "input is in else if clause" in {
       val helper = newCompilerHelper
-      val hello = helper.compile[((Int) => Html)]("elseIf.scala.html", "html.elseIf").static(1).toString.trim
+      val hello  = helper.compile[((Int) => Html)]("elseIf.scala.html", "html.elseIf").static(1).toString.trim
       hello must be("world")
     }
     "input is in else clause" in {
       val helper = newCompilerHelper
-      val hello = helper.compile[((Int) => Html)]("elseIf.scala.html", "html.elseIf").static(25).toString.trim
+      val hello  = helper.compile[((Int) => Html)]("elseIf.scala.html", "html.elseIf").static(25).toString.trim
       hello must be("fail!")
     }
   }
 
   "compile successfully (if without brackets)" in {
     val helper = newCompilerHelper
-    val hello = helper.compile[((String, String) => Html)]("ifWithoutBrackets.scala.html", "html.ifWithoutBrackets")
+    val hello  = helper.compile[((String, String) => Html)]("ifWithoutBrackets.scala.html", "html.ifWithoutBrackets")
     hello.static("twirl", "play").toString.trim must be("twirl-play")
     hello.static("twirl", "something-else").toString.trim must be("twirl")
   }
 
   "compile successfully (complex if without brackets)" in {
     val helper = newCompilerHelper
-    val hello = helper.compile[((String, String) => Html)]("ifWithoutBracketsComplex.scala.html", "html.ifWithoutBracketsComplex")
+    val hello =
+      helper.compile[((String, String) => Html)]("ifWithoutBracketsComplex.scala.html", "html.ifWithoutBracketsComplex")
     hello.static("twirl", "play").toString.trim must include("""<header class="play-twirl">""")
     hello.static("twirl", "something-else").toString.trim must include("""<header class="twirl">""")
   }
 
   "compile successfully (block with tuple)" in {
     val helper = newCompilerHelper
-    val hello = helper.compile[(Seq[(String, String)] => Html)]("blockWithTuple.scala.html", "html.blockWithTuple")
+    val hello  = helper.compile[(Seq[(String, String)] => Html)]("blockWithTuple.scala.html", "html.blockWithTuple")
 
     val args = Seq[(String, String)](
       "the-key" -> "the-value"
@@ -248,30 +285,43 @@ object Helper {
     import scala.collection.mutable
     import scala.reflect.internal.util.Position
     import scala.tools.nsc.reporters.ConsoleReporter
-    import scala.tools.nsc.{ Global, Settings }
+    import scala.tools.nsc.Global
+    import scala.tools.nsc.Settings
 
     val twirlCompiler = TwirlCompiler
 
-    val classloader = new URLClassLoader(Array(generatedClasses.toURI.toURL), Class.forName("play.twirl.compiler.TwirlCompiler").getClassLoader)
+    val classloader = new URLClassLoader(
+      Array(generatedClasses.toURI.toURL),
+      Class.forName("play.twirl.compiler.TwirlCompiler").getClassLoader
+    )
 
     // A list of the compile errors from the most recent compiler run
     val compileErrors = new mutable.ListBuffer[CompilationError]
 
     val compiler = {
 
-      def additionalClassPathEntry: Option[String] = Some(
-        Class.forName("play.twirl.compiler.TwirlCompiler").getClassLoader.asInstanceOf[URLClassLoader].getURLs.map(url => new File(url.toURI)).mkString(":"))
+      def additionalClassPathEntry: Option[String] =
+        Some(
+          Class
+            .forName("play.twirl.compiler.TwirlCompiler")
+            .getClassLoader
+            .asInstanceOf[URLClassLoader]
+            .getURLs
+            .map(url => new File(url.toURI))
+            .mkString(":")
+        )
 
-      val settings = new Settings
+      val settings          = new Settings
       val scalaObjectSource = Class.forName("scala.Option").getProtectionDomain.getCodeSource
 
       // is null in Eclipse/OSGI but luckily we don't need it there
       if (scalaObjectSource != null) {
-        val compilerPath = Class.forName("scala.tools.nsc.Interpreter").getProtectionDomain.getCodeSource.getLocation
-        val libPath = scalaObjectSource.getLocation
-        val pathList = List(compilerPath, libPath)
+        val compilerPath      = Class.forName("scala.tools.nsc.Interpreter").getProtectionDomain.getCodeSource.getLocation
+        val libPath           = scalaObjectSource.getLocation
+        val pathList          = List(compilerPath, libPath)
         val origBootclasspath = settings.bootclasspath.value
-        settings.bootclasspath.value = ((origBootclasspath :: pathList) ::: additionalClassPathEntry.toList) mkString File.pathSeparator
+        settings.bootclasspath.value =
+          ((origBootclasspath :: pathList) ::: additionalClassPathEntry.toList).mkString(File.pathSeparator)
         settings.outdir.value = generatedClasses.getAbsolutePath
       }
 
@@ -279,7 +329,7 @@ object Helper {
         override def display(pos: Position, msg: String, severity: Severity): Unit = {
           pos match {
             case scala.reflect.internal.util.NoPosition => // do nothing
-            case _ => compileErrors.append(CompilationError(msg, pos.line, pos.point))
+            case _                                      => compileErrors.append(CompilationError(msg, pos.line, pos.point))
           }
         }
       })
@@ -300,15 +350,25 @@ object Helper {
       def inject(constructorArgs: Any*): T = {
         classloader.loadClass(className).getConstructors match {
           case Array(single) => getF(single.newInstance(constructorArgs.asInstanceOf[Seq[AnyRef]]: _*))
-          case other => throw new IllegalStateException(className + " does not declare exactly one constructor: " + other)
+          case other =>
+            throw new IllegalStateException(className + " does not declare exactly one constructor: " + other)
         }
       }
     }
 
-    def compile[T](templateName: String, className: String, additionalImports: Seq[String] = Nil): CompiledTemplate[T] = {
+    def compile[T](
+        templateName: String,
+        className: String,
+        additionalImports: Seq[String] = Nil
+    ): CompiledTemplate[T] = {
       val templateFile = new File(sourceDir, templateName)
-      val Some(generated) = twirlCompiler.compile(templateFile, sourceDir, generatedDir, "play.twirl.api.HtmlFormat",
-        additionalImports = TwirlCompiler.DefaultImports ++ additionalImports)
+      val Some(generated) = twirlCompiler.compile(
+        templateFile,
+        sourceDir,
+        generatedDir,
+        "play.twirl.api.HtmlFormat",
+        additionalImports = TwirlCompiler.DefaultImports ++ additionalImports
+      )
 
       val mapper = GeneratedSource(generated)
 

@@ -4,7 +4,8 @@
 package play.twirl.api
 package test
 
-import org.scalatest.{ MustMatchers, WordSpec }
+import org.scalatest.MustMatchers
+import org.scalatest.WordSpec
 
 class FormatSpec extends WordSpec with MustMatchers {
 

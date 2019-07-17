@@ -4,16 +4,18 @@ import org.scalajs.jsenv.nodejs.NodeJSEnv
 
 def binaryCompatibilitySettings(org: String, moduleName: String, scalaBinVersion: String): Set[ModuleID] = {
   val artifact = org % s"${moduleName}_${scalaBinVersion}"
-  if (scalaBinVersion.equals(scala213)) Set(artifact % "1.4.2")
-  else Set(artifact % "1.4.0")
+  if (scala213.startsWith(scalaBinVersion)) Set(artifact % "1.4.2")
+  else Set(artifact                                      % "1.4.0")
 }
 
 val headerSettings = Seq(
   headerLicense := {
     val currentYear = java.time.Year.now(java.time.Clock.systemUTC).getValue
-    Some(HeaderLicense.Custom(
-      s"Copyright (C) 2009-$currentYear Lightbend Inc. <https://www.lightbend.com>"
-    ))
+    Some(
+      HeaderLicense.Custom(
+        s"Copyright (C) 2009-$currentYear Lightbend Inc. <https://www.lightbend.com>"
+      )
+    )
   },
   headerEmptyLine := false
 )
@@ -24,13 +26,15 @@ val commonSettings = headerSettings ++ Seq(
 )
 
 lazy val twirl = project
-    .in(file("."))
-    .enablePlugins(PlayRootProject)
-    .settings(commonSettings: _*)
-    .settings(crossScalaVersions := Nil) // workaround so + uses project-defined variants
-    .settings(releaseCrossBuild := false)
-    .aggregate(apiJvm, apiJs, parser, compiler, plugin)
-
+  .in(file("."))
+  .enablePlugins(PlayRootProject)
+  .settings(commonSettings)
+  .settings(
+    crossScalaVersions := Nil, // workaround so + uses project-defined variants
+    releaseCrossBuild := false,
+    mimaFailOnNoPrevious := false
+  )
+  .aggregate(apiJvm, apiJs, parser, compiler, plugin)
 
 lazy val nodeJs = {
   if (System.getProperty("NODE_PATH") != null)
@@ -40,64 +44,77 @@ lazy val nodeJs = {
 }
 
 lazy val api = crossProject(JVMPlatform, JSPlatform)
-    .in(file("api"))
-    .enablePlugins(PlayLibrary, Playdoc)
-    .configs(Docs)
-    .settings(commonSettings: _*)
-    .settings(mimaPreviousArtifacts := binaryCompatibilitySettings(organization.value, moduleName.value, scalaBinaryVersion.value))
-    .settings(
-      name := "twirl-api",
-      jsEnv := nodeJs,
-      libraryDependencies ++= scalaXml.value,
-      libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest(scalaVersion.value) % "test"
-    )
+  .in(file("api"))
+  .enablePlugins(PlayLibrary, Playdoc)
+  .configs(Docs)
+  .settings(commonSettings: _*)
+  .settings(
+    name := "twirl-api",
+    jsEnv := nodeJs,
+    libraryDependencies ++= scalaXml.value,
+    libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest(scalaVersion.value) % "test",
+    mimaPreviousArtifacts := binaryCompatibilitySettings(
+      organization.value,
+      moduleName.value,
+      scalaBinaryVersion.value
+    ),
+  )
 
 lazy val apiJvm = api.jvm
-lazy val apiJs = api.js
+lazy val apiJs  = api.js
 
 lazy val parser = project
-    .in(file("parser"))
-    .enablePlugins(PlayLibrary)
-    .settings(commonSettings: _*)
-    .settings(mimaPreviousArtifacts := binaryCompatibilitySettings(organization.value, moduleName.value, scalaBinaryVersion.value))
-    .settings(
-      name := "twirl-parser",
-      libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
-      libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test",
-      libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest(scalaVersion.value) % "test"
-    )
+  .in(file("parser"))
+  .enablePlugins(PlayLibrary)
+  .settings(commonSettings: _*)
+  .settings(
+    name := "twirl-parser",
+    libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
+    libraryDependencies += "com.novocode"  % "junit-interface" % "0.11"                        % "test",
+    libraryDependencies += "org.scalatest" %%% "scalatest"     % scalatest(scalaVersion.value) % "test",
+    mimaPreviousArtifacts := binaryCompatibilitySettings(organization.value, moduleName.value, scalaBinaryVersion.value)
+  )
 
 lazy val compiler = project
-    .in(file("compiler"))
-    .enablePlugins(PlayLibrary)
-    .dependsOn(apiJvm, parser % "compile;test->test")
-    .settings(commonSettings: _*)
-    .settings(mimaPreviousArtifacts := binaryCompatibilitySettings(organization.value, moduleName.value, scalaBinaryVersion.value))
-    .settings(
-      name := "twirl-compiler",
-      libraryDependencies += scalaCompiler(scalaVersion.value),
-      libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
-      fork in run := true
-    )
+  .in(file("compiler"))
+  .enablePlugins(PlayLibrary)
+  .dependsOn(apiJvm, parser % "compile;test->test")
+  .settings(commonSettings: _*)
+  .settings(
+    name := "twirl-compiler",
+    libraryDependencies += scalaCompiler(scalaVersion.value),
+    libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
+    fork in run := true,
+    mimaPreviousArtifacts := binaryCompatibilitySettings(
+      organization.value,
+      moduleName.value,
+      scalaBinaryVersion.value
+    ),
+  )
 
 lazy val plugin = project
-    .in(file("sbt-twirl"))
-    .enablePlugins(PlaySbtPlugin, SbtPlugin)
-    .dependsOn(compiler)
-    .settings(headerSettings)
-    .settings(
-      name := "sbt-twirl",
-      organization := "com.typesafe.sbt",
-      scalaVersion := scala212,
-      libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest(scalaVersion.value) % "test",
-      resourceGenerators in Compile += generateVersionFile.taskValue,
-      scriptedDependencies := {
-        scriptedDependencies.value
-        publishLocal.all(ScopeFilter(
-          inDependencies(compiler)
-        )).value
-      }
-    )
+  .in(file("sbt-twirl"))
+  .enablePlugins(PlaySbtPlugin, SbtPlugin)
+  .dependsOn(compiler)
+  .settings(headerSettings)
+  .settings(
+    name := "sbt-twirl",
+    organization := "com.typesafe.sbt",
+    scalaVersion := scala212,
+    libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest(scalaVersion.value) % "test",
+    resourceGenerators in Compile += generateVersionFile.taskValue,
+    scriptedDependencies := {
+      scriptedDependencies.value
+      publishLocal
+        .all(
+          ScopeFilter(
+            inDependencies(compiler)
+          )
+        )
+        .value
+    },
+    mimaFailOnNoPrevious := false,
+  )
 
 playBuildRepoName in ThisBuild := "twirl"
 playBuildExtraTests := {
@@ -111,7 +128,7 @@ playBuildExtraPublish := {
 
 def generateVersionFile = Def.task {
   val version = (Keys.version in apiJvm).value
-  val file = (resourceManaged in Compile).value / "twirl.version.properties"
+  val file    = (resourceManaged in Compile).value / "twirl.version.properties"
   val content = s"twirl.api.version=$version"
   IO.write(file, content)
   Seq(file)
@@ -127,9 +144,10 @@ def scalaCompiler(version: String) = "org.scala-lang" % "scala-compiler" % versi
 
 def scalaParserCombinators(scalaVersion: String): Seq[ModuleID] = scalaVersion match {
   case interplay.ScalaVersions.scala210 => Seq.empty
-  case _ => Seq(
-    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2" % "optional"
-  )
+  case _ =>
+    Seq(
+      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2" % "optional"
+    )
 }
 
 def scalaXml = Def.setting {
@@ -141,4 +159,4 @@ def scalaXml = Def.setting {
   }
 }
 
-addCommandAlias("validateCode", ";headerCheck;test:headerCheck")
+addCommandAlias("validateCode", ";headerCheck;test:headerCheck;scalafmtCheckAll;scalafmtSbtCheck")
