@@ -15,6 +15,7 @@ object TreeNodes {
       name: PosString,
       constructor: Option[Constructor],
       comment: Option[Comment],
+      templateFunctionName: Option[PosString],
       params: PosString,
       topImports: collection.Seq[Simple],
       imports: collection.Seq[Simple],

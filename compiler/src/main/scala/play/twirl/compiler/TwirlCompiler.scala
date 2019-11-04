@@ -426,7 +426,11 @@ object TwirlCompiler {
       additionalImports: collection.Seq[String],
       constructorAnnotations: collection.Seq[String]
   ): collection.Seq[Any] = {
-    val (renderCall, f, templateType) = TemplateAsFunctionCompiler.getFunctionMapping(root.params.str, resultType)
+    val (renderCall, f, templateType) = TemplateAsFunctionCompiler.getFunctionMapping(
+      root.templateFunctionName.map(_.str).getOrElse("f"),
+      root.params.str,
+      resultType
+    )
 
     // Get the imports that we need to include, filtering out empty imports
     val imports: Seq[Any] = Seq(additionalImports.map(i => Seq("import ", i, "\n")), formatImports(root.topImports))
@@ -520,7 +524,7 @@ package """ :+ packageName :+ """
     /** The maximum time in milliseconds to wait for a compiler response to finish. */
     private val Timeout = 10000
 
-    def getFunctionMapping(signature: String, returnType: String): (String, String, String) = synchronized {
+    def getFunctionMapping(fn: String, signature: String, returnType: String): (String, String, String) = synchronized {
 
       def filterType(t: String) =
         t.replace("_root_.scala.<repeated>", "Array")
@@ -584,7 +588,8 @@ package """ :+ packageName :+ """
             (if (params.flatten.isEmpty) "" else ",") + returnType
           )
 
-          val f = "def f:%s = %s => apply%s".format(
+          val f = "def %s:%s = %s => apply%s".format(
+            fn,
             functionType,
             params.map(group => "(" + group.map(_.name.toString).mkString(",") + ")").mkString(" => "),
             params
