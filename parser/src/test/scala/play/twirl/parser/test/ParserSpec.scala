@@ -5,11 +5,11 @@ package play.twirl.parser
 package test
 
 import org.scalatest.Inside
-import org.scalatest.MustMatchers
-import org.scalatest.WordSpec
 import play.twirl.parser.TreeNodes._
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class ParserSpec extends WordSpec with MustMatchers with Inside {
+class ParserSpec extends AnyWordSpec with Matchers with Inside {
 
   val parser = new TwirlParser(shouldParseInclusiveDot = false)
 

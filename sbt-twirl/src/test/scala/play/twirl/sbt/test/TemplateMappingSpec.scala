@@ -5,12 +5,12 @@ package play.twirl.sbt
 package test
 
 import org.scalatest.Inspectors
-import org.scalatest.MustMatchers
-import org.scalatest.WordSpec
 import play.twirl.sbt.TemplateProblem.TemplateMapping
 import play.twirl.sbt.TemplateProblem.TemplateMapping.Location
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class TemplateMappingSpec extends WordSpec with MustMatchers with Inspectors {
+class TemplateMappingSpec extends AnyWordSpec with Matchers with Inspectors {
 
   "TemplateMapping" should {
 

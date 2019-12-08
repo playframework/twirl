@@ -8,10 +8,10 @@ import java.io.File
 import play.twirl.sbt.TemplateProblem.TemplateMapping
 import play.twirl.sbt.TemplateProblem.TemplatePosition
 import org.scalatest.Inspectors
-import org.scalatest.MustMatchers
-import org.scalatest.WordSpec
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class TemplatePositionSpec extends WordSpec with MustMatchers with Inspectors {
+class TemplatePositionSpec extends AnyWordSpec with Matchers with Inspectors {
 
   "TemplatePosition" should {
 

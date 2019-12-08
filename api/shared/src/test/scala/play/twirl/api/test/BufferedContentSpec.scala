@@ -3,13 +3,13 @@
  */
 package play.twirl.api.test
 
-import org.scalatest.MustMatchers
-import org.scalatest.WordSpec
 import play.twirl.api._
 
 import scala.collection.immutable
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class BufferedContentSpec extends WordSpec with MustMatchers {
+class BufferedContentSpec extends AnyWordSpec with Matchers {
 
   "equality checking" should {
 

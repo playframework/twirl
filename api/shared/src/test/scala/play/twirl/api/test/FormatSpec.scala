@@ -4,10 +4,10 @@
 package play.twirl.api
 package test
 
-import org.scalatest.MustMatchers
-import org.scalatest.WordSpec
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class FormatSpec extends WordSpec with MustMatchers {
+class FormatSpec extends AnyWordSpec with Matchers {
 
   "Formats" should {
     "show null text values as empty" in {
