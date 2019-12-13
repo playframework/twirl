@@ -539,14 +539,13 @@ package """ :+ packageName :+ """
       val resp = PresentationCompiler.global
         .askForResponse { () =>
           val functionType = "(" + params
-            .map(
-              group =>
-                "(" + group
-                  .map {
-                    case ByNameParam(_, paramType) => " => " + paramType
-                    case a                         => filterType(a.tpt.toString)
-                  }
-                  .mkString(",") + ")"
+            .map(group =>
+              "(" + group
+                .map {
+                  case ByNameParam(_, paramType) => " => " + paramType
+                  case a                         => filterType(a.tpt.toString)
+                }
+                .mkString(",") + ")"
             )
             .mkString(" => ") + " => " + returnType + ")"
 
@@ -559,16 +558,15 @@ package """ :+ packageName :+ """
               .mkString(",") + ")",
             returnType,
             params
-              .map(
-                group =>
-                  "(" + group
-                    .map { p =>
-                      p.name.toString + Option(p.tpt.toString)
-                        .filter(_.startsWith("_root_.scala.<repeated>"))
-                        .map(_ => ".toIndexedSeq:_*")
-                        .getOrElse("")
-                    }
-                    .mkString(",") + ")"
+              .map(group =>
+                "(" + group
+                  .map { p =>
+                    p.name.toString + Option(p.tpt.toString)
+                      .filter(_.startsWith("_root_.scala.<repeated>"))
+                      .map(_ => ".toIndexedSeq:_*")
+                      .getOrElse("")
+                  }
+                  .mkString(",") + ")"
               )
               .mkString
           )
@@ -588,16 +586,15 @@ package """ :+ packageName :+ """
             functionType,
             params.map(group => "(" + group.map(_.name.toString).mkString(",") + ")").mkString(" => "),
             params
-              .map(
-                group =>
-                  "(" + group
-                    .map { p =>
-                      p.name.toString + Option(p.tpt.toString)
-                        .filter(_.startsWith("_root_.scala.<repeated>"))
-                        .map(_ => ".toIndexedSeq:_*")
-                        .getOrElse("")
-                    }
-                    .mkString(",") + ")"
+              .map(group =>
+                "(" + group
+                  .map { p =>
+                    p.name.toString + Option(p.tpt.toString)
+                      .filter(_.startsWith("_root_.scala.<repeated>"))
+                      .map(_ => ".toIndexedSeq:_*")
+                      .getOrElse("")
+                  }
+                  .mkString(",") + ")"
               )
               .mkString
           )
