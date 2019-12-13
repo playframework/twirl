@@ -5,6 +5,8 @@ import org.scalajs.jsenv.nodejs.NodeJSEnv
 // Binary compatibility is this version
 val previousVersion: Option[String] = None
 
+val ScalaTestVersion = "3.1.0"
+
 def binaryCompatibilitySettings(org: String, moduleName: String, scalaBinVersion: String): Set[ModuleID] = {
   if (scalaBinVersion.equals(scala213)) Set.empty
   else
@@ -91,7 +93,7 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
     name := "twirl-api",
     jsEnv := nodeJs,
     libraryDependencies ++= scalaXml.value,
-    libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest(scalaVersion.value) % "test",
+    libraryDependencies += "org.scalatest" %%% "scalatest" % ScalaTestVersion % "test",
     mimaPreviousArtifacts := binaryCompatibilitySettings(
       organization.value,
       moduleName.value,
@@ -109,8 +111,8 @@ lazy val parser = project
   .settings(
     name := "twirl-parser",
     libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
-    libraryDependencies += "com.novocode"  % "junit-interface" % "0.11"                        % "test",
-    libraryDependencies += "org.scalatest" %%% "scalatest"     % scalatest(scalaVersion.value) % "test",
+    libraryDependencies += "com.novocode"  % "junit-interface" % "0.11"           % "test",
+    libraryDependencies += "org.scalatest" %%% "scalatest"     % ScalaTestVersion % "test",
     mimaPreviousArtifacts := binaryCompatibilitySettings(organization.value, moduleName.value, scalaBinaryVersion.value)
   )
 
@@ -141,7 +143,7 @@ lazy val plugin = project
     name := "sbt-twirl",
     organization := "com.typesafe.sbt",
     scalaVersion := scala212,
-    libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest(scalaVersion.value) % "test",
+    libraryDependencies += "org.scalatest" %%% "scalatest" % ScalaTestVersion % "test",
     resourceGenerators in Compile += generateVersionFile.taskValue,
     scriptedDependencies := {
       scriptedDependencies.value
@@ -173,12 +175,6 @@ def generateVersionFile = Def.task {
   val content = s"twirl.api.version=$version"
   IO.write(file, content)
   Seq(file)
-}
-
-// Dependencies
-
-def scalatest(scalaV: String): String = scalaV match {
-  case _ => "3.0.8"
 }
 
 def scalaCompiler(version: String) = "org.scala-lang" % "scala-compiler" % version
