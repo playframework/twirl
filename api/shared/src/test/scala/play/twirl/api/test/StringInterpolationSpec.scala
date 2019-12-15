@@ -8,10 +8,10 @@ import java.util.ArrayList
 import java.util.Optional
 import java.util.{ List => JList }
 
-import org.scalatest.MustMatchers
-import org.scalatest.WordSpec
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class StringInterpolationSpec extends WordSpec with MustMatchers {
+class StringInterpolationSpec extends AnyWordSpec with Matchers {
 
   "StringInterpolation" should {
     "leave string parts untouched" in {

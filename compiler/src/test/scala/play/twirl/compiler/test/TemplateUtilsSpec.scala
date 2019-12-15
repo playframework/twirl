@@ -4,13 +4,13 @@
 package play.twirl.compiler
 package test
 
-import org.scalatest.MustMatchers
-import org.scalatest.WordSpec
 import play.twirl.api._
 
 import scala.collection.immutable
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class TemplateUtilsSpec extends WordSpec with MustMatchers {
+class TemplateUtilsSpec extends AnyWordSpec with Matchers {
 
   "Templates" should {
 

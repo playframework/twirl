@@ -6,12 +6,12 @@ package test
 
 import java.io._
 
-import org.scalatest.MustMatchers
-import org.scalatest.WordSpec
 import play.twirl.api.Html
 import play.twirl.parser.TwirlIO
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class CompilerSpec extends WordSpec with MustMatchers {
+class CompilerSpec extends AnyWordSpec with Matchers {
 
   import Helper._
 
