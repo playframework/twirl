@@ -810,7 +810,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
         if (check("{")) {
           val (imports, localDefs, templates, mixeds) = templateContent()
           if (check("}"))
-            result = Template(templDecl._1, None, None, templDecl._2, Nil, imports, localDefs, templates, mixeds)
+            result = Template(templDecl._1, None, None, None, templDecl._2, Nil, imports, localDefs, templates, mixeds)
         }
       }
     }
@@ -932,6 +932,29 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   /**
+   * Parse the template function name, if it exists
+   */
+  private def maybeTemplateFunctionName(): Option[PosString] = {
+    if (check("@templateFunctionName(")) {
+      val p = input.offset()
+      whitespaceNoBreak
+      val name = stringLiteral("\"", "\\")
+      if (name != null) {
+        whitespaceNoBreak
+        if (!check(")")) {
+          error("Expected closing parenthesis after template function name")
+          None
+        } else {
+          Some(position(PosString(name), p))
+        }
+      } else {
+        error("Expected template function name")
+        None
+      }
+    } else None
+  }
+
+  /**
    * Parse the template arguments, if they exist
    */
   private def constructorArgs(): PosString = {
@@ -965,12 +988,14 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       }
     }
     val args                                    = maybeTemplateArgs()
+    val templateFunctionName                    = maybeTemplateFunctionName()
     val (imports, localDefs, templates, mixeds) = templateContent()
 
     val template = Template(
       PosString(""),
       constructor,
       argsComment,
+      templateFunctionName,
       args.getOrElse(PosString("()")),
       topImports,
       imports,
