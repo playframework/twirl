@@ -11,9 +11,7 @@ import play.twirl.sbt.TemplateProblem.TemplateMapping
 import play.twirl.sbt.TemplateProblem.TemplateMapping.Location
 
 class TemplateMappingSpec extends WordSpec with MustMatchers with Inspectors {
-
   "TemplateMapping" should {
-
     "handle empty templates" in {
       val mapping = TemplateMapping(Seq.empty)
 

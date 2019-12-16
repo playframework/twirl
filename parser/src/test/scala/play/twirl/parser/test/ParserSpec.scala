@@ -10,7 +10,6 @@ import org.scalatest.WordSpec
 import play.twirl.parser.TreeNodes._
 
 class ParserSpec extends WordSpec with MustMatchers with Inside {
-
   val parser = new TwirlParser(shouldParseInclusiveDot = false)
 
   def get(templateName: String): String = {
@@ -56,9 +55,7 @@ class ParserSpec extends WordSpec with MustMatchers with Inside {
   }
 
   "New twirl parser" should {
-
     "succeed for" when {
-
       "static.scala.html" in {
         parseSuccess("static.scala.html")
       }
@@ -169,7 +166,6 @@ class ParserSpec extends WordSpec with MustMatchers with Inside {
     }
 
     "handle string literals within parentheses" when {
-
       "with left parenthesis" in {
         parseStringSuccess("""@foo("(")""")
       }
@@ -177,7 +173,6 @@ class ParserSpec extends WordSpec with MustMatchers with Inside {
       "with right parenthesis and '@'" in {
         parseStringSuccess("""@foo(")@")""")
       }
-
     }
 
     "handle escaped closing curly braces" in {
@@ -185,7 +180,6 @@ class ParserSpec extends WordSpec with MustMatchers with Inside {
     }
 
     "fail for" when {
-
       "unclosedBracket.scala.html" in {
         parseFailure("unclosedBracket.scala.html", "Expected '}' but found 'EOF'", 12, 6)
       }
@@ -197,9 +191,6 @@ class ParserSpec extends WordSpec with MustMatchers with Inside {
       "invalidAt.scala.html" in {
         parseFailure("invalidAt.scala.html", "Invalid '@' symbol", 5, 5)
       }
-
     }
-
   }
-
 }

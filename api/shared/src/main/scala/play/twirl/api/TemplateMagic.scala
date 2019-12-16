@@ -7,7 +7,6 @@ import scala.language.implicitConversions
 
 @deprecated("Use TwirlDefaultImports instead", "1.2.0")
 object TemplateMagic {
-
   // --- UTILS
 
   def defining[T](t: T)(handler: T => Any) = {
@@ -47,11 +46,9 @@ object TemplateMagic {
   // --- DATE
 
   class RichDate(date: java.util.Date) {
-
     def format(pattern: String) = {
       new java.text.SimpleDateFormat(pattern).format(date)
     }
-
   }
 
   implicit def richDate(date: java.util.Date) = new RichDate(date)
@@ -59,16 +56,13 @@ object TemplateMagic {
   // --- STRING
 
   class RichString(string: String) {
-
     def when(predicate: => Boolean) = {
       predicate match {
         case true  => string
         case false => ""
       }
     }
-
   }
 
   implicit def richString(string: String) = new RichString(string)
-
 }

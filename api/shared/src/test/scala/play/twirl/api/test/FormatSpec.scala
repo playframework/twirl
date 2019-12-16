@@ -8,7 +8,6 @@ import org.scalatest.MustMatchers
 import org.scalatest.WordSpec
 
 class FormatSpec extends WordSpec with MustMatchers {
-
   "Formats" should {
     "show null text values as empty" in {
       val text: String = null
@@ -50,5 +49,4 @@ class FormatSpec extends WordSpec with MustMatchers {
       JavaScriptFormat.escape("""foo ' bar " baz \""").body must be("""foo \' bar \" baz \\""")
     }
   }
-
 }

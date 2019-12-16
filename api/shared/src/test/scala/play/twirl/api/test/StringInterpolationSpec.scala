@@ -12,7 +12,6 @@ import org.scalatest.MustMatchers
 import org.scalatest.WordSpec
 
 class StringInterpolationSpec extends WordSpec with MustMatchers {
-
   "StringInterpolation" should {
     "leave string parts untouched" in {
       val p = html"<p>"
@@ -38,5 +37,4 @@ class StringInterpolationSpec extends WordSpec with MustMatchers {
       html"${javaList}".body mustBe "ab"
     }
   }
-
 }

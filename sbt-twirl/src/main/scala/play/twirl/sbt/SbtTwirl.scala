@@ -28,7 +28,6 @@ object Import {
 }
 
 object SbtTwirl extends AutoPlugin {
-
   import Import.TwirlKeys._
 
   val autoImport = Import

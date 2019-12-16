@@ -43,7 +43,6 @@ object TemplateCompiler extends TemplateCompilerErrorHandler {
       codec: Codec,
       log: Logger
   ): Seq[File] = {
-
     try {
       syncGenerated(targetDirectory, codec)
       val templates = collectTemplates(sourceDirectories, templateFormats, includeFilter, excludeFilter)

@@ -16,7 +16,6 @@ import scala.language.implicitConversions
  * - default values (maybeFoo ? defaultFoo)
  */
 object TwirlFeatureImports {
-
   /**
    * Provides the `@defining` language feature, that lets you set a local val that can be reused.
    *
