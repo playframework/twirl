@@ -4,7 +4,6 @@
 package play.twirl.api.utils
 
 object StringEscapeUtils {
-
   def escapeEcmaScript(input: String): String = {
     val s   = new StringBuilder()
     val len = input.length
@@ -57,5 +56,4 @@ object StringEscapeUtils {
 
     s.toString()
   }
-
 }

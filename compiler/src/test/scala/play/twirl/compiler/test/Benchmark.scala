@@ -14,7 +14,6 @@ import play.twirl.parser.TwirlIO
  * sbt "compiler/test:runMain play.twirl.compiler.test.Benchmark"
  */
 object Benchmark extends App {
-
   val sourceDir        = new File("src/test/resources")
   val generatedDir     = new File("target/test/benchmark-templates")
   val generatedClasses = new File("target/test/benchmark-classes")
@@ -50,5 +49,4 @@ object Benchmark extends App {
     template(text, input)(4).body
   }
   println("Second run: " + (System.currentTimeMillis() - start2) + "ms")
-
 }

@@ -10,7 +10,6 @@ import sbt.internal.inc.LoggedReporter
 import scala.io.Codec
 
 trait TemplateCompilerErrorHandler {
-
   def handleError(log: Logger, codec: Codec): PartialFunction[Throwable, Nothing] = {
     case TemplateCompilationError(source, message, line, column) =>
       val exception = TemplateProblem.exception(source, codec, message, line, column)

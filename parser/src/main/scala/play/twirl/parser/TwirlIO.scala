@@ -13,7 +13,6 @@ import java.net.URL
  * This is intentionally not public API.
  */
 private[twirl] object TwirlIO {
-
   val defaultEncoding = scala.util.Properties.sourceEncoding
 
   val defaultCodec = Codec(defaultEncoding)

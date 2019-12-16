@@ -72,7 +72,6 @@ class Html private[api] (elements: immutable.Seq[Html], text: String, escape: Bo
  * Helper for HTML utility methods.
  */
 object Html {
-
   /**
    * Creates an HTML fragment with initial content specified.
    */
@@ -92,7 +91,6 @@ object Html {
  * Formatter for HTML content.
  */
 object HtmlFormat extends Format[Html] {
-
   /**
    * Creates a raw (unescaped) HTML fragment.
    */
@@ -114,7 +112,6 @@ object HtmlFormat extends Format[Html] {
    * Create an HTML Fragment that holds other fragments.
    */
   def fill(elements: immutable.Seq[Html]): Html = new Html(elements)
-
 }
 
 /**
@@ -134,21 +131,18 @@ class Txt private (elements: immutable.Seq[Txt], text: String) extends BufferedC
  * Helper for utilities Txt methods.
  */
 object Txt {
-
   /**
    * Creates a text fragment with initial content specified.
    */
   def apply(text: String): Txt = {
     new Txt(text)
   }
-
 }
 
 /**
  * Formatter for text content.
  */
 object TxtFormat extends Format[Txt] {
-
   /**
    * Create a text fragment.
    */
@@ -168,7 +162,6 @@ object TxtFormat extends Format[Txt] {
    * Create an Txt Fragment that holds other fragments.
    */
   def fill(elements: immutable.Seq[Txt]): Txt = new Txt(elements)
-
 }
 
 /**
@@ -188,21 +181,18 @@ class Xml private (elements: immutable.Seq[Xml], text: String) extends BufferedC
  * Helper for XML utility methods.
  */
 object Xml {
-
   /**
    * Creates an XML fragment with initial content specified.
    */
   def apply(text: String): Xml = {
     new Xml(text)
   }
-
 }
 
 /**
  * Formatter for XML content.
  */
 object XmlFormat extends Format[Xml] {
-
   /**
    * Creates an XML fragment.
    */
@@ -222,7 +212,6 @@ object XmlFormat extends Format[Xml] {
    * Create an XML Fragment that holds other fragments.
    */
   def fill(elements: immutable.Seq[Xml]): Xml = new Xml(elements)
-
 }
 
 /**
@@ -243,7 +232,6 @@ class JavaScript private (elements: immutable.Seq[JavaScript], text: String)
  * Helper for JavaScript utility methods.
  */
 object JavaScript {
-
   /**
    * Creates a JavaScript fragment with initial content specified
    */
@@ -256,7 +244,6 @@ object JavaScript {
  * Formatter for JavaScript content.
  */
 object JavaScriptFormat extends Format[JavaScript] {
-
   /**
    * Integrate `text` without performing any escaping process.
    * @param text Text to integrate
@@ -278,5 +265,4 @@ object JavaScriptFormat extends Format[JavaScript] {
    * Create an JavaScript Fragment that holds other fragments.
    */
   def fill(elements: immutable.Seq[JavaScript]): JavaScript = new JavaScript(elements)
-
 }

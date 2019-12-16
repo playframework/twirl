@@ -11,17 +11,13 @@ import play.twirl.api._
 import scala.collection.immutable
 
 class TemplateUtilsSpec extends WordSpec with MustMatchers {
-
   "Templates" should {
-
     "provide a HASH util" in {
       Hash("itShouldWork".getBytes, Nil) must be("31c0c4e0e142fe9b605fff44528fedb3dd8ae254")
     }
 
     "provide a Format API" when {
-
       "HTML for example" in {
-
         case class Html(_text: String) extends BufferedContent[Html](Nil, _text) {
           val contentType = "text/html"
         }
@@ -39,7 +35,6 @@ class TemplateUtilsSpec extends WordSpec with MustMatchers {
       }
 
       "Text for example" in {
-
         case class Text(_text: String) extends BufferedContent[Text](Nil, _text) {
           val contentType = "text/plain"
         }
@@ -54,7 +49,6 @@ class TemplateUtilsSpec extends WordSpec with MustMatchers {
         val text = TextFormat.raw("<h1>").body + TextFormat.escape("Hello <world>").body + TextFormat.raw("</h1>").body
 
         text must be("<h1>Hello <world></h1>")
-
       }
     }
   }

@@ -15,7 +15,6 @@ import xsbti.Severity
 import scala.io.Codec
 
 object TemplateProblem {
-
   def positionMapper(codec: Codec): Position => Option[Position] = position => {
     toScala(position.sourceFile).flatMap(f => MaybeGeneratedSource(f, codec)).map { generated =>
       TemplatePosition(generated, position)

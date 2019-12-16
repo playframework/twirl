@@ -9,7 +9,6 @@ import scala.collection.immutable
  * Generic type representing content to be sent over an HTTP response.
  */
 trait Content {
-
   /**
    * The content String.
    */
@@ -19,7 +18,6 @@ trait Content {
    * The default Content type to use for this content.
    */
   def contentType: String
-
 }
 
 /**
@@ -67,5 +65,4 @@ abstract class BufferedContent[A <: BufferedContent[A]](
   }
 
   override def hashCode(): Int = this.getClass.hashCode() + body.hashCode()
-
 }

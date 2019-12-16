@@ -12,7 +12,6 @@ import play.twirl.api.Html
 import play.twirl.parser.TwirlIO
 
 class CompilerSpec extends WordSpec with MustMatchers {
-
   import Helper._
 
   val testName = "Twirl compiler"
@@ -30,7 +29,6 @@ class CompilerSpec extends WordSpec with MustMatchers {
   }
 
   testName should {
-
     "compile successfully (real)" in {
       val helper = newCompilerHelper
       val tmpl = helper
@@ -192,7 +190,6 @@ class CompilerSpec extends WordSpec with MustMatchers {
     }
 
     "support injectable templates" when {
-
       "plain injected template" in {
         val helper   = newCompilerHelper
         val template = helper.compile[String => Html]("inject.scala.html", "html.inject").inject("Hello", 10)
@@ -219,7 +216,6 @@ class CompilerSpec extends WordSpec with MustMatchers {
           helper.compile[String => Html]("injectComments.scala.html", "html.injectComments").inject("Hello", 10)
         template("world").body.trim mustBe "Hello 10 world"
       }
-
     }
   }
 
@@ -293,15 +289,12 @@ class CompilerSpec extends WordSpec with MustMatchers {
     )
     hello.static(args).toString.trim must be("the-key => the-value")
   }
-
 }
 
 object Helper {
-
   case class CompilationError(message: String, line: Int, column: Int) extends RuntimeException(message)
 
   class CompilerHelper(sourceDir: File, generatedDir: File, generatedClasses: File) {
-
     import java.net._
 
     import scala.collection.mutable
@@ -321,7 +314,6 @@ object Helper {
     val compileErrors = new mutable.ListBuffer[CompilationError]
 
     val compiler = {
-
       def additionalClassPathEntry: Option[String] =
         Some(
           Class
@@ -360,7 +352,6 @@ object Helper {
     }
 
     class CompiledTemplate[T](className: String) {
-
       private def getF(template: Any) = {
         template.getClass.getMethod("f").invoke(template).asInstanceOf[T]
       }
@@ -409,6 +400,5 @@ object Helper {
 
       new CompiledTemplate[T](className)
     }
-
   }
 }
