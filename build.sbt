@@ -53,6 +53,49 @@ val headerSettings = Seq(
   headerEmptyLine := false
 )
 
+// Customise sbt-dynver's behaviour to make it work with tags which aren't v-prefixed
+dynverVTagPrefix in ThisBuild := false
+
+// Sanity-check: assert that version comes from a tag (e.g. not a too-shallow clone)
+// https://github.com/dwijnand/sbt-dynver/#sanity-checking-the-version
+Global / onLoad := (Global / onLoad).value.andThen { s =>
+  val v = version.value
+  if (dynverGitDescribeOutput.value.hasNoTags)
+    throw new MessageOnlyException(
+      s"Failed to derive version from git tags. Maybe run `git fetch --unshallow`? Version: $v"
+    )
+  s
+}
+
+// this overrides interplay release settings with some adaptations for working with sbt-dynver
+// moreover, it contain only bits necessary for twirl, nothing else
+lazy val releaseSettings: Seq[Setting[_]] = Seq(
+  // Release settings
+  releaseCrossBuild := false,
+  releaseProcess := {
+    import ReleaseTransformations._
+
+    def ifDefinedAndTrue(key: SettingKey[Boolean], step: State => State): State => State = { state =>
+      Project.extract(state).getOpt(key in ThisBuild) match {
+        case Some(true) => step(state)
+        case _          => state
+      }
+    }
+
+    Seq[ReleaseStep](
+      checkSnapshotDependencies,
+      runClean,
+      releaseStepCommandAndRemaining("+test"),
+      releaseStepTask(playBuildExtraTests in thisProjectRef.value),
+      releaseStepCommandAndRemaining("+publishSigned"),
+      releaseStepTask(playBuildExtraPublish in thisProjectRef.value),
+      ifDefinedAndTrue(playBuildPromoteBintray, releaseStepTask(bintrayRelease in thisProjectRef.value)),
+      ifDefinedAndTrue(playBuildPromoteSonatype, releaseStepCommand("sonatypeBundleRelease")),
+      pushChanges
+    )
+  }
+)
+
 val commonSettings = javaCompilerSettings ++ headerSettings ++ Seq(
   scalaVersion := scala212,
   crossScalaVersions := Seq(scala210, scala212, scala213),
@@ -63,6 +106,7 @@ lazy val twirl = project
   .in(file("."))
   .enablePlugins(PlayRootProject)
   .settings(commonSettings)
+  .settings(releaseSettings)
   .settings(
     crossScalaVersions := Nil, // workaround so + uses project-defined variants
     releaseCrossBuild := false,
