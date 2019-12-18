@@ -13,15 +13,12 @@ import org.scalatest.wordspec.AnyWordSpec
 class TemplateUtilsSpec extends AnyWordSpec with Matchers {
 
   "Templates" should {
-
     "provide a HASH util" in {
       Hash("itShouldWork".getBytes, Nil) must be("31c0c4e0e142fe9b605fff44528fedb3dd8ae254")
     }
 
     "provide a Format API" when {
-
       "HTML for example" in {
-
         case class Html(_text: String) extends BufferedContent[Html](Nil, _text) {
           val contentType = "text/html"
         }
@@ -39,7 +36,6 @@ class TemplateUtilsSpec extends AnyWordSpec with Matchers {
       }
 
       "Text for example" in {
-
         case class Text(_text: String) extends BufferedContent[Text](Nil, _text) {
           val contentType = "text/plain"
         }
@@ -54,7 +50,6 @@ class TemplateUtilsSpec extends AnyWordSpec with Matchers {
         val text = TextFormat.raw("<h1>").body + TextFormat.escape("Hello <world>").body + TextFormat.raw("</h1>").body
 
         text must be("<h1>Hello <world></h1>")
-
       }
     }
   }

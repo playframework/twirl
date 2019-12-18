@@ -38,5 +38,4 @@ class StringInterpolationSpec extends AnyWordSpec with Matchers {
       html"${javaList}".body mustBe "ab"
     }
   }
-
 }

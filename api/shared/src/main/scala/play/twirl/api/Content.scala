@@ -19,7 +19,6 @@ trait Content {
    * The default Content type to use for this content.
    */
   def contentType: String
-
 }
 
 /**
@@ -67,5 +66,4 @@ abstract class BufferedContent[A <: BufferedContent[A]](
   }
 
   override def hashCode(): Int = this.getClass.hashCode() + body.hashCode()
-
 }

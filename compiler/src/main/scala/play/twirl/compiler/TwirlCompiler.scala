@@ -13,7 +13,6 @@ import play.twirl.parser.TwirlIO
 import play.twirl.parser.TwirlParser
 
 object Hash {
-
   def apply(bytes: Array[Byte], imports: collection.Seq[String]): String = {
     import java.security.MessageDigest
     val digest = MessageDigest.getInstance("SHA-1")
@@ -22,14 +21,12 @@ object Hash {
     imports.foreach(i => digest.update(i.getBytes("utf-8")))
     digest.digest().map(0xFF & _).map { "%02x".format(_) }.foldLeft("") { _ + _ }
   }
-
 }
 
 case class TemplateCompilationError(source: File, message: String, line: Int, column: Int)
     extends RuntimeException(message)
 
 object MaybeGeneratedSource {
-
   def unapply(source: File): Option[GeneratedSource] = apply(source, TwirlIO.defaultCodec)
 
   def apply(source: File, codec: Codec): Option[GeneratedSource] = {
@@ -40,7 +37,6 @@ object MaybeGeneratedSource {
       None
     }
   }
-
 }
 
 sealed trait AbstractGeneratedSource {
@@ -117,7 +113,6 @@ sealed trait AbstractGeneratedSource {
 }
 
 case class GeneratedSource(file: File, codec: Codec = TwirlIO.defaultCodec) extends AbstractGeneratedSource {
-
   def content = TwirlIO.readFileAsString(file, codec)
 
   def needRecompilation(imports: collection.Seq[String]): Boolean =
@@ -150,7 +145,6 @@ case class GeneratedSource(file: File, codec: Codec = TwirlIO.defaultCodec) exte
       file.delete()
     }
   }
-
 }
 
 case class GeneratedSourceVirtual(path: String) extends AbstractGeneratedSource {
@@ -162,7 +156,6 @@ case class GeneratedSourceVirtual(path: String) extends AbstractGeneratedSource 
 }
 
 object TwirlCompiler {
-
   val DefaultImports = Seq(
     "_root_.play.twirl.api.TwirlFeatureImports._",
     "_root_.play.twirl.api.TwirlHelperImports._",
@@ -395,7 +388,6 @@ object TwirlCompiler {
   }
 
   def templateCode(template: Template, resultType: String): collection.Seq[Any] = {
-
     val defs = (template.sub ++ template.defs).map {
       case t: Template if t.name.toString == "" => templateCode(t, resultType)
       case t: Template => {
@@ -490,7 +482,6 @@ package """ :+ packageName :+ """
   }
 
   object TemplateAsFunctionCompiler {
-
     // Note, the presentation compiler is not thread safe, all access to it must be synchronized.  If access to it
     // is not synchronized, then weird things happen like FreshRunReq exceptions are thrown when multiple sub projects
     // are compiled (done in parallel by default by SBT).  So if adding any new methods to this object, make sure you
@@ -521,7 +512,6 @@ package """ :+ packageName :+ """
     private val Timeout = 10000
 
     def getFunctionMapping(signature: String, returnType: String): (String, String, String) = synchronized {
-
       def filterType(t: String) =
         t.replace("_root_.scala.<repeated>", "Array")
           .replace("<synthetic>", "")
@@ -619,11 +609,9 @@ package """ :+ packageName :+ """
     }
 
     class CompilerInstance {
-
       def additionalClassPathEntry: Option[String] = None
 
       lazy val compiler = {
-
         val settings = new Settings
 
         val scalaPredefSource = Class.forName("scala.Predef").getProtectionDomain.getCodeSource
@@ -664,7 +652,6 @@ package """ :+ packageName :+ """
     }
 
     trait TreeCreationMethods {
-
       val global: scala.tools.nsc.interactive.Global
 
       val randomFileName = {
@@ -688,7 +675,6 @@ package """ :+ packageName :+ """
             throw error
         }
       }
-
     }
 
     object CompilerInstance extends CompilerInstance
@@ -700,9 +686,7 @@ package """ :+ packageName :+ """
         global.askShutdown()
       }
     }
-
   }
-
 }
 
 /* ------- */
@@ -714,7 +698,6 @@ import scala.util.parsing.input.NoPosition
 case class Source(code: String, pos: Position = NoPosition)
 
 object Source {
-
   import scala.collection.mutable.ListBuffer
 
   def finalSource(
@@ -758,7 +741,6 @@ object Source {
       case s: collection.Seq[any]   => serialize(s, source, positions, lines)
     }
   }
-
 }
 
 /**
@@ -786,5 +768,4 @@ object StringGrouper {
       parts._1 :: apply(parts._2, n)
     }
   }
-
 }

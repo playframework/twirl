@@ -14,9 +14,7 @@ import org.scalatest.wordspec.AnyWordSpec
 class TemplatePositionSpec extends AnyWordSpec with Matchers with Inspectors {
 
   "TemplatePosition" should {
-
     "toString" should {
-
       "have the source path" in {
         val file     = new File("/some/path/file.scala.html")
         val location = TemplateMapping.Location(line = 10, column = 2, offset = 22, content = "some content")
@@ -71,5 +69,4 @@ class TemplatePositionSpec extends AnyWordSpec with Matchers with Inspectors {
       }
     }
   }
-
 }

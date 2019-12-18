@@ -10,7 +10,6 @@ import scala.collection.JavaConverters
 import scala.reflect.ClassTag
 
 case class BaseScalaTemplate[T <: Appendable[T], F <: Format[T]](format: F) {
-
   // The overloaded methods are here for speed. The compiled templates
   // can take advantage of them for a 12% performance boost
   def _display_(x: AnyVal): T            = format.escape(x.toString)

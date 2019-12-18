@@ -50,5 +50,4 @@ class FormatSpec extends AnyWordSpec with Matchers {
       JavaScriptFormat.escape("""foo ' bar " baz \""").body must be("""foo \' bar \" baz \\""")
     }
   }
-
 }

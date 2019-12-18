@@ -13,7 +13,6 @@ import org.scalatest.wordspec.AnyWordSpec
 class TemplateMappingSpec extends AnyWordSpec with Matchers with Inspectors {
 
   "TemplateMapping" should {
-
     "handle empty templates" in {
       val mapping = TemplateMapping(Seq.empty)
 

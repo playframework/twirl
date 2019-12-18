@@ -56,9 +56,7 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
   }
 
   "New twirl parser" should {
-
     "succeed for" when {
-
       "static.scala.html" in {
         parseSuccess("static.scala.html")
       }
@@ -169,7 +167,6 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
     }
 
     "handle string literals within parentheses" when {
-
       "with left parenthesis" in {
         parseStringSuccess("""@foo("(")""")
       }
@@ -177,7 +174,6 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
       "with right parenthesis and '@'" in {
         parseStringSuccess("""@foo(")@")""")
       }
-
     }
 
     "handle escaped closing curly braces" in {
@@ -185,7 +181,6 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
     }
 
     "fail for" when {
-
       "unclosedBracket.scala.html" in {
         parseFailure("unclosedBracket.scala.html", "Expected '}' but found 'EOF'", 12, 6)
       }
@@ -197,9 +192,6 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
       "invalidAt.scala.html" in {
         parseFailure("invalidAt.scala.html", "Invalid '@' symbol", 5, 5)
       }
-
     }
-
   }
-
 }

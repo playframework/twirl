@@ -12,7 +12,6 @@ import org.scalatest.wordspec.AnyWordSpec
 class BufferedContentSpec extends AnyWordSpec with Matchers {
 
   "equality checking" should {
-
     "return false for BufferedContents with the same body but different implementations" in {
       Html("hello") must not be Xml("hello")
       Html("hello") must not be Txt("hello")
@@ -54,7 +53,5 @@ class BufferedContentSpec extends AnyWordSpec with Matchers {
       Txt("hello") mustEqual Txt("hello")
       Xml("hello") mustEqual Xml("hello")
     }
-
   }
-
 }

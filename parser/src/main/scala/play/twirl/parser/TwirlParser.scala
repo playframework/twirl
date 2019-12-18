@@ -89,7 +89,6 @@ import scala.util.parsing.input.OffsetPosition
  *   - Invalid ("alone") '@' symbols.
  */
 class TwirlParser(val shouldParseInclusiveDot: Boolean) {
-
   import play.twirl.parser.TreeNodes._
   import scala.util.parsing.input.Positional
 
@@ -983,7 +982,6 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       Success(template, input)
     else
       Error(template, input, errorStack.toList)
-
   }
 
   def mkRegressionStatisticsString(): Unit = {

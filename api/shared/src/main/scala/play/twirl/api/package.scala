@@ -22,7 +22,6 @@ package object api {
    * Three interpolators are available: `html`, `xml` and `js`.
    */
   implicit class StringInterpolation(val sc: StringContext) extends AnyVal {
-
     def html(args: Any*): Html = interpolate(args, HtmlFormat)
 
     def xml(args: Any*): Xml = interpolate(args, XmlFormat)
@@ -43,7 +42,5 @@ package object api {
       }
       new BaseScalaTemplate[A, Format[A]](format)._display_(array)
     }
-
   }
-
 }

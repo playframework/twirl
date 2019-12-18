@@ -114,7 +114,6 @@ object HtmlFormat extends Format[Html] {
    * Create an HTML Fragment that holds other fragments.
    */
   def fill(elements: immutable.Seq[Html]): Html = new Html(elements)
-
 }
 
 /**
@@ -141,7 +140,6 @@ object Txt {
   def apply(text: String): Txt = {
     new Txt(text)
   }
-
 }
 
 /**
@@ -168,7 +166,6 @@ object TxtFormat extends Format[Txt] {
    * Create an Txt Fragment that holds other fragments.
    */
   def fill(elements: immutable.Seq[Txt]): Txt = new Txt(elements)
-
 }
 
 /**
@@ -195,7 +192,6 @@ object Xml {
   def apply(text: String): Xml = {
     new Xml(text)
   }
-
 }
 
 /**
@@ -222,7 +218,6 @@ object XmlFormat extends Format[Xml] {
    * Create an XML Fragment that holds other fragments.
    */
   def fill(elements: immutable.Seq[Xml]): Xml = new Xml(elements)
-
 }
 
 /**
@@ -278,5 +273,4 @@ object JavaScriptFormat extends Format[JavaScript] {
    * Create an JavaScript Fragment that holds other fragments.
    */
   def fill(elements: immutable.Seq[JavaScript]): JavaScript = new JavaScript(elements)
-
 }
