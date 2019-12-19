@@ -36,12 +36,7 @@ val javaCompilerSettings = Seq(
   javacOptions in Test ++= javacParameters,
 )
 
-def scalacCompilerSettings(scalaVer: String) =
-  if (scalaVer.equals(scala210)) {
-    scalacBasicParams
-  } else {
-    scalacExtraParams
-  }
+def scalacCompilerSettings(scalaVer: String) = scalacExtraParams
 
 val headerSettings = Seq(
   headerLicense := {
@@ -100,7 +95,7 @@ lazy val releaseSettings: Seq[Setting[_]] = Seq(
 
 val commonSettings = javaCompilerSettings ++ headerSettings ++ Seq(
   scalaVersion := scala212,
-  crossScalaVersions := Seq(scala210, scala212, scala213),
+  crossScalaVersions := Seq(scala212, scala213),
   scalacOptions ++= scalacCompilerSettings(scalaVersion.value),
 )
 
@@ -210,12 +205,10 @@ def generateVersionFile = Def.task {
 
 def scalaCompiler(version: String) = "org.scala-lang" % "scala-compiler" % version
 
-def scalaParserCombinators(scalaVersion: String): Seq[ModuleID] = scalaVersion match {
-  case interplay.ScalaVersions.scala210 => Seq.empty
-  case _ =>
-    Seq(
-      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2" % "optional"
-    )
+def scalaParserCombinators(scalaVersion: String): Seq[ModuleID] = {
+  Seq(
+    "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2" % "optional"
+  )
 }
 
 def scalaXml = Def.setting {
