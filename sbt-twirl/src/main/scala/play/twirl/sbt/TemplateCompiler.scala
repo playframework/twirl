@@ -7,7 +7,9 @@ import sbt._
 import play.twirl.compiler._
 import scala.io.Codec
 
-object TemplateCompiler extends TemplateCompilerErrorHandler {
+import sbt.internal.inc.LoggedReporter
+
+object TemplateCompiler {
   @deprecated("Use other compile method", "1.2.0")
   def compile(
       sourceDirectories: Seq[File],
@@ -61,6 +63,17 @@ object TemplateCompiler extends TemplateCompilerErrorHandler {
       }
       generatedFiles(targetDirectory).map(_.getAbsoluteFile)
     } catch handleError(log, codec)
+  }
+
+  private def handleError(log: Logger, codec: Codec): PartialFunction[Throwable, Nothing] = {
+    case TemplateCompilationError(source, message, line, column) =>
+      val exception = TemplateProblem.exception(source, codec, message, line, column)
+      val reporter  = new LoggedReporter(10, log)
+      exception.problems.foreach { p =>
+        reporter.log(p)
+      }
+      throw exception
+    case e => throw e
   }
 
   def generatedFiles(targetDirectory: File): Seq[File] = {
