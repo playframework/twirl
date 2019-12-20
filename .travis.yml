@@ -59,7 +59,6 @@ cache:
   directories:
     - "$HOME/.coursier/cache"
     - "$HOME/.ivy2/cache"
-    - "$HOME/.ivy2/local"
     - "$HOME/.jabba/jdk"
     - "$HOME/.sbt"
 
