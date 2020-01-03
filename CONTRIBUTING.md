@@ -35,7 +35,7 @@ All Typesafe projects must include Typesafe copyright notices.  Each project can
   2. The Notices file for the project includes the Typesafe copyright notice and no other files contain copyright notices.  See http://www.apache.org/legal/src-headers.html for instructions for managing this approach for copyrights.
 
   Other guidelines to follow for copyright notices:
-    - Use a form of ``Copyright (C) 2011-2014 Typesafe Inc. <http://www.typesafe.com>``, where the start year is when the project or file was first created and the end year is the last time the project or file was modified.
+    - Use a form of ``Copyright (C) Typesafe Inc. <http://www.typesafe.com>``, where the start year is when the project or file was first created and the end year is the last time the project or file was modified.
     - Never delete or change existing copyright notices, just add additional info.
     - Do not use ``@author`` tags since it does not encourage [Collective Code Ownership](http://www.extremeprogramming.org/rules/collective.html). However, each project should make sure that the contributors gets the credit they deserve—in a text file or page on the project website and in the release notes etc.
 

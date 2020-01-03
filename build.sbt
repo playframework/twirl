@@ -43,10 +43,9 @@ def scalacCompilerSettings(scalaVer: String) =
 
 val headerSettings = Seq(
   headerLicense := {
-    val currentYear = java.time.Year.now(java.time.Clock.systemUTC).getValue
     Some(
       HeaderLicense.Custom(
-        s"Copyright (C) 2009-$currentYear Lightbend Inc. <https://www.lightbend.com>"
+        s"Copyright (C) Lightbend Inc. <https://www.lightbend.com>"
       )
     )
   },
