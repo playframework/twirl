@@ -5,12 +5,9 @@ import org.scalajs.jsenv.nodejs.NodeJSEnv
 // Binary compatibility is this version
 val previousVersion: Option[String] = Some("1.5.0")
 
-def binaryCompatibilitySettings(org: String, moduleName: String, scalaBinVersion: String): Set[ModuleID] = {
-  previousVersion match {
-    case None     => Set.empty
-    case Some(pv) => Set(org % s"${moduleName}_${scalaBinVersion}" % pv)
-  }
-}
+val mimaSettings = Seq(
+  mimaPreviousArtifacts := previousVersion.map(organization.value %% name.value % _).toSet
+)
 
 val javacParameters = Seq(
   "-source",
@@ -46,14 +43,56 @@ def scalacCompilerSettings(scalaVer: String) =
 
 val headerSettings = Seq(
   headerLicense := {
-    val currentYear = java.time.Year.now(java.time.Clock.systemUTC).getValue
     Some(
       HeaderLicense.Custom(
-        s"Copyright (C) 2009-$currentYear Lightbend Inc. <https://www.lightbend.com>"
+        s"Copyright (C) Lightbend Inc. <https://www.lightbend.com>"
       )
     )
   },
   headerEmptyLine := false
+)
+
+// Customise sbt-dynver's behaviour to make it work with tags which aren't v-prefixed
+dynverVTagPrefix in ThisBuild := false
+
+// Sanity-check: assert that version comes from a tag (e.g. not a too-shallow clone)
+// https://github.com/dwijnand/sbt-dynver/#sanity-checking-the-version
+Global / onLoad := (Global / onLoad).value.andThen { s =>
+  val v = version.value
+  if (dynverGitDescribeOutput.value.hasNoTags)
+    throw new MessageOnlyException(
+      s"Failed to derive version from git tags. Maybe run `git fetch --unshallow`? Version: $v"
+    )
+  s
+}
+
+// this overrides interplay release settings with some adaptations for working with sbt-dynver
+// moreover, it contain only bits necessary for twirl, nothing else
+lazy val releaseSettings: Seq[Setting[_]] = Seq(
+  // Release settings
+  releaseCrossBuild := false,
+  releaseProcess := {
+    import ReleaseTransformations._
+
+    def ifDefinedAndTrue(key: SettingKey[Boolean], step: State => State): State => State = { state =>
+      Project.extract(state).getOpt(key in ThisBuild) match {
+        case Some(true) => step(state)
+        case _          => state
+      }
+    }
+
+    Seq[ReleaseStep](
+      checkSnapshotDependencies,
+      runClean,
+      releaseStepCommandAndRemaining("+test"),
+      releaseStepTask(playBuildExtraTests in thisProjectRef.value),
+      releaseStepCommandAndRemaining("+publishSigned"),
+      releaseStepTask(playBuildExtraPublish in thisProjectRef.value),
+      ifDefinedAndTrue(playBuildPromoteBintray, releaseStepTask(bintrayRelease in thisProjectRef.value)),
+      ifDefinedAndTrue(playBuildPromoteSonatype, releaseStepCommand("sonatypeBundleRelease")),
+      pushChanges
+    )
+  }
 )
 
 val commonSettings = javaCompilerSettings ++ headerSettings ++ Seq(
@@ -66,6 +105,7 @@ lazy val twirl = project
   .in(file("."))
   .enablePlugins(PlayRootProject)
   .settings(commonSettings)
+  .settings(releaseSettings)
   .settings(
     crossScalaVersions := Nil, // workaround so + uses project-defined variants
     releaseCrossBuild := false,
@@ -84,17 +124,13 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
   .in(file("api"))
   .enablePlugins(PlayLibrary, Playdoc)
   .configs(Docs)
-  .settings(commonSettings)
   .settings(
+    commonSettings,
+    mimaSettings,
     name := "twirl-api",
     jsEnv := nodeJs,
     libraryDependencies ++= scalaXml.value,
     libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest(scalaVersion.value) % "test",
-    mimaPreviousArtifacts := binaryCompatibilitySettings(
-      organization.value,
-      moduleName.value,
-      scalaBinaryVersion.value
-    ),
   )
 
 lazy val apiJvm = api.jvm
@@ -103,39 +139,35 @@ lazy val apiJs  = api.js
 lazy val parser = project
   .in(file("parser"))
   .enablePlugins(PlayLibrary)
-  .settings(commonSettings)
   .settings(
+    commonSettings,
+    mimaSettings,
     name := "twirl-parser",
     libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
     libraryDependencies += "com.novocode"  % "junit-interface" % "0.11"                        % "test",
     libraryDependencies += "org.scalatest" %%% "scalatest"     % scalatest(scalaVersion.value) % "test",
-    mimaPreviousArtifacts := binaryCompatibilitySettings(organization.value, moduleName.value, scalaBinaryVersion.value)
   )
 
 lazy val compiler = project
   .in(file("compiler"))
   .enablePlugins(PlayLibrary)
   .dependsOn(apiJvm, parser % "compile;test->test")
-  .settings(commonSettings)
   .settings(
+    commonSettings,
+    mimaSettings,
     name := "twirl-compiler",
     libraryDependencies += scalaCompiler(scalaVersion.value),
     libraryDependencies ++= scalaParserCombinators(scalaVersion.value),
     fork in run := true,
-    mimaPreviousArtifacts := binaryCompatibilitySettings(
-      organization.value,
-      moduleName.value,
-      scalaBinaryVersion.value
-    ),
   )
 
 lazy val plugin = project
   .in(file("sbt-twirl"))
   .enablePlugins(PlaySbtPlugin, SbtPlugin)
   .dependsOn(compiler)
-  .settings(javaCompilerSettings)
-  .settings(headerSettings)
   .settings(
+    javaCompilerSettings,
+    headerSettings,
     name := "sbt-twirl",
     organization := "com.typesafe.sbt",
     scalaVersion := scala212,
