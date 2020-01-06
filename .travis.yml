@@ -1,23 +1,62 @@
 language: scala
-scala:
-  - 2.10.7
-  - 2.12.10
-  - 2.13.1
 
 git:
   depth: false # Avoid sbt-dynver not seeing the tag
 
 env:
-  - TRAVIS_JDK=8
   - TRAVIS_JDK=11
 
 before_install: curl -Ls https://git.io/jabba | bash && . ~/.jabba/jabba.sh
 install: jabba install "adopt@~1.$TRAVIS_JDK.0-0" && jabba use "$_" && java -Xmx32m -version
 
-script:
-  - ./scripts/test-code.sh
-  - ./scripts/validate-code.sh
-  - ./scripts/validate-docs.sh
+jobs:
+  include:
+    - stage: validations
+      script: scripts/validate-code.sh
+      name: "Code validations (headerCheck, scalafmt, mima)"
+   
+    - stage: test-jdk11
+      name: "Run tests with Scala 2.10 and AdoptOpenJDK 11"
+      script: scripts/test-code.sh
+      env: 
+        - TRAVIS_SCALA_VERSION=2.10.7 
+        - TRAVIS_JDK=11 
+
+    - name: "Run tests with Scala 2.12 and AdoptOpenJDK 11" 
+      script: scripts/test-code.sh
+      env:
+        - TRAVIS_SCALA_VERSION=2.12.11 
+        - TRAVIS_JDK=11
+
+    - name: "Run tests with Scala 2.13 and AdoptOpenJDK 11" 
+      script: scripts/test-code.sh
+      env: 
+        - TRAVIS_SCALA_VERSION=2.13.1 
+        - TRAVIS_JDK=11 
+      
+    - stage: test-jdk8
+      name: "Run tests with Scala 2.10 and AdoptOpenJDK 8"
+      script: scripts/test-code.sh
+      env: 
+        - TRAVIS_SCALA_VERSION=2.10.7 
+        - TRAVIS_JDK=8  
+
+    - name: "Run tests with Scala 2.12 and AdoptOpenJDK 8" 
+      script: scripts/test-code.sh
+      env: 
+        - TRAVIS_SCALA_VERSION=2.12.11 
+        - TRAVIS_JDK=8  
+
+    - name: "Run tests with Scala 2.13 and AdoptOpenJDK 8" 
+      script: scripts/test-code.sh
+      env: 
+        - TRAVIS_SCALA_VERSION=2.13.1 
+        - TRAVIS_JDK=8  
+        
+
+    - stage: docs  
+      script: scripts/validate-docs.sh
+      name: "Validate documentation"
 
 cache:
   directories:
