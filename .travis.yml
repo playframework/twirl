@@ -60,10 +60,10 @@ jobs:
 
 cache:
   directories:
-    - "$HOME/.coursier/cache"
-    - "$HOME/.ivy2/cache"
-    - "$HOME/.jabba/jdk"
-    - "$HOME/.sbt"
+  - "$HOME/.cache/coursier"
+  - "$HOME/.ivy2/cache"
+  - "$HOME/.jabba/jdk"
+  - "$HOME/.sbt"
 
 before_cache:
   - rm -rf $HOME/.ivy2/cache/com.typesafe.play/twirl*
