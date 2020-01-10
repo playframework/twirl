@@ -198,4 +198,4 @@ def generateVersionFile = Def.task {
   Seq(file)
 }
 
-addCommandAlias("validateCode", ";headerCheck;test:headerCheck;scalafmtCheckAll;scalafmtSbtCheck")
+addCommandAlias("validateCode", ";headerCheckAll;scalafmtCheckAll;scalafmtSbtCheck")
