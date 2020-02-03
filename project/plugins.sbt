@@ -5,7 +5,7 @@ addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.32")
 
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "0.6.1")
 
-addSbtPlugin("com.typesafe"      % "sbt-mima-plugin" % "0.6.1")
+addSbtPlugin("com.typesafe"      % "sbt-mima-plugin" % "0.6.2")
 addSbtPlugin("de.heikoseeberger" % "sbt-header"      % "5.4.0")
 addSbtPlugin("org.scalameta"     % "sbt-scalafmt"    % "2.3.1")
 
