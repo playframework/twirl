@@ -39,9 +39,7 @@ class Html private[api] (elements: immutable.Seq[Html], text: String, escape: Bo
    */
   protected override def buildString(builder: StringBuilder): Unit = {
     if (elements.nonEmpty) {
-      elements.foreach { e =>
-        e.buildString(builder)
-      }
+      elements.foreach { e => e.buildString(builder) }
     } else if (escape) {
       // Using our own algorithm here because commons lang escaping wasn't designed for protecting against XSS, and there
       // don't seem to be any other good generic escaping tools out there.

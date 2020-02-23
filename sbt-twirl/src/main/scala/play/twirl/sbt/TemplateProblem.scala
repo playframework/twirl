@@ -44,12 +44,8 @@ object TemplateProblem {
     }
 
     def apply(generated: GeneratedSource, position: Position): TemplatePosition = {
-      val offset = toScala(position.offset).map { o =>
-        generated.mapPosition(o)
-      }
-      val location = offset.flatMap { o =>
-        TemplateMapping(generated.source, generated.codec).location(o)
-      }
+      val offset   = toScala(position.offset).map { o => generated.mapPosition(o) }
+      val location = offset.flatMap { o => TemplateMapping(generated.source, generated.codec).location(o) }
       new TemplatePosition(generated.source, location)
     }
   }
@@ -64,9 +60,7 @@ object TemplateProblem {
     val pointer: java.util.Optional[Integer] = toJava { location.map(_.column) }
 
     val pointerSpace: java.util.Optional[String] = toJava {
-      location.map { l =>
-        lineContent.take(l.column).map { case '\t' => '\t'; case _ => ' ' }
-      }
+      location.map { l => lineContent.take(l.column).map { case '\t' => '\t'; case _ => ' ' } }
     }
 
     val sourceFile: java.util.Optional[File] = toJava(source)

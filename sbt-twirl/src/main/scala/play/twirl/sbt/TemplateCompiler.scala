@@ -69,9 +69,7 @@ object TemplateCompiler {
     case TemplateCompilationError(source, message, line, column) =>
       val exception = TemplateProblem.exception(source, codec, message, line, column)
       val reporter  = new LoggedReporter(10, log)
-      exception.problems.foreach { p =>
-        reporter.log(p)
-      }
+      exception.problems.foreach { p => reporter.log(p) }
       throw exception
     case e => throw e
   }
