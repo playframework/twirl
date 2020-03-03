@@ -38,9 +38,7 @@ abstract class BufferedContent[A <: BufferedContent[A]](
     with Content { this: A =>
   protected def buildString(builder: StringBuilder): Unit = {
     if (!elements.isEmpty) {
-      elements.foreach { e =>
-        e.buildString(builder)
-      }
+      elements.foreach { e => e.buildString(builder) }
     } else {
       builder.append(text)
     }
