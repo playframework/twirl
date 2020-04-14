@@ -5,5 +5,5 @@ lazy val sbtTwirl = ProjectRef(Path.fileProperty("user.dir").getParentFile, "plu
 resolvers ++= DefaultOptions.resolvers(snapshot = true)
 
 addSbtPlugin("com.typesafe.play" % "play-docs-sbt-plugin" % sys.props.getOrElse("play.version", "2.8.0"))
-addSbtPlugin("de.heikoseeberger" % "sbt-header"           % "5.5.0")
-addSbtPlugin("org.scalameta"     % "sbt-scalafmt"         % "2.3.2")
+addSbtPlugin("de.heikoseeberger" % "sbt-header"           % "5.4.0")
+addSbtPlugin("org.scalameta"     % "sbt-scalafmt"         % "2.3.4")
