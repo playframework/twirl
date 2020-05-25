@@ -1,4 +1,4 @@
-addSbtPlugin("com.typesafe.play" % "interplay" % sys.props.get("interplay.version").getOrElse("3.0.0"))
+addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.6")
 
 // For the Cross Build
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.33")
