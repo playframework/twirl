@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
 
-sbt "++ $TRAVIS_SCALA_VERSION test"           || travis_terminate 1
-sbt +publishLocal plugin/test plugin/scripted || travis_terminate 1
+# Copyright (C) 2009-2019 Lightbend Inc. <https://www.lightbend.com>
+
+sbt "++ $TRAVIS_SCALA_VERSION test" || exit 1          
+sbt +publishLocal plugin/test plugin/scripted || exit 1
