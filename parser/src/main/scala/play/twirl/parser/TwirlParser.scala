@@ -316,8 +316,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   /** Match zero or more `parser` */
-  def several[T, BufferType <: mutable.Buffer[T]](parser: () => T, provided: BufferType = null)(
-      implicit manifest: Manifest[BufferType]
+  def several[T, BufferType <: mutable.Buffer[T]](parser: () => T, provided: BufferType = null)(implicit
+      manifest: Manifest[BufferType]
   ): BufferType = {
     val ab     = if (provided != null) provided else manifest.runtimeClass.newInstance().asInstanceOf[BufferType]
     var parsed = parser()
@@ -582,7 +582,9 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       if (parens != null) {
         val blk = block(blockArgsAllowed = true)
         if (blk != null) {
-          result = Display(ScalaExp(ListBuffer(position(Simple("for" + parens + " yield "), p + 1), blk))) // don't include pos of @
+          result = Display(
+            ScalaExp(ListBuffer(position(Simple("for" + parens + " yield "), p + 1), blk))
+          ) // don't include pos of @
         }
       }
     }

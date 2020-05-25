@@ -19,7 +19,7 @@ object Hash {
     digest.reset()
     digest.update(bytes)
     imports.foreach(i => digest.update(i.getBytes("utf-8")))
-    digest.digest().map(0xFF & _).map { "%02x".format(_) }.foldLeft("") { _ + _ }
+    digest.digest().map(0xff & _).map { "%02x".format(_) }.foldLeft("") { _ + _ }
   }
 }
 
@@ -373,7 +373,7 @@ object TwirlCompiler {
             case ScalaExp(parts) =>
               previous :+ parts.map {
                 case s @ Simple(code) => Source(code, s.pos)
-                case b @ Block(whitespace, args, content) if (content.forall(_.isInstanceOf[ScalaExp])) =>
+                case b @ Block(whitespace, args, content) if content.forall(_.isInstanceOf[ScalaExp]) =>
                   Nil :+ Source(whitespace + "{" + args.getOrElse(""), b.pos) :+ visit(content, Nil) :+ "}"
                 case b @ Block(whitespace, args, content) =>
                   Nil :+ Source(whitespace + "{" + args.getOrElse(""), b.pos) :+ displayVisitedChildren(
@@ -390,13 +390,19 @@ object TwirlCompiler {
     val defs = (template.sub ++ template.defs).map {
       case t: Template if t.name.toString == "" => templateCode(t, resultType)
       case t: Template => {
-        Nil :+ (if (t.name.str.startsWith("implicit")) "implicit def " else "def ") :+ Source(t.name.str, t.name.pos) :+ Source(
+        Nil :+ (if (t.name.str.startsWith("implicit")) "implicit def " else "def ") :+ Source(
+          t.name.str,
+          t.name.pos
+        ) :+ Source(
           t.params.str,
           t.params.pos
         ) :+ ":" :+ resultType :+ " = {_display_(" :+ templateCode(t, resultType) :+ ")};"
       }
       case Def(name, params, block) => {
-        Nil :+ (if (name.str.startsWith("implicit")) "implicit def " else "def ") :+ Source(name.str, name.pos) :+ Source(
+        Nil :+ (if (name.str.startsWith("implicit")) "implicit def " else "def ") :+ Source(
+          name.str,
+          name.pos
+        ) :+ Source(
           params.str,
           params.pos
         ) :+ " = {" :+ block.code :+ "};"
@@ -510,102 +516,103 @@ package """ :+ packageName :+ """
     /** The maximum time in milliseconds to wait for a compiler response to finish. */
     private val Timeout = 10000
 
-    def getFunctionMapping(signature: String, returnType: String): (String, String, String) = synchronized {
-      def filterType(t: String) =
-        t.replace("_root_.scala.<repeated>", "Array")
-          .replace("<synthetic>", "")
+    def getFunctionMapping(signature: String, returnType: String): (String, String, String) =
+      synchronized {
+        def filterType(t: String) =
+          t.replace("_root_.scala.<repeated>", "Array")
+            .replace("<synthetic>", "")
 
-      def findSignature(tree: Tree): Option[DefDef] = {
-        tree match {
-          case t: DefDef if t.name.toString == "signature" => Some(t)
-          case t: Tree                                     => t.children.flatMap(findSignature).headOption
+        def findSignature(tree: Tree): Option[DefDef] = {
+          tree match {
+            case t: DefDef if t.name.toString == "signature" => Some(t)
+            case t: Tree                                     => t.children.flatMap(findSignature).headOption
+          }
         }
-      }
 
-      val params =
-        findSignature(PresentationCompiler.treeFrom("object FT { def signature" + signature + " }")).get.vparamss
+        val params =
+          findSignature(PresentationCompiler.treeFrom("object FT { def signature" + signature + " }")).get.vparamss
 
-      val resp = PresentationCompiler.global
-        .askForResponse { () =>
-          val functionType = "(" + params
-            .map(group =>
-              "(" + group
+        val resp = PresentationCompiler.global
+          .askForResponse { () =>
+            val functionType = "(" + params
+              .map(group =>
+                "(" + group
+                  .map {
+                    case ByNameParam(_, paramType) => " => " + paramType
+                    case a                         => filterType(a.tpt.toString)
+                  }
+                  .mkString(",") + ")"
+              )
+              .mkString(" => ") + " => " + returnType + ")"
+
+            val renderCall = "def render%s: %s = apply%s".format(
+              "(" + params.flatten
                 .map {
-                  case ByNameParam(_, paramType) => " => " + paramType
+                  case ByNameParam(name, paramType) => name + ":" + paramType
+                  case a                            => a.name.toString + ":" + filterType(a.tpt.toString)
+                }
+                .mkString(",") + ")",
+              returnType,
+              params
+                .map(group =>
+                  "(" + group
+                    .map { p =>
+                      p.name.toString + Option(p.tpt.toString)
+                        .filter(_.startsWith("_root_.scala.<repeated>"))
+                        .map(_ => ".toIndexedSeq:_*")
+                        .getOrElse("")
+                    }
+                    .mkString(",") + ")"
+                )
+                .mkString
+            )
+
+            val templateType = "_root_.play.twirl.api.Template%s[%s%s]".format(
+              params.flatten.size,
+              params.flatten
+                .map {
+                  case ByNameParam(_, paramType) => paramType
                   case a                         => filterType(a.tpt.toString)
                 }
-                .mkString(",") + ")"
+                .mkString(","),
+              (if (params.flatten.isEmpty) "" else ",") + returnType
             )
-            .mkString(" => ") + " => " + returnType + ")"
 
-          val renderCall = "def render%s: %s = apply%s".format(
-            "(" + params.flatten
-              .map {
-                case ByNameParam(name, paramType) => name + ":" + paramType
-                case a                            => a.name.toString + ":" + filterType(a.tpt.toString)
-              }
-              .mkString(",") + ")",
-            returnType,
-            params
-              .map(group =>
-                "(" + group
-                  .map { p =>
-                    p.name.toString + Option(p.tpt.toString)
-                      .filter(_.startsWith("_root_.scala.<repeated>"))
-                      .map(_ => ".toIndexedSeq:_*")
-                      .getOrElse("")
-                  }
-                  .mkString(",") + ")"
-              )
-              .mkString
-          )
+            val f = "def f:%s = %s => apply%s".format(
+              functionType,
+              params.map(group => "(" + group.map(_.name.toString).mkString(",") + ")").mkString(" => "),
+              params
+                .map(group =>
+                  "(" + group
+                    .map { p =>
+                      p.name.toString + Option(p.tpt.toString)
+                        .filter(_.startsWith("_root_.scala.<repeated>"))
+                        .map(_ => ".toIndexedSeq:_*")
+                        .getOrElse("")
+                    }
+                    .mkString(",") + ")"
+                )
+                .mkString
+            )
 
-          val templateType = "_root_.play.twirl.api.Template%s[%s%s]".format(
-            params.flatten.size,
-            params.flatten
-              .map {
-                case ByNameParam(_, paramType) => paramType
-                case a                         => filterType(a.tpt.toString)
-              }
-              .mkString(","),
-            (if (params.flatten.isEmpty) "" else ",") + returnType
-          )
-
-          val f = "def f:%s = %s => apply%s".format(
-            functionType,
-            params.map(group => "(" + group.map(_.name.toString).mkString(",") + ")").mkString(" => "),
-            params
-              .map(group =>
-                "(" + group
-                  .map { p =>
-                    p.name.toString + Option(p.tpt.toString)
-                      .filter(_.startsWith("_root_.scala.<repeated>"))
-                      .map(_ => ".toIndexedSeq:_*")
-                      .getOrElse("")
-                  }
-                  .mkString(",") + ")"
-              )
-              .mkString
-          )
-
-          (renderCall, f, templateType)
-        }
-        .get(Timeout)
-
-      resp match {
-        case None =>
-          PresentationCompiler.global.reportThrowable(new Throwable("Timeout in getFunctionMapping"))
-          ("", "", "")
-        case Some(res) =>
-          res match {
-            case Right(t) =>
-              PresentationCompiler.global.reportThrowable(new Throwable("Throwable in getFunctionMapping", t))
-              ("", "", "")
-            case Left(res) =>
-              res
+            (renderCall, f, templateType)
           }
+          .get(Timeout)
+
+        resp match {
+          case None =>
+            PresentationCompiler.global.reportThrowable(new Throwable("Timeout in getFunctionMapping"))
+            ("", "", "")
+          case Some(res) =>
+            res match {
+              case Right(t) =>
+                PresentationCompiler.global.reportThrowable(new Throwable("Throwable in getFunctionMapping", t))
+                ("", "", "")
+              case Left(res) =>
+                res
+            }
+        }
       }
-    }
 
     class CompilerInstance {
       def additionalClassPathEntry: Option[String] = None
@@ -639,9 +646,12 @@ package """ :+ packageName :+ """
             ((origBootclasspath :: pathList) ::: additionalClassPathEntry.toList).mkString(File.pathSeparator)
         }
 
-        val compiler = new Global(settings, new ConsoleReporter(settings) {
-          override def display(pos: Position, msg: String, severity: Severity): Unit = ()
-        })
+        val compiler = new Global(
+          settings,
+          new ConsoleReporter(settings) {
+            override def display(pos: Position, msg: String, severity: Severity): Unit = ()
+          }
+        )
 
         // Everything must be done on the compiler thread, because the presentation compiler is a fussy piece of work.
         compiler.ask(() => new compiler.Run)

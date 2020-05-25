@@ -44,13 +44,14 @@ object TwirlFeatureImports {
    * the default value.
    */
   implicit class TwirlDefaultValue(default: Any) {
-    def ?:(x: Any): Any = x match {
-      case ""    => default
-      case Nil   => default
-      case false => default
-      case 0     => default
-      case None  => default
-      case _     => x
-    }
+    def ?:(x: Any): Any =
+      x match {
+        case ""    => default
+        case Nil   => default
+        case false => default
+        case 0     => default
+        case None  => default
+        case _     => x
+      }
   }
 }

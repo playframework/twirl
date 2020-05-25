@@ -29,17 +29,19 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
     parseStringSuccess(get(templateName))
   }
 
-  def parseStringSuccess(template: String) = parseString(template) must matchPattern {
-    case parser.Success(_, rest) if rest.atEnd() =>
-  }
+  def parseStringSuccess(template: String) =
+    parseString(template) must matchPattern {
+      case parser.Success(_, rest) if rest.atEnd() =>
+    }
 
-  def parseFailure(templateName: String, message: String, line: Int, column: Int) = inside(parse(templateName)) {
-    case parser.Error(_, rest, errors) =>
-      val e = errors.head
-      e.str mustBe message
-      e.pos.line mustBe line
-      e.pos.column mustBe column
-  }
+  def parseFailure(templateName: String, message: String, line: Int, column: Int) =
+    inside(parse(templateName)) {
+      case parser.Error(_, rest, errors) =>
+        val e = errors.head
+        e.str mustBe message
+        e.pos.line mustBe line
+        e.pos.column mustBe column
+    }
 
   def parseTemplate(templateName: String): Template = {
     parseTemplateString(get(templateName))
@@ -101,7 +103,10 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
       }
 
       "code block containing => of another statement with curly braces in first line" in {
-        val tmpl          = parseTemplateString("""@if(attrs!=null){@attrs.map{ v => @v._1 }}""") // "@attrs.map{ v =>" should not be handled as block args
+        val tmpl =
+          parseTemplateString(
+            """@if(attrs!=null){@attrs.map{ v => @v._1 }}"""
+          ) // "@attrs.map{ v =>" should not be handled as block args
         val ifExpressions = tmpl.content(0).asInstanceOf[Display].exp.parts
         ifExpressions.head must be(Simple("if(attrs!=null)"))
         val ifBlockBody = ifExpressions(1).asInstanceOf[Block].content(0).asInstanceOf[Display].exp.parts
@@ -115,7 +120,10 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
       }
 
       "code block containing => of another statement with parentheses in first line" in {
-        val tmpl          = parseTemplateString("""@if(attrs!=null){@attrs.map( v => @v._1 )}""") // "@attrs.map( v =>" should not be handled as block args
+        val tmpl =
+          parseTemplateString(
+            """@if(attrs!=null){@attrs.map( v => @v._1 )}"""
+          ) // "@attrs.map( v =>" should not be handled as block args
         val ifExpressions = tmpl.content(0).asInstanceOf[Display].exp.parts
         ifExpressions.head must be(Simple("if(attrs!=null)"))
         val ifBlockBody = ifExpressions(1).asInstanceOf[Block].content(0).asInstanceOf[Display].exp.parts
@@ -124,7 +132,10 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
       }
 
       "code block containing (...) => in first line" in {
-        val tmpl          = parseTemplateString("""@if(attrs!=null){( arg1, arg2 ) => @arg1.toString }""") // "( arg1, arg2 ) =>" should be handled as block args
+        val tmpl =
+          parseTemplateString(
+            """@if(attrs!=null){( arg1, arg2 ) => @arg1.toString }"""
+          ) // "( arg1, arg2 ) =>" should be handled as block args
         val ifExpressions = tmpl.content(0).asInstanceOf[Display].exp.parts
         ifExpressions.head must be(Simple("if(attrs!=null)"))
         val ifBlock = ifExpressions(1).asInstanceOf[Block]
@@ -135,7 +146,10 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
       }
 
       "text outside of code block on same line containing =>" in {
-        val tmpl          = parseTemplateString("""@if(attrs!=null){blockbody}Some plain text with => inside""") // "blockbody}Some plain text with =>" should not be handled as block args
+        val tmpl =
+          parseTemplateString(
+            """@if(attrs!=null){blockbody}Some plain text with => inside"""
+          ) // "blockbody}Some plain text with =>" should not be handled as block args
         val ifExpressions = tmpl.content(0).asInstanceOf[Display].exp.parts
         ifExpressions.head must be(Simple("if(attrs!=null)"))
         val ifBlockBody = ifExpressions(1).asInstanceOf[Block].content(0).asInstanceOf[Plain]

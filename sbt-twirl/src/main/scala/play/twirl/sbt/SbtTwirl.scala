@@ -43,79 +43,85 @@ object SbtTwirl extends AutoPlugin {
       positionSettings ++
       dependencySettings
 
-  def twirlSettings: Seq[Setting[_]] = Seq(
-    includeFilter in compileTemplates := "*.scala.*",
-    excludeFilter in compileTemplates := HiddenFileFilter,
-    sourceDirectories in compileTemplates := Seq(sourceDirectory.value / "twirl"),
-    watchSources in Defaults.ConfigGlobal +=
-      WatchSource(
-        (sourceDirectory in compileTemplates).value,
-        (includeFilter in compileTemplates).value,
-        (excludeFilter in compileTemplates).value
-      ),
-    sources in compileTemplates := Defaults
-      .collectFiles(
-        sourceDirectories in compileTemplates,
-        includeFilter in compileTemplates,
-        excludeFilter in compileTemplates
-      )
-      .value,
-    target in compileTemplates := crossTarget.value / "twirl" / Defaults.nameForSrc(configuration.value.name),
-    compileTemplates := compileTemplatesTask.value,
-    sourceGenerators += compileTemplates.taskValue,
-    managedSourceDirectories += (target in compileTemplates).value
-  )
+  def twirlSettings: Seq[Setting[_]] =
+    Seq(
+      includeFilter in compileTemplates := "*.scala.*",
+      excludeFilter in compileTemplates := HiddenFileFilter,
+      sourceDirectories in compileTemplates := Seq(sourceDirectory.value / "twirl"),
+      watchSources in Defaults.ConfigGlobal +=
+        WatchSource(
+          (sourceDirectory in compileTemplates).value,
+          (includeFilter in compileTemplates).value,
+          (excludeFilter in compileTemplates).value
+        ),
+      sources in compileTemplates := Defaults
+        .collectFiles(
+          sourceDirectories in compileTemplates,
+          includeFilter in compileTemplates,
+          excludeFilter in compileTemplates
+        )
+        .value,
+      target in compileTemplates := crossTarget.value / "twirl" / Defaults.nameForSrc(configuration.value.name),
+      compileTemplates := compileTemplatesTask.value,
+      sourceGenerators += compileTemplates.taskValue,
+      managedSourceDirectories += (target in compileTemplates).value
+    )
 
-  def defaultSettings: Seq[Setting[_]] = Seq(
-    templateFormats := defaultFormats,
-    templateImports := TwirlCompiler.DefaultImports,
-    constructorAnnotations := Nil,
-    sourceEncoding := scalacEncoding(scalacOptions.value)
-  )
+  def defaultSettings: Seq[Setting[_]] =
+    Seq(
+      templateFormats := defaultFormats,
+      templateImports := TwirlCompiler.DefaultImports,
+      constructorAnnotations := Nil,
+      sourceEncoding := scalacEncoding(scalacOptions.value)
+    )
 
-  def positionSettings: Seq[Setting[_]] = Seq(
-    sourcePositionMappers += TemplateProblem.positionMapper(Codec(sourceEncoding.value))
-  )
+  def positionSettings: Seq[Setting[_]] =
+    Seq(
+      sourcePositionMappers += TemplateProblem.positionMapper(Codec(sourceEncoding.value))
+    )
 
-  def dependencySettings = Def.settings(
-    twirlVersion := readResourceProperty("twirl.version.properties", "twirl.api.version"),
-    libraryDependencies += {
-      val crossVer = crossVersion.value
-      val isScalaJS = CrossVersion(crossVer, scalaVersion.value, scalaBinaryVersion.value) match {
-        case Some(f) => f("").contains("_sjs0.6") // detect ScalaJS CrossVersion
-        case None    => false
+  def dependencySettings =
+    Def.settings(
+      twirlVersion := readResourceProperty("twirl.version.properties", "twirl.api.version"),
+      libraryDependencies += {
+        val crossVer = crossVersion.value
+        val isScalaJS = CrossVersion(crossVer, scalaVersion.value, scalaBinaryVersion.value) match {
+          case Some(f) => f("").contains("_sjs0.6") // detect ScalaJS CrossVersion
+          case None    => false
+        }
+        // TODO: use %%% from sbt-crossproject when we add support for scalajs 1.0
+        val baseModuleID = "com.typesafe.play" %% "twirl-api" % twirlVersion.value
+        if (isScalaJS) baseModuleID.cross(crossVer) else baseModuleID
       }
-      // TODO: use %%% from sbt-crossproject when we add support for scalajs 1.0
-      val baseModuleID = "com.typesafe.play" %% "twirl-api" % twirlVersion.value
-      if (isScalaJS) baseModuleID.cross(crossVer) else baseModuleID
-    }
-  )
+    )
 
   def scalacEncoding(options: Seq[String]): String = {
     val i = options.indexOf("-encoding") + 1
     if (i > 0 && i < options.length) options(i) else "UTF-8"
   }
 
-  def defaultFormats = Map(
-    "html" -> "play.twirl.api.HtmlFormat",
-    "txt"  -> "play.twirl.api.TxtFormat",
-    "xml"  -> "play.twirl.api.XmlFormat",
-    "js"   -> "play.twirl.api.JavaScriptFormat"
-  )
-
-  def compileTemplatesTask = Def.task {
-    TemplateCompiler.compile(
-      (sourceDirectories in compileTemplates).value,
-      (target in compileTemplates).value,
-      templateFormats.value,
-      templateImports.value,
-      constructorAnnotations.value,
-      (includeFilter in compileTemplates).value,
-      (excludeFilter in compileTemplates).value,
-      Codec(sourceEncoding.value),
-      streams.value.log
+  def defaultFormats =
+    Map(
+      "html" -> "play.twirl.api.HtmlFormat",
+      "txt"  -> "play.twirl.api.TxtFormat",
+      "xml"  -> "play.twirl.api.XmlFormat",
+      "js"   -> "play.twirl.api.JavaScriptFormat"
     )
-  }
+
+  def compileTemplatesTask =
+    Def.task {
+      TemplateCompiler.compile(
+        (sourceDirectories in compileTemplates).value,
+        (target in compileTemplates).value,
+        templateFormats.value,
+        templateImports.value,
+        constructorAnnotations.value,
+        (includeFilter in compileTemplates).value,
+        (excludeFilter in compileTemplates).value,
+        Codec(sourceEncoding.value),
+        streams.value.log
+      )
+    }
 
   def readResourceProperty(resource: String, property: String): String = {
     val props  = new java.util.Properties
