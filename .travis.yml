@@ -15,13 +15,6 @@ jobs:
       script: scripts/validate-code.sh
       name: "Code validations (headerCheck, scalafmt, mima)"
    
-    - stage: test-jdk11
-      name: "Run tests with Scala 2.10 and AdoptOpenJDK 11"
-      script: scripts/test-code.sh
-      env: 
-        - TRAVIS_SCALA_VERSION=2.10.7 
-        - TRAVIS_JDK=11 
-
     - name: "Run tests with Scala 2.12 and AdoptOpenJDK 11" 
       script: scripts/test-code.sh
       env:
@@ -33,13 +26,6 @@ jobs:
       env: 
         - TRAVIS_SCALA_VERSION=2.13.1 
         - TRAVIS_JDK=11 
-      
-    - stage: test-jdk8
-      name: "Run tests with Scala 2.10 and AdoptOpenJDK 8"
-      script: scripts/test-code.sh
-      env: 
-        - TRAVIS_SCALA_VERSION=2.10.7 
-        - TRAVIS_JDK=8  
 
     - name: "Run tests with Scala 2.12 and AdoptOpenJDK 8" 
       script: scripts/test-code.sh
