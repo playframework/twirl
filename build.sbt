@@ -1,4 +1,4 @@
-import interplay.ScalaVersions._
+import Dependencies._
 import sbtcrossproject.crossProject
 import org.scalajs.jsenv.nodejs.NodeJSEnv
 
@@ -11,39 +11,6 @@ val ScalaParserCombinatorsVersion = "1.1.2"
 
 val mimaSettings = Seq(
   mimaPreviousArtifacts := previousVersion.map(organization.value %% name.value % _).toSet
-)
-
-val javacParameters = Seq(
-  "-source",
-  "1.8",
-  "-target",
-  "1.8",
-  "-Xlint:deprecation",
-  "-Xlint:unchecked"
-)
-
-val scalacCompilerParams = Seq(
-  "-target:jvm-1.8",
-  "-Ywarn-unused:imports",
-  "-Xlint:nullary-unit",
-  "-Xlint",
-  "-Ywarn-dead-code",
-)
-
-val javaCompilerSettings = Seq(
-  javacOptions in Compile ++= javacParameters,
-  javacOptions in Test ++= javacParameters,
-)
-
-val headerSettings = Seq(
-  headerLicense := {
-    Some(
-      HeaderLicense.Custom(
-        s"Copyright (C) Lightbend Inc. <https://www.lightbend.com>"
-      )
-    )
-  },
-  headerEmptyLine := false
 )
 
 // Customise sbt-dynver's behaviour to make it work with tags which aren't v-prefixed
@@ -60,49 +27,12 @@ Global / onLoad := (Global / onLoad).value.andThen { s =>
   s
 }
 
-// this overrides interplay release settings with some adaptations for working with sbt-dynver
-// moreover, it contain only bits necessary for twirl, nothing else
-lazy val releaseSettings: Seq[Setting[_]] = Seq(
-  // Release settings
-  releaseCrossBuild := false,
-  releaseProcess := {
-    import ReleaseTransformations._
-
-    def ifDefinedAndTrue(key: SettingKey[Boolean], step: State => State): State => State = { state =>
-      Project.extract(state).getOpt(key in ThisBuild) match {
-        case Some(true) => step(state)
-        case _          => state
-      }
-    }
-
-    Seq[ReleaseStep](
-      checkSnapshotDependencies,
-      runClean,
-      releaseStepCommandAndRemaining("+test"),
-      releaseStepTask(playBuildExtraTests in thisProjectRef.value),
-      releaseStepCommandAndRemaining("+publishSigned"),
-      releaseStepTask(playBuildExtraPublish in thisProjectRef.value),
-      ifDefinedAndTrue(playBuildPromoteBintray, releaseStepTask(bintrayRelease in thisProjectRef.value)),
-      ifDefinedAndTrue(playBuildPromoteSonatype, releaseStepCommand("sonatypeBundleRelease")),
-      pushChanges
-    )
-  }
-)
-
-val commonSettings = javaCompilerSettings ++ headerSettings ++ Seq(
-  scalaVersion := scala212,
-  crossScalaVersions := Seq(scala212, scala213),
-  scalacOptions ++= scalacCompilerParams,
-)
-
 lazy val twirl = project
   .in(file("."))
-  .enablePlugins(PlayRootProject)
+  .disablePlugins(MimaPlugin)
   .settings(
-    commonSettings,
-    releaseSettings,
     crossScalaVersions := Nil, // workaround so + uses project-defined variants
-    mimaFailOnNoPrevious := false
+    publish / skip := true
   )
   .aggregate(apiJvm, apiJs, parser, compiler, plugin)
 
@@ -115,10 +45,9 @@ lazy val nodeJs = {
 
 lazy val api = crossProject(JVMPlatform, JSPlatform)
   .in(file("api"))
-  .enablePlugins(PlayLibrary, Playdoc)
+  .enablePlugins(Common, Playdoc, Omnidoc, PublishLibrary)
   .configs(Docs)
   .settings(
-    commonSettings,
     mimaSettings,
     name := "twirl-api",
     jsEnv := nodeJs,
@@ -131,9 +60,8 @@ lazy val apiJs  = api.js
 
 lazy val parser = project
   .in(file("parser"))
-  .enablePlugins(PlayLibrary)
+  .enablePlugins(Common, Omnidoc, PublishLibrary)
   .settings(
-    commonSettings,
     mimaSettings,
     name := "twirl-parser",
     libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % ScalaParserCombinatorsVersion % "optional",
@@ -143,10 +71,9 @@ lazy val parser = project
 
 lazy val compiler = project
   .in(file("compiler"))
-  .enablePlugins(PlayLibrary)
+  .enablePlugins(Common, Omnidoc, PublishLibrary)
   .dependsOn(apiJvm, parser % "compile;test->test")
   .settings(
-    commonSettings,
     mimaSettings,
     name := "twirl-compiler",
     libraryDependencies += "org.scala-lang"          % "scala-compiler"           % scalaVersion.value,
@@ -156,14 +83,12 @@ lazy val compiler = project
 
 lazy val plugin = project
   .in(file("sbt-twirl"))
-  .enablePlugins(PlaySbtPlugin, SbtPlugin)
+  .enablePlugins(PublishSbtPlugin, SbtPlugin)
   .dependsOn(compiler)
   .settings(
-    javaCompilerSettings,
-    headerSettings,
     name := "sbt-twirl",
     organization := "com.typesafe.sbt",
-    scalaVersion := scala212,
+    scalaVersion := Scala212,
     libraryDependencies += "org.scalatest" %%% "scalatest" % ScalaTestVersion % "test",
     resourceGenerators in Compile += generateVersionFile.taskValue,
     scriptedDependencies := {
@@ -176,20 +101,10 @@ lazy val plugin = project
         )
         .value
     },
-    scalacOptions ++= scalacCompilerParams,
     mimaFailOnNoPrevious := false,
   )
 
-playBuildRepoName in ThisBuild := "twirl"
-playBuildExtraTests := {
-  (scripted in plugin).toTask("").value
-}
-playBuildExtraPublish := {
-  (PgpKeys.publishSigned in plugin).value
-}
-
 // Version file
-
 def generateVersionFile =
   Def.task {
     val version = (Keys.version in apiJvm).value
@@ -199,4 +114,4 @@ def generateVersionFile =
     Seq(file)
   }
 
-addCommandAlias("validateCode", ";headerCheckAll;scalafmtCheckAll;scalafmtSbtCheck")
+addCommandAlias("validateCode", ";headerCheckAll;+scalafmtCheckAll;scalafmtSbtCheck")

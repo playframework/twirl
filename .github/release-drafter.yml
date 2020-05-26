@@ -2,7 +2,7 @@
 name-template: 'Twirl, the Play templay engine $NEXT_PATCH_VERSION'
 tag-template: '$NEXT_PATCH_VERSION'
 
-change-template: '- $TITLE [#$NUMBER] by [@$AUTHOR](https://github.com/$AUTHOR)'
+change-template: '- $TITLE #$NUMBER by [@$AUTHOR](https://github.com/$AUTHOR)'
 template: |
   ## Changes
 

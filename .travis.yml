@@ -1,10 +1,19 @@
+version: ~> 1.0
 language: scala
 
 git:
   depth: false # Avoid sbt-dynver not seeing the tag
 
 env:
-  - TRAVIS_JDK=11
+  matrix: 
+    - TRAVIS_JDK=11
+
+  global:
+    # encrypt with: travis encrypt --pro BINTRAY_USER=...
+    - secure: "TV8cmq1UrtAmwxpaZTI89qEu+kYFgDqRJ2pm2F8TG75TmPWMUZ8YycYld8wWn2dMOXMc5mpDUYYXiJpqnxxiF90lYdCzN/TIJlLGEsHthXSS9UTHyqrCAh5JyT0XiQZmjP+6oCmWJLpdDayrgyTRqQNkUSFboEqN25aXJuCkCDw="
+      # encrypt with: travis encrypt --pro BINTRAY_PASS=...
+    - secure: "XHaF/fAX2H78Bc/5+nyQkSYLQfRX17SP4xBjF15iTxr9v9F2P0KxqsZ4qng2xHaQeUN122iXssOaZviQo4W+Z/o9FqoLXuUq9ukMol48RCFQjJXXnNNmdLmivetOJXOogAu9hHcRTeOoZ197RovIKbgnHIiavicsA3HMPNtm/bw="
+
 
 before_install: curl -Ls https://raw.githubusercontent.com/shyiko/jabba/0.11.2/install.sh | bash && . ~/.jabba/jabba.sh
 install: jabba install "adopt@~1.$TRAVIS_JDK.0-0" && jabba use "$_" && java -Xmx32m -version
@@ -24,7 +33,7 @@ jobs:
     - name: "Run tests with Scala 2.13 and AdoptOpenJDK 11" 
       script: scripts/test-code.sh
       env: 
-        - TRAVIS_SCALA_VERSION=2.13.1 
+        - TRAVIS_SCALA_VERSION=2.13.2 
         - TRAVIS_JDK=11 
 
     - name: "Run tests with Scala 2.12 and AdoptOpenJDK 8" 
@@ -36,13 +45,23 @@ jobs:
     - name: "Run tests with Scala 2.13 and AdoptOpenJDK 8" 
       script: scripts/test-code.sh
       env: 
-        - TRAVIS_SCALA_VERSION=2.13.1 
+        - TRAVIS_SCALA_VERSION=2.13.2 
         - TRAVIS_JDK=8  
         
-
     - stage: docs  
       script: scripts/validate-docs.sh
       name: "Validate documentation"
+
+    - stage: publish
+      name: "Publish artifacts to Bintray"
+      script: sbt +publish
+
+stages:
+  - name: validations
+  - name: docs
+  - name: publish
+    # TODO: remove branch and type condition after we publish a snapshot
+    if: ((branch = master AND type = push) OR (tag IS present)) AND NOT fork
 
 cache:
   directories:
@@ -64,3 +83,9 @@ notifications:
     on_failure: always
   slack:
     secure: lrBEBp00Fwr3T72GXK+eOaQVNy34QT+OBcJanr/WCVoD3kgt+L5hkEZ3iS9B7pDd26vMBcUGBb5kM8Z5QGo48gvbLUFgRtaTU00EBoTXbUPDIqlaMkuxdF+TN7GgS7yZKnKIInj54e7o1QaJ4R/I/Atw81kUJr0PNzMU0hfg6VU=
+    
+# safelist
+branches:
+  only:
+    - master
+    - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
