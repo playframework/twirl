@@ -5,6 +5,9 @@ git:
   depth: false # Avoid sbt-dynver not seeing the tag
 
 env:
+  matrix: 
+    - TRAVIS_JDK=11
+
   global:
     # encrypt with: travis encrypt --pro BINTRAY_USER=...
     - secure: "TV8cmq1UrtAmwxpaZTI89qEu+kYFgDqRJ2pm2F8TG75TmPWMUZ8YycYld8wWn2dMOXMc5mpDUYYXiJpqnxxiF90lYdCzN/TIJlLGEsHthXSS9UTHyqrCAh5JyT0XiQZmjP+6oCmWJLpdDayrgyTRqQNkUSFboEqN25aXJuCkCDw="
@@ -52,8 +55,6 @@ jobs:
     - stage: publish
       name: "Publish artifacts to Bintray"
       script: sbt +publish
-      env:
-        - TRAVIS_JDK=11
 
 stages:
   - name: validations
