@@ -2,4 +2,4 @@
 
 # Copyright (C) Lightbend Inc. <https://www.lightbend.com>
 
-sbt ";+validateCode;+mimaReportBinaryIssues" || exit 1
+sbt "validateCode;+mimaReportBinaryIssues" || exit 1
