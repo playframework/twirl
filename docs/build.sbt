@@ -12,7 +12,6 @@ lazy val docs = project
     PlayDocsKeys.javaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "javaGuide" ** "code").get,
     PlayDocsKeys.scalaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "scalaGuide" ** "code").get,
     headerLicense := {
-      val currentYear = java.time.Year.now(java.time.Clock.systemUTC).getValue
       Some(
         HeaderLicense.Custom(
           s"Copyright (C) Lightbend Inc. <https://www.lightbend.com>"
