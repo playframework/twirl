@@ -137,8 +137,8 @@ lazy val parser = project
     mimaSettings,
     name := "twirl-parser",
     libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % ScalaParserCombinatorsVersion % "optional",
-    libraryDependencies += "com.novocode"           % "junit-interface"           % "0.11"                        % "test",
-    libraryDependencies += "org.scalatest"          %%% "scalatest"               % ScalaTestVersion              % "test",
+    libraryDependencies += "com.novocode"            % "junit-interface"          % "0.11"                        % "test",
+    libraryDependencies += "org.scalatest"         %%% "scalatest"                % ScalaTestVersion              % "test",
   )
 
 lazy val compiler = project
@@ -149,7 +149,7 @@ lazy val compiler = project
     commonSettings,
     mimaSettings,
     name := "twirl-compiler",
-    libraryDependencies += "org.scala-lang"         % "scala-compiler"            % scalaVersion.value,
+    libraryDependencies += "org.scala-lang"          % "scala-compiler"           % scalaVersion.value,
     libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % ScalaParserCombinatorsVersion % "optional",
     fork in run := true,
   )
@@ -190,12 +190,13 @@ playBuildExtraPublish := {
 
 // Version file
 
-def generateVersionFile = Def.task {
-  val version = (Keys.version in apiJvm).value
-  val file    = (resourceManaged in Compile).value / "twirl.version.properties"
-  val content = s"twirl.api.version=$version"
-  IO.write(file, content)
-  Seq(file)
-}
+def generateVersionFile =
+  Def.task {
+    val version = (Keys.version in apiJvm).value
+    val file    = (resourceManaged in Compile).value / "twirl.version.properties"
+    val content = s"twirl.api.version=$version"
+    IO.write(file, content)
+    Seq(file)
+  }
 
 addCommandAlias("validateCode", ";headerCheckAll;scalafmtCheckAll;scalafmtSbtCheck")

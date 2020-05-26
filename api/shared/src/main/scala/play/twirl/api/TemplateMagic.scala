@@ -31,14 +31,15 @@ object TemplateMagic {
   // --- DEFAULT
 
   case class Default(default: Any) {
-    def ?:(x: Any) = x match {
-      case ""    => default
-      case Nil   => default
-      case false => default
-      case 0     => default
-      case None  => default
-      case _     => x
-    }
+    def ?:(x: Any) =
+      x match {
+        case ""    => default
+        case Nil   => default
+        case false => default
+        case 0     => default
+        case None  => default
+        case _     => x
+      }
   }
 
   implicit def anyToDefault(x: Any) = Default(x)

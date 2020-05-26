@@ -15,11 +15,12 @@ import xsbti.Severity
 import scala.io.Codec
 
 object TemplateProblem {
-  def positionMapper(codec: Codec): Position => Option[Position] = position => {
-    toScala(position.sourceFile).flatMap(f => MaybeGeneratedSource(f, codec)).map { generated =>
-      TemplatePosition(generated, position)
+  def positionMapper(codec: Codec): Position => Option[Position] =
+    position => {
+      toScala(position.sourceFile).flatMap(f => MaybeGeneratedSource(f, codec)).map { generated =>
+        TemplatePosition(generated, position)
+      }
     }
-  }
 
   def exception(source: File, codec: Codec, message: String, line: Int, column: Int) = {
     val column0 = 0.max(column - 1) // convert to 0-based column
@@ -138,10 +139,11 @@ object TemplateProblem {
     }
   }
 
-  def toJava[A](o: Option[A]): java.util.Optional[A] = o match {
-    case Some(v) => java.util.Optional.ofNullable(v)
-    case None    => java.util.Optional.empty()
-  }
+  def toJava[A](o: Option[A]): java.util.Optional[A] =
+    o match {
+      case Some(v) => java.util.Optional.ofNullable(v)
+      case None    => java.util.Optional.empty()
+    }
 
   def toScala[A](o: java.util.Optional[A]): Option[A] = {
     if (o.isPresent) Option(o.get())

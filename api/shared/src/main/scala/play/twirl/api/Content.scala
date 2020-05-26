@@ -58,10 +58,11 @@ abstract class BufferedContent[A <: BufferedContent[A]](
 
   def body = builtBody
 
-  override def equals(obj: Any): Boolean = obj match {
-    case other: BufferedContent[_] if this.getClass == other.getClass => body == other.body
-    case _                                                            => false
-  }
+  override def equals(obj: Any): Boolean =
+    obj match {
+      case other: BufferedContent[_] if this.getClass == other.getClass => body == other.body
+      case _                                                            => false
+    }
 
   override def hashCode(): Int = this.getClass.hashCode() + body.hashCode()
 }
