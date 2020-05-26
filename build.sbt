@@ -51,6 +51,15 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
     mimaSettings,
     name := "twirl-api",
     jsEnv := nodeJs,
+    // hack for GraalVM, see: https://github.com/scala-js/scala-js/issues/3673
+    // and https://github.com/playframework/twirl/pull/339
+    testFrameworks := List(
+      new TestFramework(
+        "org.scalatest.tools.Framework",
+        "org.scalatest.tools.ScalaTestFramework",
+        "com.novocode.junit.JUnitFramework"
+      )
+    ),
     libraryDependencies += "org.scala-lang.modules" %%% "scala-xml" % ScalaXmlVersion,
     libraryDependencies += "org.scalatest"          %%% "scalatest" % ScalaTestVersion % "test",
   )
