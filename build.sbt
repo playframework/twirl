@@ -2,15 +2,16 @@ import Dependencies._
 import sbtcrossproject.crossProject
 import org.scalajs.jsenv.nodejs.NodeJSEnv
 
-// Binary compatibility is this version
-val previousVersion: Option[String] = Some("1.5.0")
-
 val ScalaTestVersion              = "3.1.2"
 val ScalaXmlVersion               = "1.3.0"
 val ScalaParserCombinatorsVersion = "1.1.2"
 
 val mimaSettings = Seq(
-  mimaPreviousArtifacts := previousVersion.map(organization.value %% name.value % _).toSet
+  mimaPreviousArtifacts := ((crossProjectPlatform.?.value, previousStableVersion.value) match {
+    case (Some(JSPlatform), Some("1.5.0")) => Set.empty
+    case (_, Some(previousVersion))        => Set(organization.value %%% moduleName.value % previousVersion)
+    case _                                 => throw new Error("Unable to determine previous version")
+  })
 )
 
 // Customise sbt-dynver's behaviour to make it work with tags which aren't v-prefixed
@@ -84,6 +85,7 @@ lazy val compiler = project
 lazy val plugin = project
   .in(file("sbt-twirl"))
   .enablePlugins(PublishSbtPlugin, SbtPlugin)
+  .disablePlugins(MimaPlugin)
   .dependsOn(compiler)
   .settings(
     name := "sbt-twirl",
@@ -100,8 +102,7 @@ lazy val plugin = project
           )
         )
         .value
-    },
-    mimaFailOnNoPrevious := false,
+    }
   )
 
 // Version file
