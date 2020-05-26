@@ -83,3 +83,9 @@ notifications:
     on_failure: always
   slack:
     secure: lrBEBp00Fwr3T72GXK+eOaQVNy34QT+OBcJanr/WCVoD3kgt+L5hkEZ3iS9B7pDd26vMBcUGBb5kM8Z5QGo48gvbLUFgRtaTU00EBoTXbUPDIqlaMkuxdF+TN7GgS7yZKnKIInj54e7o1QaJ4R/I/Atw81kUJr0PNzMU0hfg6VU=
+    
+# safelist
+branches:
+  only:
+    - master
+    - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
