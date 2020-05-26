@@ -21,7 +21,6 @@ class Publish(isLibrary: Boolean) extends AutoPlugin {
       bintrayOrganization := Some("playframework"),
       bintrayRepository := (if (isSnapshot.value) snapshotRepo else releaseRepo),
       bintrayPackage := "twirl",
-      bintrayReleaseOnPublish := false,
       // maven style should only be used for libraries, not for plugins
       publishMavenStyle := isLibrary,
       bintrayPackageLabels := {

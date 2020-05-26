@@ -60,8 +60,7 @@ stages:
   - name: validations
   - name: docs
   - name: publish
-    # TODO: remove branch and type condition after we publish a snapshot
-    if: ((branch = master AND type = push) OR (tag IS present)) AND NOT fork
+    if: tag IS present AND NOT fork
 
 cache:
   directories:
