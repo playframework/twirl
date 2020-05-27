@@ -56,8 +56,7 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
     testFrameworks := List(
       new TestFramework(
         "org.scalatest.tools.Framework",
-        "org.scalatest.tools.ScalaTestFramework",
-        "com.novocode.junit.JUnitFramework"
+        "org.scalatest.tools.ScalaTestFramework"
       )
     ),
     libraryDependencies += "org.scala-lang.modules" %%% "scala-xml" % ScalaXmlVersion,
