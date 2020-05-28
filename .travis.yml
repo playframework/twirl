@@ -23,8 +23,9 @@ jobs:
     - stage: validations
       script: scripts/validate-code.sh
       name: "Code validations (headerCheck, scalafmt, mima)"
-   
-    - name: "Run tests with Scala 2.12 and AdoptOpenJDK 11" 
+
+    - stage: test
+      name: "Run tests with Scala 2.12 and AdoptOpenJDK 11"
       script: scripts/test-code.sh
       env:
         - TRAVIS_SCALA_VERSION=2.12.11 
@@ -58,6 +59,7 @@ jobs:
 
 stages:
   - name: validations
+  - name: test
   - name: docs
   - name: publish
     if: tag IS present AND NOT fork
@@ -87,4 +89,4 @@ notifications:
 branches:
   only:
     - master
-    - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+    - /^\d+\.\d+(\.\d+)?(-\S*)?$/
