@@ -20,11 +20,11 @@ install: jabba install "adopt@~1.$TRAVIS_JDK.0-0" && jabba use "$_" && java -Xmx
 
 jobs:
   include:
-    - stage: validations
+    - stage: test
       script: scripts/validate-code.sh
       name: "Code validations (headerCheck, scalafmt, mima)"
-   
-    - name: "Run tests with Scala 2.12 and AdoptOpenJDK 11" 
+
+    - name: "Run tests with Scala 2.12 and AdoptOpenJDK 11"
       script: scripts/test-code.sh
       env:
         - TRAVIS_SCALA_VERSION=2.12.11 
@@ -57,7 +57,7 @@ jobs:
       script: sbt +publish
 
 stages:
-  - name: validations
+  - name: test
   - name: docs
   - name: publish
     if: tag IS present AND NOT fork
@@ -87,4 +87,4 @@ notifications:
 branches:
   only:
     - master
-    - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+    - /^\d+\.\d+(\.\d+)?(-\S*)?$/

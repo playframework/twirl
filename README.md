@@ -1,4 +1,4 @@
-# Twirl [![Latest version](https://index.scala-lang.org/playframework/twirl/twirl-api/latest.svg?color=orange)](https://index.scala-lang.org/playframework/twirl/twirl-api) [![Build Status](https://travis-ci.org/playframework/twirl.svg?branch=v1.1.0)](https://travis-ci.org/playframework/twirl)
+# Twirl [![Latest version](https://index.scala-lang.org/playframework/twirl/twirl-api/latest.svg?color=orange)](https://index.scala-lang.org/playframework/twirl/twirl-api) [![Build Status](https://travis-ci.org/playframework/twirl.svg)](https://travis-ci.org/playframework/twirl)
 
 Twirl is the [Play][play-site] [template engine][docs].
 
@@ -13,7 +13,7 @@ about the template syntax.
 Twirl can also be used outside of Play. An sbt plugin is provided for easy
 integration with Scala or Java projects.
 
-> sbt-twirl requires sbt 0.13.5 or higher.
+> sbt-twirl requires sbt 1.3.0 or higher.
 
 To add the sbt plugin to your project add the sbt plugin dependency in
 `project/plugins.sbt`:
