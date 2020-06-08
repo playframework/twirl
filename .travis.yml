@@ -60,7 +60,8 @@ stages:
   - name: test
   - name: docs
   - name: publish
-    if: tag IS present AND NOT fork
+    # Snapshots from Bintray are picked up by a scheduled build on Lightbend's Vegemite
+    if: ((branch = master AND type = push) OR (tag IS present)) AND NOT fork
 
 cache:
   directories:
