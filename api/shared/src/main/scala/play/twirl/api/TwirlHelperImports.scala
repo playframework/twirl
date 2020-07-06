@@ -16,7 +16,7 @@ object TwirlHelperImports {
     x.asScala
   }
 
-  /** Allows inline formatting of java.util.Date  */
+  /** Allows inline formatting of java.util.Date */
   implicit class TwirlRichDate(date: java.util.Date) {
     def format(pattern: String): String = {
       new java.text.SimpleDateFormat(pattern).format(date)

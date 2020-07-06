@@ -252,7 +252,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     positional
   }
 
-  /** Recursively match pairs of prefixes and suffixes and return the consumed characters
+  /**
+   * Recursively match pairs of prefixes and suffixes and return the consumed characters
    *
    *  Terminates at EOF.
    */
