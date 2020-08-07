@@ -5,7 +5,7 @@ import org.scalajs.jsenv.nodejs.NodeJSEnv
 // Binary compatibility is this version
 val previousVersion: Option[String] = Some("1.5.0")
 
-val ScalaTestVersion              = "3.1.2"
+val ScalaTestVersion              = "3.2.1"
 val ScalaXmlVersion               = "1.3.0"
 val ScalaParserCombinatorsVersion = "1.1.2"
 
