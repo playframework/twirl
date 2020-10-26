@@ -48,9 +48,8 @@ class TemplateMappingSpec extends AnyWordSpec with Matchers with Inspectors {
         10 -> Location(4, 1, 7, "d")
       )
 
-      forAll(testOffsets) {
-        case (offset, location) =>
-          mapping.location(offset) mustBe Some(location)
+      forAll(testOffsets) { case (offset, location) =>
+        mapping.location(offset) mustBe Some(location)
       }
 
       val testPositions = Seq(
@@ -63,9 +62,8 @@ class TemplateMappingSpec extends AnyWordSpec with Matchers with Inspectors {
         (5, 0)  -> Location(4, 1, 7, "d")
       )
 
-      forAll(testPositions) {
-        case ((line, column), location) =>
-          mapping.location(line, column) mustBe Some(location)
+      forAll(testPositions) { case ((line, column), location) =>
+        mapping.location(line, column) mustBe Some(location)
       }
     }
   }

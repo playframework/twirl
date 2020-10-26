@@ -35,12 +35,11 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
     }
 
   def parseFailure(templateName: String, message: String, line: Int, column: Int) =
-    inside(parse(templateName)) {
-      case parser.Error(_, rest, errors) =>
-        val e = errors.head
-        e.str mustBe message
-        e.pos.line mustBe line
-        e.pos.column mustBe column
+    inside(parse(templateName)) { case parser.Error(_, rest, errors) =>
+      val e = errors.head
+      e.str mustBe message
+      e.pos.line mustBe line
+      e.pos.column mustBe column
     }
 
   def parseTemplate(templateName: String): Template = {
