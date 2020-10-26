@@ -4,7 +4,6 @@
 package play.twirl.compiler
 
 import java.io.File
-import java.time.LocalDateTime
 
 import scala.annotation.tailrec
 import scala.io.Codec
@@ -185,7 +184,7 @@ object TwirlCompiler {
         templateName,
         TwirlIO.readFile(source),
         codec,
-        source.getAbsolutePath,
+        relativePath(source),
         resultType,
         formatterType,
         additionalImports,
@@ -215,7 +214,7 @@ object TwirlCompiler {
       templateName,
       content.getBytes(codec.charSet),
       codec,
-      source.getAbsolutePath,
+      relativePath(source),
       resultType,
       formatterType,
       additionalImports,
@@ -226,11 +225,14 @@ object TwirlCompiler {
     generatedSource
   }
 
+  private def relativePath(file: File): String =
+    new File(".").toURI.relativize(file.toURI).getPath
+
   def parseAndGenerateCode(
       templateName: Array[String],
       content: Array[Byte],
       codec: Codec,
-      absolutePath: String,
+      relativePath: String,
       resultType: String,
       formatterType: String,
       additionalImports: collection.Seq[String],
@@ -241,7 +243,7 @@ object TwirlCompiler {
     templateParser.parse(new String(content, codec.charSet)) match {
       case templateParser.Success(parsed: Template, rest) if rest.atEnd => {
         generateFinalTemplate(
-          absolutePath,
+          relativePath,
           content,
           templateName.dropRight(1).mkString("."),
           templateName.takeRight(1).mkString,
@@ -253,12 +255,12 @@ object TwirlCompiler {
         )
       }
       case templateParser.Success(_, rest) => {
-        throw new TemplateCompilationError(new File(absolutePath), "Not parsed?", rest.pos.line, rest.pos.column)
+        throw new TemplateCompilationError(new File(relativePath), "Not parsed?", rest.pos.line, rest.pos.column)
       }
       case templateParser.Error(_, rest, errors) => {
         val firstError = errors.head
         throw new TemplateCompilationError(
-          new File(absolutePath),
+          new File(relativePath),
           firstError.str,
           firstError.pos.line,
           firstError.pos.column
@@ -470,7 +472,7 @@ package """ :+ packageName :+ """
   }
 
   def generateFinalTemplate(
-      absolutePath: String,
+      relativePath: String,
       contents: Array[Byte],
       packageName: String,
       name: String,
@@ -483,7 +485,7 @@ package """ :+ packageName :+ """
     val generated =
       generateCode(packageName, name, root, resultType, formatterType, additionalImports, constructorAnnotations)
 
-    Source.finalSource(absolutePath, contents, generated, Hash(contents, additionalImports))
+    Source.finalSource(relativePath, contents, generated, Hash(contents, additionalImports))
   }
 
   object TemplateAsFunctionCompiler {
@@ -710,7 +712,7 @@ object Source {
   import scala.collection.mutable.ListBuffer
 
   def finalSource(
-      absolutePath: String,
+      relativePath: String,
       contents: Array[Byte],
       generatedTokens: collection.Seq[Any],
       hash: String
@@ -722,8 +724,7 @@ object Source {
     scalaCode.toString + s"""
               /*
                   -- GENERATED --
-                  DATE: ${LocalDateTime.now()}
-                  SOURCE: ${absolutePath.replace(File.separator, "/")}
+                  SOURCE: ${relativePath.replace(File.separator, "/")}
                   HASH: $hash
                   MATRIX: ${positions.map(pos => s"${pos._1}->${pos._2}").mkString("|")}
                   LINES: ${lines.map(line => s"${line._1}->${line._2}").mkString("|")}
