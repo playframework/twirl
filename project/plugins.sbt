@@ -1,4 +1,4 @@
-addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.6")
+addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.6.1")
 
 // For the Cross Build
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.33")
