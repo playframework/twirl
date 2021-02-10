@@ -54,14 +54,14 @@ object SbtTwirl extends AutoPlugin {
           (compileTemplates / includeFilter).value,
           (compileTemplates / excludeFilter).value
         ),
-      (compileTemplates / sources) := Defaults
+      compileTemplates / sources := Defaults
         .collectFiles(
           compileTemplates / sourceDirectories,
           compileTemplates / includeFilter,
           compileTemplates / excludeFilter
         )
         .value,
-      (compileTemplates / target) := crossTarget.value / "twirl" / Defaults.nameForSrc(configuration.value.name),
+      compileTemplates / target := crossTarget.value / "twirl" / Defaults.nameForSrc(configuration.value.name),
       compileTemplates := compileTemplatesTask.value,
       sourceGenerators += compileTemplates.taskValue,
       managedSourceDirectories += (compileTemplates / target).value

@@ -1,66 +1,49 @@
 version: ~> 1.0
 import: scala/scala-dev:travis/default.yml
 
-language: scala
-
 git:
   depth: false # Avoid sbt-dynver not seeing the tag
 
+language: scala
+
+scala:
+  - 2.12.14
+  - 2.13.6
+  - 3.0.1
+
 env:
   matrix:
+    - ADOPTOPENJDK=8
     - ADOPTOPENJDK=11
+
+script:
+  - sbt ++$TRAVIS_SCALA_VERSION test
 
 jobs:
   include:
-    - stage: test
-      script: scripts/validate-code.sh
-      name: "Code validations (headerCheck, scalafmt, mima)"
+    - name: "Validations"
+      script: sbt validateCode +mimaReportBinaryIssues
+      env: ADOPTOPENJDK=8
 
-    - name: "Run tests with Scala 2.12 and AdoptOpenJDK 11"
-      script: scripts/test-code.sh
-      env:
-        - TRAVIS_SCALA_VERSION=2.12.14
-        - ADOPTOPENJDK=11
+    - name: "Plugin tests"
+      script: sbt plugin/test plugin/scripted
+      env: ADOPTOPENJDK=8
 
-    - name: "Run tests with Scala 2.13 and AdoptOpenJDK 11"
-      script: scripts/test-code.sh
-      env:
-        - TRAVIS_SCALA_VERSION=2.13.6
-        - ADOPTOPENJDK=11
-
-    - name: "Run tests with Scala 2.12 and AdoptOpenJDK 8"
-      script: scripts/test-code.sh
-      env:
-        - TRAVIS_SCALA_VERSION=2.12.14
-        - ADOPTOPENJDK=8
-
-    - name: "Run tests with Scala 2.13 and AdoptOpenJDK 8"
-      script: scripts/test-code.sh
-      env:
-        - TRAVIS_SCALA_VERSION=2.13.6
-        - ADOPTOPENJDK=8
-
-    - stage: docs
+    - name: "Validate documentation"
       script: scripts/validate-docs.sh
-      name: "Validate documentation"
+      env: ADOPTOPENJDK=8
 
     - stage: release
       name: "Release artifacts to Sonatype"
       script: sbt ci-release
-      env:
-        - ADOPTOPENJDK=8
+      env: ADOPTOPENJDK=8
 
 stages:
   - name: test
-  - name: docs
   - name: release
     if: tag IS present
 
 notifications:
-  webhooks:
-    urls: https://webhooks.gitter.im/e/d2c8a242a2615f659595
-    on_success: always
-    on_failure: always
   slack:
     secure: lrBEBp00Fwr3T72GXK+eOaQVNy34QT+OBcJanr/WCVoD3kgt+L5hkEZ3iS9B7pDd26vMBcUGBb5kM8Z5QGo48gvbLUFgRtaTU00EBoTXbUPDIqlaMkuxdF+TN7GgS7yZKnKIInj54e7o1QaJ4R/I/Atw81kUJr0PNzMU0hfg6VU=
 

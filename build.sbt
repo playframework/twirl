@@ -5,12 +5,16 @@ import org.scalajs.jsenv.nodejs.NodeJSEnv
 // Binary compatibility is this version
 val previousVersion: Option[String] = Some("1.5.0")
 
-val ScalaTestVersion              = "3.2.9"
-val ScalaParserCombinatorsVersion = "2.0.0"
-
-val ScalaXmlVersion = "2.0.1"
 // Next line can be removed when dropping Scala 2.12? See https://github.com/playframework/twirl/pull/424
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
+
+val ScalaTestVersion              = "3.2.9"
+val ScalaXmlVersion               = "2.0.1"
+val ScalaParserCombinatorsVersion = "2.0.0"
+
+// temporarily needed for scaladoc generation Scala 3.0.0-RC1 -- we ought to be
+// able to remove this by the time 3.0.0 final rolls around
+ThisBuild / resolvers += Resolver.JCenterRepository
 
 val mimaSettings = Seq(
   mimaPreviousArtifacts := previousVersion.map(organization.value %% name.value % _).toSet
@@ -39,7 +43,7 @@ lazy val twirl = project
     crossScalaVersions := Nil, // workaround so + uses project-defined variants
     publish / skip := true
   )
-  .aggregate(apiJvm, apiJs, parser, compiler, plugin)
+  .aggregate(apiJvm, apiJs, parser, compiler) // but not plugin, .travis.yml deals with that separately
 
 lazy val nodeJs = {
   if (System.getProperty("NODE_PATH") != null)
@@ -89,7 +93,12 @@ lazy val compiler = project
   .settings(
     mimaSettings,
     name := "twirl-compiler",
-    libraryDependencies += "org.scala-lang"          % "scala-compiler"           % scalaVersion.value,
+    libraryDependencies +=
+      (if (ScalaArtifacts.isScala3(scalaVersion.value))
+         "org.scala-lang" %% "scala3-compiler" % scalaVersion.value
+       else
+         ("org.scala-lang" % "scala-compiler" % scalaVersion.value)
+           .exclude("org.scala-lang.modules", s"scala-xml_${scalaBinaryVersion.value}")),
     libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % ScalaParserCombinatorsVersion % "optional",
     run / fork := true,
   )
@@ -105,18 +114,9 @@ lazy val plugin = project
     libraryDependencies += "org.scalatest" %%% "scalatest" % ScalaTestVersion % Test,
     Compile / resourceGenerators += generateVersionFile.taskValue,
     scriptedLaunchOpts += version.apply { v => s"-Dproject.version=$v" }.value,
-    // both `locally`s are to work around sbt/sbt#6161
     scriptedDependencies := {
-      locally { val _ = scriptedDependencies.value }
-      locally {
-        val _ = publishLocal
-          .all(
-            ScopeFilter(
-              inAnyProject
-            )
-          )
-          .value
-      }
+      scriptedDependencies.value
+      publishLocal.all(ScopeFilter(inAnyProject)).value
       ()
     },
     mimaFailOnNoPrevious := false,
