@@ -29,9 +29,9 @@ lazy val docs = project
 // twirl settings.
 def overrideTwirlSettings: Seq[Setting[_]] =
   Seq(
-    sourceGenerators in Test := Nil
+    Test / sourceGenerators := Nil
   ) ++ inConfig(Test)(SbtTwirl.twirlSettings) ++ SbtTwirl.defaultSettings ++ SbtTwirl.positionSettings ++ Seq(
-    sourceDirectories in (Test, TwirlKeys.compileTemplates) ++=
+    Test / TwirlKeys.compileTemplates / sourceDirectories ++=
       (PlayDocsKeys.javaManualSourceDirectories.value ++ PlayDocsKeys.scalaManualSourceDirectories.value)
   )
 
