@@ -99,15 +99,19 @@ lazy val plugin = project
     scalaVersion := Scala212,
     libraryDependencies += "org.scalatest" %%% "scalatest" % ScalaTestVersion % Test,
     Compile / resourceGenerators += generateVersionFile.taskValue,
+    // both `locally`s are to work around sbt/sbt#6161
     scriptedDependencies := {
-      scriptedDependencies.value
-      publishLocal
-        .all(
-          ScopeFilter(
-            inDependencies(compiler)
+      locally { val _ = scriptedDependencies.value }
+      locally {
+        val _ = publishLocal
+          .all(
+            ScopeFilter(
+              inDependencies(compiler)
+            )
           )
-        )
-        .value
+          .value
+      }
+      ()
     },
     mimaFailOnNoPrevious := false,
   )
