@@ -3,7 +3,7 @@ lazy val docs = project
   .enablePlugins(PlayDocsPlugin)
   .configs(Configuration.of("Docs", "docs"))
   .settings(
-    scalaVersion := "2.12.12",
+    scalaVersion := "2.12.13",
     // use special snapshot play version for now
     resolvers ++= DefaultOptions.resolvers(snapshot = true),
     resolvers += Resolver.typesafeRepo("releases"),
@@ -29,9 +29,9 @@ lazy val docs = project
 // twirl settings.
 def overrideTwirlSettings: Seq[Setting[_]] =
   Seq(
-    sourceGenerators in Test := Nil
+    Test / sourceGenerators := Nil
   ) ++ inConfig(Test)(SbtTwirl.twirlSettings) ++ SbtTwirl.defaultSettings ++ SbtTwirl.positionSettings ++ Seq(
-    sourceDirectories in (Test, TwirlKeys.compileTemplates) ++=
+    Test / TwirlKeys.compileTemplates / sourceDirectories ++=
       (PlayDocsKeys.javaManualSourceDirectories.value ++ PlayDocsKeys.scalaManualSourceDirectories.value)
   )
 

@@ -5,7 +5,7 @@ import org.scalajs.jsenv.nodejs.NodeJSEnv
 // Binary compatibility is this version
 val previousVersion: Option[String] = Some("1.5.0")
 
-val ScalaTestVersion              = "3.1.4"
+val ScalaTestVersion              = "3.2.3"
 val ScalaXmlVersion               = "1.3.0"
 val ScalaParserCombinatorsVersion = "1.1.2"
 
@@ -14,7 +14,7 @@ val mimaSettings = Seq(
 )
 
 // Customise sbt-dynver's behaviour to make it work with tags which aren't v-prefixed
-dynverTagPrefix in ThisBuild := ""
+ThisBuild / dynverTagPrefix := ""
 
 // Sanity-check: assert that version comes from a tag (e.g. not a too-shallow clone)
 // https://github.com/dwijnand/sbt-dynver/#sanity-checking-the-version
@@ -60,7 +60,7 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
       )
     ),
     libraryDependencies += "org.scala-lang.modules" %%% "scala-xml" % ScalaXmlVersion,
-    libraryDependencies += "org.scalatest"          %%% "scalatest" % ScalaTestVersion % "test",
+    libraryDependencies += "org.scalatest"          %%% "scalatest" % ScalaTestVersion % Test,
   )
 
 lazy val apiJvm = api.jvm
@@ -72,9 +72,9 @@ lazy val parser = project
   .settings(
     mimaSettings,
     name := "twirl-parser",
-    libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % ScalaParserCombinatorsVersion % "optional",
-    libraryDependencies += "com.novocode"            % "junit-interface"          % "0.11"                        % "test",
-    libraryDependencies += "org.scalatest"         %%% "scalatest"                % ScalaTestVersion              % "test",
+    libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % ScalaParserCombinatorsVersion % Optional,
+    libraryDependencies += "com.novocode"            % "junit-interface"          % "0.11"                        % Test,
+    libraryDependencies += "org.scalatest"         %%% "scalatest"                % ScalaTestVersion              % Test,
   )
 
 lazy val compiler = project
@@ -86,7 +86,7 @@ lazy val compiler = project
     name := "twirl-compiler",
     libraryDependencies += "org.scala-lang"          % "scala-compiler"           % scalaVersion.value,
     libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % ScalaParserCombinatorsVersion % "optional",
-    fork in run := true,
+    run / fork := true,
   )
 
 lazy val plugin = project
@@ -97,17 +97,21 @@ lazy val plugin = project
     name := "sbt-twirl",
     organization := "com.typesafe.sbt",
     scalaVersion := Scala212,
-    libraryDependencies += "org.scalatest" %%% "scalatest" % ScalaTestVersion % "test",
-    resourceGenerators in Compile += generateVersionFile.taskValue,
+    libraryDependencies += "org.scalatest" %%% "scalatest" % ScalaTestVersion % Test,
+    Compile / resourceGenerators += generateVersionFile.taskValue,
+    // both `locally`s are to work around sbt/sbt#6161
     scriptedDependencies := {
-      scriptedDependencies.value
-      publishLocal
-        .all(
-          ScopeFilter(
-            inDependencies(compiler)
+      locally { val _ = scriptedDependencies.value }
+      locally {
+        val _ = publishLocal
+          .all(
+            ScopeFilter(
+              inDependencies(compiler)
+            )
           )
-        )
-        .value
+          .value
+      }
+      ()
     },
     mimaFailOnNoPrevious := false,
   )
@@ -115,8 +119,8 @@ lazy val plugin = project
 // Version file
 def generateVersionFile =
   Def.task {
-    val version = (Keys.version in apiJvm).value
-    val file    = (resourceManaged in Compile).value / "twirl.version.properties"
+    val version = (apiJvm / Keys.version).value
+    val file    = (Compile / resourceManaged).value / "twirl.version.properties"
     val content = s"twirl.api.version=$version"
     IO.write(file, content)
     Seq(file)
