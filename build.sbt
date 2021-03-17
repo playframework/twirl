@@ -97,7 +97,7 @@ lazy val releaseSettings: Seq[Setting[_]] = Seq(
 
 val commonSettings = javaCompilerSettings ++ headerSettings ++ Seq(
   scalaVersion := scala212,
-  crossScalaVersions := Seq(scala210, scala212, scala213),
+  crossScalaVersions := Seq(scala210, scala212, "2.13.4"), // scala213 (=2.13.5) does not work because "Error downloading org.scala-js:scalajs-compiler_2.13.5:0.6.33"
   scalacOptions ++= scalacCompilerSettings(scalaVersion.value),
 )
 
