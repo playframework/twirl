@@ -52,6 +52,13 @@ val headerSettings = Seq(
   headerEmptyLine := false
 )
 
+// Avoid race condition using Scala 2.10.x
+// E.g. when running "sbt ++2.10.7 test" (after a fresh checkout when no "target" folder exists yet)
+// See https://www.scala-sbt.org/1.x/docs/Parallel-Execution.html#Defining+Restrictions
+Global / concurrentRestrictions := Seq(
+  Tags.limitAll(1) // the total number of tasks to run concurrently
+)
+
 // Customise sbt-dynver's behaviour to make it work with tags which aren't v-prefixed
 dynverVTagPrefix in ThisBuild := false
 
