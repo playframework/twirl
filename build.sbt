@@ -185,7 +185,7 @@ lazy val plugin = project
       publishLocal
         .all(
           ScopeFilter(
-            inDependencies(compiler)
+            inAnyProject
           )
         )
         .value
