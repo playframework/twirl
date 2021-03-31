@@ -1,4 +1,6 @@
 version: ~> 1.0
+import: scala/scala-dev:travis/default.yml
+
 language: scala
 
 git:
@@ -6,17 +8,13 @@ git:
 
 env:
   matrix:
-    - TRAVIS_JDK=11
+    - ADOPTOPENJDK=11
 
   global:
     # encrypt with: travis encrypt --pro BINTRAY_USER=...
     - secure: "TV8cmq1UrtAmwxpaZTI89qEu+kYFgDqRJ2pm2F8TG75TmPWMUZ8YycYld8wWn2dMOXMc5mpDUYYXiJpqnxxiF90lYdCzN/TIJlLGEsHthXSS9UTHyqrCAh5JyT0XiQZmjP+6oCmWJLpdDayrgyTRqQNkUSFboEqN25aXJuCkCDw="
       # encrypt with: travis encrypt --pro BINTRAY_PASS=...
     - secure: "XHaF/fAX2H78Bc/5+nyQkSYLQfRX17SP4xBjF15iTxr9v9F2P0KxqsZ4qng2xHaQeUN122iXssOaZviQo4W+Z/o9FqoLXuUq9ukMol48RCFQjJXXnNNmdLmivetOJXOogAu9hHcRTeOoZ197RovIKbgnHIiavicsA3HMPNtm/bw="
-
-
-before_install: curl -Ls https://raw.githubusercontent.com/shyiko/jabba/0.11.2/install.sh | bash && . ~/.jabba/jabba.sh
-install: jabba install "adopt@~1.$TRAVIS_JDK.0-0" && jabba use "$_" && java -Xmx32m -version
 
 jobs:
   include:
@@ -28,25 +26,25 @@ jobs:
       script: scripts/test-code.sh
       env:
         - TRAVIS_SCALA_VERSION=2.12.13
-        - TRAVIS_JDK=11
+        - ADOPTOPENJDK=11
 
     - name: "Run tests with Scala 2.13 and AdoptOpenJDK 11"
       script: scripts/test-code.sh
       env:
         - TRAVIS_SCALA_VERSION=2.13.5
-        - TRAVIS_JDK=11
+        - ADOPTOPENJDK=11
 
     - name: "Run tests with Scala 2.12 and AdoptOpenJDK 8"
       script: scripts/test-code.sh
       env:
         - TRAVIS_SCALA_VERSION=2.12.13
-        - TRAVIS_JDK=8
+        - ADOPTOPENJDK=8
 
     - name: "Run tests with Scala 2.13 and AdoptOpenJDK 8"
       script: scripts/test-code.sh
       env:
         - TRAVIS_SCALA_VERSION=2.13.5
-        - TRAVIS_JDK=8
+        - ADOPTOPENJDK=8
 
     - stage: docs
       script: scripts/validate-docs.sh
@@ -62,19 +60,6 @@ stages:
   - name: publish
     # Snapshots from Bintray are picked up by a scheduled build on Lightbend's Vegemite
     if: ((branch = master AND type = push) OR (tag IS present)) AND NOT fork
-
-cache:
-  directories:
-  - "$HOME/.cache/coursier"
-  - "$HOME/.ivy2/cache"
-  - "$HOME/.jabba/jdk"
-  - "$HOME/.sbt"
-
-before_cache:
-  - rm -rf $HOME/.ivy2/cache/com.typesafe.play/twirl*
-  - rm -rf $HOME/.ivy2/cache/scala_*/sbt_*/com.typesafe.sbt/sbt-twirl
-  - find $HOME/.ivy2 -name "ivydata-*.properties" -delete
-  - find $HOME/.sbt  -name "*.lock"               -delete
 
 notifications:
   webhooks:
