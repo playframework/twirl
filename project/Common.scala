@@ -30,7 +30,6 @@ object Common extends AutoPlugin {
     "-unchecked",
     "-encoding",
     "utf8",
-    "-target:jvm-1.8",
     "-Ywarn-unused:imports",
     "-Xlint:nullary-unit",
     "-Xlint",

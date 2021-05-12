@@ -45,26 +45,26 @@ object SbtTwirl extends AutoPlugin {
 
   def twirlSettings: Seq[Setting[_]] =
     Seq(
-      includeFilter in compileTemplates := "*.scala.*",
-      excludeFilter in compileTemplates := HiddenFileFilter,
-      sourceDirectories in compileTemplates := Seq(sourceDirectory.value / "twirl"),
+      compileTemplates / includeFilter := "*.scala.*",
+      compileTemplates / excludeFilter := HiddenFileFilter,
+      compileTemplates / sourceDirectories := Seq(sourceDirectory.value / "twirl"),
       watchSources in Defaults.ConfigGlobal +=
         WatchSource(
-          (sourceDirectory in compileTemplates).value,
-          (includeFilter in compileTemplates).value,
-          (excludeFilter in compileTemplates).value
+          (compileTemplates / sourceDirectory).value,
+          (compileTemplates / includeFilter).value,
+          (compileTemplates / excludeFilter).value
         ),
-      sources in compileTemplates := Defaults
+      compileTemplates / sources := Defaults
         .collectFiles(
-          sourceDirectories in compileTemplates,
-          includeFilter in compileTemplates,
-          excludeFilter in compileTemplates
+          compileTemplates / sourceDirectories,
+          compileTemplates / includeFilter,
+          compileTemplates / excludeFilter,
         )
         .value,
-      target in compileTemplates := crossTarget.value / "twirl" / Defaults.nameForSrc(configuration.value.name),
+      compileTemplates / target := crossTarget.value / "twirl" / Defaults.nameForSrc(configuration.value.name),
       compileTemplates := compileTemplatesTask.value,
       sourceGenerators += compileTemplates.taskValue,
-      managedSourceDirectories += (target in compileTemplates).value
+      managedSourceDirectories += (compileTemplates / target).value
     )
 
   def defaultSettings: Seq[Setting[_]] =
@@ -111,13 +111,13 @@ object SbtTwirl extends AutoPlugin {
   def compileTemplatesTask =
     Def.task {
       TemplateCompiler.compile(
-        (sourceDirectories in compileTemplates).value,
-        (target in compileTemplates).value,
+        (compileTemplates / sourceDirectories).value,
+        (compileTemplates / target).value,
         templateFormats.value,
         templateImports.value,
         constructorAnnotations.value,
-        (includeFilter in compileTemplates).value,
-        (excludeFilter in compileTemplates).value,
+        (compileTemplates / includeFilter).value,
+        (compileTemplates / excludeFilter).value,
         Codec(sourceEncoding.value),
         streams.value.log
       )

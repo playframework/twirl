@@ -318,9 +318,9 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
   /** Match zero or more `parser` */
   def several[T, BufferType <: mutable.Buffer[T]](parser: () => T, provided: BufferType = null)(implicit
-      manifest: Manifest[BufferType]
+      classTag: reflect.ClassTag[BufferType]
   ): BufferType = {
-    val ab     = if (provided != null) provided else manifest.runtimeClass.newInstance().asInstanceOf[BufferType]
+    val ab     = if (provided != null) provided else classTag.runtimeClass.newInstance().asInstanceOf[BufferType]
     var parsed = parser()
     while (parsed != null) {
       ab += parsed
@@ -740,7 +740,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
             if (check(".")) {
               methodCall() match {
                 case m: String => nextLink = m
-                case _         =>
+                case null      =>
               }
             }
 

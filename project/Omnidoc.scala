@@ -38,7 +38,7 @@ object Omnidoc extends AutoPlugin {
         val tree: String        = if (isSnapshot.value) development else tagged
         val prefix: String      = "/" + (omnidocPathPrefix ?? "").value
         val path: String = {
-          val buildDir: File      = (baseDirectory in ThisBuild).value
+          val buildDir: File      = (ThisBuild / baseDirectory).value
           val projDir: File       = baseDirectory.value
           val rel: Option[String] = IO.relativize(buildDir, projDir)
           rel match {
@@ -50,7 +50,7 @@ object Omnidoc extends AutoPlugin {
         }
         s"https://github.com/${repo}/tree/${tree}${path}"
       },
-      packageOptions in (Compile, packageSrc) ++= omnidocSourceUrl.value.toSeq.map { url =>
+      Compile / packageSrc / packageOptions ++= omnidocSourceUrl.value.toSeq.map { url =>
         ManifestAttributes(SourceUrlKey -> url)
       }
     )

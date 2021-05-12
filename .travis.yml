@@ -23,28 +23,46 @@ jobs:
       name: "Code validations (headerCheck, scalafmt, mima)"
 
     - name: "Run tests with Scala 2.12 and AdoptOpenJDK 11"
-      script: scripts/test-code.sh
+      script: sbt ++$TRAVIS_SCALA_VERSION test
       env:
         - TRAVIS_SCALA_VERSION=2.12.13
         - ADOPTOPENJDK=11
 
     - name: "Run tests with Scala 2.13 and AdoptOpenJDK 11"
-      script: scripts/test-code.sh
+      script: sbt ++$TRAVIS_SCALA_VERSION test
       env:
         - TRAVIS_SCALA_VERSION=2.13.5
         - ADOPTOPENJDK=11
 
+    - name: "Run tests with Scala 3 and AdoptOpenJDK 11"
+      script: sbt ++$TRAVIS_SCALA_VERSION test
+      env:
+        - TRAVIS_SCALA_VERSION=3.0.0-RC3
+        - TRAVIS_JDK=11
+
     - name: "Run tests with Scala 2.12 and AdoptOpenJDK 8"
-      script: scripts/test-code.sh
+      script: sbt ++$TRAVIS_SCALA_VERSION test
       env:
         - TRAVIS_SCALA_VERSION=2.12.13
         - ADOPTOPENJDK=8
 
     - name: "Run tests with Scala 2.13 and AdoptOpenJDK 8"
-      script: scripts/test-code.sh
+      script: sbt ++$TRAVIS_SCALA_VERSION test
       env:
         - TRAVIS_SCALA_VERSION=2.13.5
         - ADOPTOPENJDK=8
+
+    - name: "Run tests with Scala 3 and AdoptOpenJDK 8"
+      script: sbt ++$TRAVIS_SCALA_VERSION test
+      env:
+        - TRAVIS_SCALA_VERSION=3.0.0-RC3
+        - TRAVIS_JDK=8
+
+    - name: "Run plugin tests on AdoptOpenJDK 8"
+      script: |
+        sbt ++2.12.13 publishLocal plugin/test plugin/scripted
+      env:
+        - TRAVIS_JDK=8
 
     - stage: docs
       script: scripts/validate-docs.sh

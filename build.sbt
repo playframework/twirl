@@ -6,8 +6,8 @@ import org.scalajs.jsenv.nodejs.NodeJSEnv
 val previousVersion: Option[String] = Some("1.5.0")
 
 val ScalaTestVersion              = "3.2.8"
-val ScalaXmlVersion               = "1.3.0"
-val ScalaParserCombinatorsVersion = "1.1.2"
+val ScalaXmlVersion               = "2.0.0-RC1"
+val ScalaParserCombinatorsVersion = "1.2.0-RC2"
 
 val mimaSettings = Seq(
   mimaPreviousArtifacts := previousVersion.map(organization.value %% name.value % _).toSet
@@ -84,7 +84,12 @@ lazy val compiler = project
   .settings(
     mimaSettings,
     name := "twirl-compiler",
-    libraryDependencies += "org.scala-lang"          % "scala-compiler"           % scalaVersion.value,
+    libraryDependencies +=
+      (if (ScalaArtifacts.isScala3(scalaVersion.value))
+         "org.scala-lang" %% "scala3-compiler" % scalaVersion.value
+       else
+         ("org.scala-lang" % "scala-compiler" % scalaVersion.value)
+           .exclude("org.scala-lang.modules", s"scala-xml_${scalaBinaryVersion.value}")),
     libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % ScalaParserCombinatorsVersion % "optional",
     run / fork := true,
   )

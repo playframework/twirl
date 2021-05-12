@@ -49,7 +49,7 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
   def parseTemplateString(template: String): Template = {
     parser.parse(template) match {
       case parser.Success(tmpl, input) =>
-        if (!input.atEnd) sys.error("Template parsed but not at source end")
+        if (!input.atEnd()) sys.error("Template parsed but not at source end")
         tmpl
       case parser.Error(_, _, errors) =>
         sys.error("Template failed to parse: " + errors.head.str)

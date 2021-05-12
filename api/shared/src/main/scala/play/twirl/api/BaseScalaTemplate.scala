@@ -28,7 +28,7 @@ case class BaseScalaTemplate[T <: Appendable[T], F <: Format[T]](format: F) {
         (if (key.isPresent) Some(key.get) else None) match {
           case None    => format.empty
           case Some(v) => _display_(v)
-          case _       => format.empty
+          case null    => format.empty
         }
       case xml: scala.xml.NodeSeq       => format.raw(xml.toString())
       case escapeds: immutable.Seq[_]   => format.fill(escapeds.map(_display_))

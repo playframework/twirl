@@ -17,13 +17,13 @@ object TemplateMagic {
 
   // --- IF
 
-  implicit def iterableToBoolean(x: Iterable[_]) = x != null && !x.isEmpty
-  implicit def optionToBoolean(x: Option[_])     = x != null && x.isDefined
-  implicit def stringToBoolean(x: String)        = x != null && !x.isEmpty
+  implicit def iterableToBoolean(x: Iterable[_]): Boolean = x != null && !x.isEmpty
+  implicit def optionToBoolean(x: Option[_]): Boolean     = x != null && x.isDefined
+  implicit def stringToBoolean(x: String): Boolean        = x != null && !x.isEmpty
 
   // --- JAVA
 
-  implicit def javaCollectionToScala[T](x: java.lang.Iterable[T]) = {
+  implicit def javaCollectionToScala[T](x: java.lang.Iterable[T]): Iterable[T] = {
     import scala.collection.JavaConverters._
     x.asScala
   }
@@ -42,7 +42,7 @@ object TemplateMagic {
       }
   }
 
-  implicit def anyToDefault(x: Any) = Default(x)
+  implicit def anyToDefault(x: Any): Default = Default(x)
 
   // --- DATE
 
@@ -52,7 +52,7 @@ object TemplateMagic {
     }
   }
 
-  implicit def richDate(date: java.util.Date) = new RichDate(date)
+  implicit def richDate(date: java.util.Date): RichDate = new RichDate(date)
 
   // --- STRING
 
@@ -65,5 +65,5 @@ object TemplateMagic {
     }
   }
 
-  implicit def richString(string: String) = new RichString(string)
+  implicit def richString(string: String): RichString = new RichString(string)
 }
