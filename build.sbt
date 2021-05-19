@@ -6,7 +6,7 @@ import org.scalajs.jsenv.nodejs.NodeJSEnv
 val previousVersion: Option[String] = Some("1.5.0")
 
 val ScalaTestVersion              = "3.2.8"
-val ScalaXmlVersion               = "1.3.0"
+val ScalaXmlVersion               = "2.0.0"
 val ScalaParserCombinatorsVersion = "1.1.2"
 
 val mimaSettings = Seq(
