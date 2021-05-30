@@ -11,7 +11,7 @@ import play.twirl.parser.TwirlIO
 /**
  * Easiest way to run this:
  *
- * sbt "compiler/test:runMain play.twirl.compiler.test.Benchmark"
+ * sbt "compiler/Test/runMain play.twirl.compiler.test.Benchmark"
  */
 object Benchmark extends App {
   val sourceDir        = new File("src/test/resources")
