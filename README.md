@@ -46,7 +46,7 @@ Template files must be named `{name}.scala.{ext}` where `ext` can be `html`,
 
 The Twirl template compiler is automatically added as a source generator for
 both the `main`/`compile` and `test` configurations. When you run `compile` or
-`test:compile` the Twirl compiler will generate Scala source files from the
+`Test/compile` the Twirl compiler will generate Scala source files from the
 templates and then these Scala sources will be compiled along with the rest of
 your project.
 
