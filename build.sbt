@@ -8,7 +8,7 @@ val previousVersion: Option[String] = Some("1.5.0")
 val ScalaTestVersion              = "3.2.9"
 val ScalaParserCombinatorsVersion = "2.0.0"
 
-val ScalaXmlVersion = "2.0.0"
+val ScalaXmlVersion = "2.0.1"
 // Next line can be removed when dropping Scala 2.12? See https://github.com/playframework/twirl/pull/424
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
 
