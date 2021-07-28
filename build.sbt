@@ -16,6 +16,8 @@ val mimaSettings = Seq(
   mimaPreviousArtifacts := previousVersion.map(organization.value %% name.value % _).toSet
 )
 
+ThisBuild / sonatypeProfileName := "com.typesafe"
+
 // Customise sbt-dynver's behaviour to make it work with tags which aren't v-prefixed
 ThisBuild / dynverTagPrefix := ""
 
@@ -48,7 +50,7 @@ lazy val nodeJs = {
 
 lazy val api = crossProject(JVMPlatform, JSPlatform)
   .in(file("api"))
-  .enablePlugins(Common, Playdoc, Omnidoc, PublishLibrary)
+  .enablePlugins(Common, Playdoc, Omnidoc)
   .configs(Docs)
   .settings(
     mimaSettings,
@@ -71,7 +73,7 @@ lazy val apiJs  = api.js
 
 lazy val parser = project
   .in(file("parser"))
-  .enablePlugins(Common, Omnidoc, PublishLibrary)
+  .enablePlugins(Common, Omnidoc)
   .settings(
     mimaSettings,
     name := "twirl-parser",
@@ -82,7 +84,7 @@ lazy val parser = project
 
 lazy val compiler = project
   .in(file("compiler"))
-  .enablePlugins(Common, Omnidoc, PublishLibrary)
+  .enablePlugins(Common, Omnidoc)
   .dependsOn(apiJvm, parser % "compile;test->test")
   .settings(
     mimaSettings,
@@ -94,7 +96,7 @@ lazy val compiler = project
 
 lazy val plugin = project
   .in(file("sbt-twirl"))
-  .enablePlugins(PublishSbtPlugin, SbtPlugin)
+  .enablePlugins(SbtPlugin)
   .dependsOn(compiler)
   .settings(
     name := "sbt-twirl",
@@ -102,6 +104,7 @@ lazy val plugin = project
     scalaVersion := Scala212,
     libraryDependencies += "org.scalatest" %%% "scalatest" % ScalaTestVersion % Test,
     Compile / resourceGenerators += generateVersionFile.taskValue,
+    scriptedLaunchOpts += version.apply { v => s"-Dproject.version=$v" }.value,
     // both `locally`s are to work around sbt/sbt#6161
     scriptedDependencies := {
       locally { val _ = scriptedDependencies.value }

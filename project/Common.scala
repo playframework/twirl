@@ -48,12 +48,6 @@ object Common extends AutoPlugin {
       crossScalaVersions := ScalaVersions,
       scalacOptions ++= scalacParameters,
       javacOptions ++= javacParameters,
-      scmInfo := Some(
-        ScmInfo(
-          url(s"https://github.com/playframework/${repoName}"),
-          s"scm:git:git@github.com:playframework/${repoName}.git"
-        )
-      ),
       developers += Developer(
         "contributors",
         "Contributors",
