@@ -9,12 +9,7 @@ This is released from the `main` branch from `1.6.0` forward. Unless an older ve
 - Check the [draft release notes](https://github.com/playframework/twirl/releases) to see if everything is there
 - Wait until [main build finished](https://travis-ci.com/github/playframework/twirl/builds) after merging the last PR
 - Update the [draft release](https://github.com/playframework/twirl/releases) with the next tag version (eg. `1.6.0`), title and release description
-- Check that Travis CI release build has executed successfully (Travis will start a [CI build](https://travis-ci.com/github/playframework/twirl/builds) for the new tag and publish artifacts to Bintray)
-
-### Requires Bintray access
-
-- Go to [Bintray](https://bintray.com/playframework/maven/twirl) and select the just released version
-- Go to the Maven Central tab and sync with Sonatype (using your Sonatype TOKEN key and password) (you may watch progress in the [Staging repository](https://oss.sonatype.org/#stagingRepositories))
+- Check that Travis CI release build has executed successfully (Travis will start a [CI build](https://travis-ci.com/github/playframework/twirl/builds) for the new tag and publish artifacts to Sonatype)
 
 ### Check Maven Central
 
