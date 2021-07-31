@@ -51,11 +51,18 @@ def commonSettings =
       "-unchecked",
       "-encoding",
       "utf8",
-      "-Ywarn-unused:imports",
-      "-Xlint:nullary-unit",
-      "-Xlint",
-      "-Ywarn-dead-code",
     ),
+    scalacOptions ++= (CrossVersion.partialVersion(scalaVersion.value) match {
+      case Some((2, _)) =>
+        Seq(
+          "-Ywarn-unused:imports",
+          "-Xlint:nullary-unit",
+          "-Xlint",
+          "-Ywarn-dead-code",
+        )
+      case _ =>
+        Seq()
+    }),
     javacOptions ++= Seq(
       "-encoding",
       "UTF-8",
