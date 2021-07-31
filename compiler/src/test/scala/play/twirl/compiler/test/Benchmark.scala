@@ -5,7 +5,7 @@ package play.twirl.compiler.test
 
 import java.io.File
 import play.twirl.api.Html
-import play.twirl.compiler.test.Helper.CompilerHelper
+import play.twirl.compiler.test.Helper
 import play.twirl.parser.TwirlIO
 
 /**
@@ -22,7 +22,7 @@ object Benchmark extends App {
   TwirlIO.deleteRecursively(generatedClasses)
   generatedClasses.mkdirs()
 
-  val helper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
+  val helper = new Helper(sourceDir, generatedDir, generatedClasses)
 
   println("Compiling template...")
   val template = helper.compile[((String, List[String]) => (Int) => Html)]("real.scala.html", "html.real").static
