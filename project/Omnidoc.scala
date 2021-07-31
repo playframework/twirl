@@ -19,7 +19,7 @@ object Omnidoc extends AutoPlugin {
     lazy val omnidocSourceUrl  = settingKey[Option[String]]("Source URL for scaladoc linking")
   }
 
-  val omnidocGithubRepo = Some(s"playframework/${Common.repoName}")
+  val omnidocGithubRepo = Some(s"playframework/twirl")
   val omnidocTagPrefix  = Some("")
 
   val SourceUrlKey = "Omnidoc-Source-URL"

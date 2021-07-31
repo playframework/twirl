@@ -36,6 +36,46 @@ Global / onLoad := (Global / onLoad).value.andThen { s =>
   s
 }
 
+def commonSettings =
+  Seq(
+    organization := "com.typesafe.play",
+    organizationName := "Lightbend Inc.",
+    organizationHomepage := Some(url("https://www.lightbend.com/")),
+    homepage := Some(url(s"https://github.com/playframework/twirl")),
+    licenses := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
+    scalaVersion := Scala212,
+    crossScalaVersions := ScalaVersions,
+    scalacOptions ++= Seq(
+      "-deprecation",
+      "-feature",
+      "-unchecked",
+      "-encoding",
+      "utf8",
+      "-Ywarn-unused:imports",
+      "-Xlint:nullary-unit",
+      "-Xlint",
+      "-Ywarn-dead-code",
+    ),
+    javacOptions ++= Seq(
+      "-encoding",
+      "UTF-8",
+      "-Xlint:-options",
+      "-source",
+      "1.8",
+      "-target",
+      "1.8",
+      "-Xlint:deprecation",
+      "-Xlint:unchecked"
+    ),
+    developers += Developer(
+      "contributors",
+      "Contributors",
+      "https://gitter.im/playframework/contributors",
+      url("https://github.com/playframework")
+    ),
+    description := "Twirl"
+  )
+
 lazy val twirl = project
   .in(file("."))
   .disablePlugins(MimaPlugin)
@@ -54,9 +94,10 @@ lazy val nodeJs = {
 
 lazy val api = crossProject(JVMPlatform, JSPlatform)
   .in(file("api"))
-  .enablePlugins(Common, Playdoc, Omnidoc)
+  .enablePlugins(Playdoc, Omnidoc)
   .configs(Docs)
   .settings(
+    commonSettings,
     mimaSettings,
     name := "twirl-api",
     jsEnv := nodeJs,
@@ -77,8 +118,9 @@ lazy val apiJs  = api.js
 
 lazy val parser = project
   .in(file("parser"))
-  .enablePlugins(Common, Omnidoc)
+  .enablePlugins(Omnidoc)
   .settings(
+    commonSettings,
     mimaSettings,
     name := "twirl-parser",
     libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % ScalaParserCombinatorsVersion % Optional,
@@ -88,9 +130,10 @@ lazy val parser = project
 
 lazy val compiler = project
   .in(file("compiler"))
-  .enablePlugins(Common, Omnidoc)
+  .enablePlugins(Omnidoc)
   .dependsOn(apiJvm, parser % "compile;test->test")
   .settings(
+    commonSettings,
     mimaSettings,
     name := "twirl-compiler",
     libraryDependencies +=
