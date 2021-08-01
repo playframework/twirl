@@ -11,9 +11,14 @@ import scala.language.implicitConversions
 object TwirlHelperImports {
 
   /** Allows Java collections to be used as if they were Scala collections. */
+  @annotation.nowarn("cat=deprecation")
   implicit def twirlJavaCollectionToScala[T](x: java.lang.Iterable[T]): Iterable[T] = {
-    import scala.collection.JavaConverters._
-    x.asScala
+    // when we drop 2.12 we can switch to scala.jdk.CollectionConverters to avoid this dance
+    @deprecated("", "") def convert = {
+      import scala.collection.JavaConverters._
+      x.asScala
+    }
+    convert
   }
 
   /** Allows inline formatting of java.util.Date */

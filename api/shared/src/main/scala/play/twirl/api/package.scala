@@ -28,8 +28,13 @@ package object api {
 
     def js(args: Any*): JavaScript = interpolate(args, JavaScriptFormat)
 
-    def interpolate[A <: Appendable[A]: ClassTag](args: Seq[Any], format: Format[A]): A = {
+    // when we drop 2.12 we can get rid of this, and below just write:
+    //  StringContext.checkLengths(args, sc.parts)
+    @deprecated("", "") private def checkLengths(sc: StringContext, args: Seq[Any]): Unit =
       sc.checkLengths(args)
+
+    def interpolate[A <: Appendable[A]: ClassTag](args: Seq[Any], format: Format[A]): A = {
+      checkLengths(sc, args): @annotation.nowarn("cat=deprecation")
       val array       = Array.ofDim[Any](args.size + sc.parts.size)
       val strings     = sc.parts.iterator
       val expressions = args.iterator

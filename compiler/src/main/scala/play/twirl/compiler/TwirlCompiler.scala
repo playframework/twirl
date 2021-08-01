@@ -64,7 +64,7 @@ sealed trait AbstractGeneratedSource {
   }
 
   lazy val matrix: Seq[(Int, Int)] = {
-    for (pos <- meta("MATRIX").split('|'); c = pos.split("->"))
+    for (pos <- meta("MATRIX").split('|').toIndexedSeq; c = pos.split("->"))
       yield try {
         Integer.parseInt(c(0)) -> Integer.parseInt(c(1))
       } catch {
@@ -73,7 +73,7 @@ sealed trait AbstractGeneratedSource {
   }
 
   lazy val lines: Seq[(Int, Int)] = {
-    for (pos <- meta("LINES").split('|'); c = pos.split("->"))
+    for (pos <- meta("LINES").split('|').toIndexedSeq; c = pos.split("->"))
       yield try {
         Integer.parseInt(c(0)) -> Integer.parseInt(c(1))
       } catch {
@@ -388,9 +388,10 @@ object TwirlCompiler {
   }
 
   def templateCode(template: Template, resultType: String): collection.Seq[Any] = {
-    val defs = (template.sub ++ template.defs).map {
-      case t: Template if t.name.toString == "" => templateCode(t, resultType)
-      case t: Template => {
+    val subs = template.sub.map { t =>
+      if (t.name.toString.isEmpty)
+        templateCode(t, resultType)
+      else {
         Nil :+ (if (t.name.str.startsWith("implicit")) "implicit def " else "def ") :+ Source(
           t.name.str,
           t.name.pos
@@ -399,6 +400,8 @@ object TwirlCompiler {
           t.params.pos
         ) :+ ":" :+ resultType :+ " = {_display_(" :+ templateCode(t, resultType) :+ ")};"
       }
+    }
+    val defs = template.defs.map {
       case Def(name, params, block) => {
         Nil :+ (if (name.str.startsWith("implicit")) "implicit def " else "def ") :+ Source(
           name.str,
@@ -412,7 +415,7 @@ object TwirlCompiler {
 
     val imports = formatImports(template.imports)
 
-    Nil :+ imports :+ "\n" :+ defs :+ "\n" :+ "Seq[Any](" :+ visit(template.content, Nil) :+ ")"
+    Nil :+ imports :+ "\n" :+ subs ++ defs :+ "\n" :+ "Seq[Any](" :+ visit(template.content, Nil) :+ ")"
   }
 
   def generateCode(
@@ -527,19 +530,19 @@ object Source {
       source: StringBuilder,
       positions: ListBuffer[(Int, Int)],
       lines: ListBuffer[(Int, Int)]
-  ): Unit = {
-    parts.foreach {
-      case s: String => source.append(s)
-      case Source(code, pos @ OffsetPosition(_, offset)) => {
-        source.append("/*" + pos + "*/")
-        positions += (source.length                -> offset)
-        lines += (source.toString.split('\n').size -> pos.line)
-        source.append(code)
+  ): Unit =
+    parts.foreach { part =>
+      (part: @unchecked) match {
+        case s: String => source.append(s)
+        case Source(code, pos @ OffsetPosition(_, offset)) =>
+          source.append("/*" + pos + "*/")
+          positions += (source.length                -> offset)
+          lines += (source.toString.split('\n').size -> pos.line)
+          source.append(code)
+        case Source(code, NoPosition) => source.append(code)
+        case s: collection.Seq[any]   => serialize(s, source, positions, lines)
       }
-      case Source(code, NoPosition) => source.append(code)
-      case s: collection.Seq[any]   => serialize(s, source, positions, lines)
     }
-  }
 }
 
 /**

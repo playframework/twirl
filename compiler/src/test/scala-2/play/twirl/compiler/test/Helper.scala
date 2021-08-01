@@ -74,13 +74,15 @@ class Helper(sourceDir: File, generatedDir: File, generatedClasses: File) {
       additionalImports: Seq[String] = Nil
   ): CompiledTemplate[T] = {
     val templateFile = new File(sourceDir, templateName)
-    val Some(generated) = twirlCompiler.compile(
-      templateFile,
-      sourceDir,
-      generatedDir,
-      "play.twirl.api.HtmlFormat",
-      additionalImports = TwirlCompiler.DefaultImports ++ additionalImports
-    )
+    val generated = twirlCompiler
+      .compile(
+        templateFile,
+        sourceDir,
+        generatedDir,
+        "play.twirl.api.HtmlFormat",
+        additionalImports = TwirlCompiler.DefaultImports ++ additionalImports
+      )
+      .get
 
     val mapper = GeneratedSource(generated)
 
@@ -100,4 +102,3 @@ class Helper(sourceDir: File, generatedDir: File, generatedClasses: File) {
     new CompiledTemplate[T](className, classloader)
   }
 }
-

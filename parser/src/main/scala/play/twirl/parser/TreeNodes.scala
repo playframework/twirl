@@ -6,8 +6,8 @@ package play.twirl.parser
 import scala.util.parsing.input.Positional
 
 object TreeNodes {
-  abstract class TemplateTree
-  abstract class ScalaExpPart
+  sealed abstract class TemplateTree
+  sealed abstract class ScalaExpPart
 
   case class Params(code: String) extends Positional
   case class Constructor(comment: Option[Comment], params: PosString)

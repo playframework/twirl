@@ -5,7 +5,6 @@ package play.twirl.compiler.test
 
 import java.io.File
 import play.twirl.api.Html
-import play.twirl.compiler.test.Helper
 import play.twirl.parser.TwirlIO
 
 /**

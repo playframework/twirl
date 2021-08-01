@@ -6,7 +6,6 @@ package play.twirl.api
 import java.util.Optional
 
 import scala.collection.immutable
-import scala.collection.JavaConverters
 import scala.reflect.ClassTag
 
 case class BaseScalaTemplate[T <: Appendable[T], F <: Format[T]](format: F) {
@@ -18,6 +17,11 @@ case class BaseScalaTemplate[T <: Appendable[T], F <: Format[T]](format: F) {
   def _display_(x: scala.xml.NodeSeq): T = if (x eq null) format.empty else format.raw(x.toString())
   def _display_(x: T): T                 = if (x eq null) format.empty else x
 
+  // once we drop 2.12 we can stop doing this little dance
+  @deprecated("", "") private def traversableOnceToList[U](xs: TraversableOnce[U]): List[U] =
+    xs.toList
+
+  @annotation.nowarn("cat=deprecation")
   def _display_(o: Any)(implicit m: ClassTag[T]): T = {
     o match {
       case escaped if escaped != null && escaped.getClass == m.runtimeClass => escaped.asInstanceOf[T]
@@ -32,9 +36,11 @@ case class BaseScalaTemplate[T <: Appendable[T], F <: Format[T]](format: F) {
         }
       case xml: scala.xml.NodeSeq       => format.raw(xml.toString())
       case escapeds: immutable.Seq[_]   => format.fill(escapeds.map(_display_))
-      case escapeds: TraversableOnce[_] => format.fill(escapeds.map(_display_).toList)
-      case escapeds: Array[_]           => format.fill(escapeds.view.map(_display_).toList)
-      case escapeds: java.util.List[_] =>
+      case escapeds: TraversableOnce[_] => format.fill(traversableOnceToList(escapeds.map(_display_)))
+      case escapeds: Array[_]           => format.fill(traversableOnceToList(escapeds.iterator.map(_display_)))
+      case escapeds: java.util.List[_]  =>
+        // when we drop 2.12, switch to collection.jdk.CollectionConverters
+        import scala.collection.JavaConverters
         format.fill(JavaConverters.collectionAsScalaIterableConverter(escapeds).asScala.map(_display_).toList)
       case string: String => format.escape(string)
       case v if v != null => format.escape(v.toString)

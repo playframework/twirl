@@ -61,6 +61,8 @@ def commonSettings =
           "-Ywarn-dead-code",
           // may help facilitate cross-building
           "-Xsource:3",
+          // when we drop 2.12, this can be changed to `-Werror` which is the more modern name
+          "-Xfatal-warnings",
         )
       case _ =>
         Seq()
@@ -74,7 +76,8 @@ def commonSettings =
       "-target",
       "1.8",
       "-Xlint:deprecation",
-      "-Xlint:unchecked"
+      "-Xlint:unchecked",
+      "-Werror",
     ),
     developers += Developer(
       "contributors",

@@ -320,7 +320,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   def several[T, BufferType <: mutable.Buffer[T]](parser: () => T, provided: BufferType = null)(implicit
       classTag: reflect.ClassTag[BufferType]
   ): BufferType = {
-    val ab     = if (provided != null) provided else classTag.runtimeClass.newInstance().asInstanceOf[BufferType]
+    val ab =
+      Option(provided).getOrElse(classTag.runtimeClass.getDeclaredConstructor().newInstance().asInstanceOf[BufferType])
     var parsed = parser()
     while (parsed != null) {
       ab += parsed
