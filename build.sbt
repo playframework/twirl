@@ -59,6 +59,8 @@ def commonSettings =
           "-Xlint:nullary-unit",
           "-Xlint",
           "-Ywarn-dead-code",
+          // may help facilitate cross-building
+          "-Xsource:3",
         )
       case _ =>
         Seq()
