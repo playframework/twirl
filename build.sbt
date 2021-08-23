@@ -37,7 +37,7 @@ lazy val twirl = project
   .disablePlugins(MimaPlugin)
   .settings(
     crossScalaVersions := Nil, // workaround so + uses project-defined variants
-    publish / skip := true
+    publish / skip     := true
   )
   .aggregate(apiJvm, apiJs, parser, compiler, plugin)
 
@@ -54,7 +54,7 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
   .configs(Docs)
   .settings(
     mimaSettings,
-    name := "twirl-api",
+    name  := "twirl-api",
     jsEnv := nodeJs,
     // hack for GraalVM, see: https://github.com/scala-js/scala-js/issues/3673
     // and https://github.com/playframework/twirl/pull/339
@@ -78,8 +78,8 @@ lazy val parser = project
     mimaSettings,
     name := "twirl-parser",
     libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % ScalaParserCombinatorsVersion % Optional,
-    libraryDependencies += "com.novocode"            % "junit-interface"          % "0.11"                        % Test,
-    libraryDependencies += "org.scalatest"         %%% "scalatest"                % ScalaTestVersion              % Test,
+    libraryDependencies += "com.novocode"    % "junit-interface" % "0.11"           % Test,
+    libraryDependencies += "org.scalatest" %%% "scalatest"       % ScalaTestVersion % Test,
   )
 
 lazy val compiler = project
@@ -88,8 +88,8 @@ lazy val compiler = project
   .dependsOn(apiJvm, parser % "compile;test->test")
   .settings(
     mimaSettings,
-    name := "twirl-compiler",
-    libraryDependencies += "org.scala-lang"          % "scala-compiler"           % scalaVersion.value,
+    name                                   := "twirl-compiler",
+    libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value,
     libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % ScalaParserCombinatorsVersion % "optional",
     run / fork := true,
   )
@@ -99,9 +99,9 @@ lazy val plugin = project
   .enablePlugins(SbtPlugin)
   .dependsOn(compiler)
   .settings(
-    name := "sbt-twirl",
-    organization := "com.typesafe.sbt",
-    scalaVersion := Scala212,
+    name                                    := "sbt-twirl",
+    organization                            := "com.typesafe.sbt",
+    scalaVersion                            := Scala212,
     libraryDependencies += "org.scalatest" %%% "scalatest" % ScalaTestVersion % Test,
     Compile / resourceGenerators += generateVersionFile.taskValue,
     scriptedLaunchOpts += version.apply { v => s"-Dproject.version=$v" }.value,

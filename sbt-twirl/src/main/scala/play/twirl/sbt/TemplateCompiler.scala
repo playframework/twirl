@@ -6,7 +6,6 @@ package play.twirl.sbt
 import sbt._
 import play.twirl.compiler._
 import scala.io.Codec
-
 import sbt.internal.inc.LoggedReporter
 
 object TemplateCompiler {

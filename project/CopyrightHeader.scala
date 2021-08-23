@@ -13,7 +13,7 @@ object CopyrightHeader extends AutoPlugin {
   override def projectSettings =
     Seq(
       headerEmptyLine := false,
-      headerLicense := Some(HeaderLicense.Custom("Copyright (C) Lightbend Inc. <https://www.lightbend.com>"))
+      headerLicense   := Some(HeaderLicense.Custom("Copyright (C) Lightbend Inc. <https://www.lightbend.com>"))
     )
 
 }

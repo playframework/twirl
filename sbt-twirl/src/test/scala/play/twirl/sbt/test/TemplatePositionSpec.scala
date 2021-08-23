@@ -4,7 +4,6 @@
 package play.twirl.sbt.test
 
 import java.io.File
-
 import play.twirl.sbt.TemplateProblem.TemplateMapping
 import play.twirl.sbt.TemplateProblem.TemplatePosition
 import org.scalatest.Inspectors

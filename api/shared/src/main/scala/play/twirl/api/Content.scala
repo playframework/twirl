@@ -24,12 +24,15 @@ trait Content {
 /**
  * Appendable content using a StringBuilder. Either specify elements or text, not both.
  *
- * Using an Either[TraversableOnce[A], String] impacts performance in an already
- * contentious part of code, so it has been done with both parameters instead.
+ * Using an Either[TraversableOnce[A], String] impacts performance in an already contentious part of code, so it has
+ * been done with both parameters instead.
  *
- * @param elements Sub elements to traverse when creating the resultant string
- * @param text Formatted content
- * @tparam A self-type
+ * @param elements
+ *   Sub elements to traverse when creating the resultant string
+ * @param text
+ *   Formatted content
+ * @tparam A
+ *   self-type
  */
 abstract class BufferedContent[A <: BufferedContent[A]](
     protected val elements: immutable.Seq[A],
@@ -45,8 +48,7 @@ abstract class BufferedContent[A <: BufferedContent[A]](
   }
 
   /**
-   * This should only ever be called at the top level element
-   * to avoid unneeded memory allocation.
+   * This should only ever be called at the top level element to avoid unneeded memory allocation.
    */
   private lazy val builtBody = {
     val builder = new StringBuilder()

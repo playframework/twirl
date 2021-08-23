@@ -5,7 +5,6 @@ package play.twirl.compiler
 package test
 
 import play.twirl.api._
-
 import scala.collection.immutable
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec

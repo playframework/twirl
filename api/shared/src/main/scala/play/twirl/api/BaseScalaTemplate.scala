@@ -4,7 +4,6 @@
 package play.twirl.api
 
 import java.util.Optional
-
 import scala.collection.immutable
 import scala.collection.JavaConverters
 import scala.reflect.ClassTag

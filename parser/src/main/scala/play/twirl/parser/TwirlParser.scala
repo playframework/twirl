@@ -10,10 +10,13 @@ import scala.collection.mutable.ListBuffer
 import scala.util.parsing.input.OffsetPosition
 
 /**
- * TwirlParser is a recursive descent parser for a modified grammar of the Play2 template language as loosely defined [[http://www.playframework.com/documentation/latest/Home here]] and more rigorously defined by the original template parser, `play.templates.ScalaTemplateCompiler.TemplateParser`.
- * TwirlParser is meant to be a near drop in replacement for `play.templates.ScalaTemplateCompiler.TemplateParser`.
+ * TwirlParser is a recursive descent parser for a modified grammar of the Play2 template language as loosely defined
+ * [[http://www.playframework.com/documentation/latest/Home here]] and more rigorously defined by the original template
+ * parser, `play.templates.ScalaTemplateCompiler.TemplateParser`. TwirlParser is meant to be a near drop in replacement
+ * for `play.templates.ScalaTemplateCompiler.TemplateParser`.
  *
- * The original grammar, as reversed-engineered from `play.templates.ScalaTemplateCompiler.TemplateParser`, is defined as follows:
+ * The original grammar, as reversed-engineered from `play.templates.ScalaTemplateCompiler.TemplateParser`, is defined
+ * as follows:
  * {{{
  *   parser : comment? whitespace? ('@' parentheses+)? templateContent
  *   templateContent : (importExpression | localDef | template | mixed)*
@@ -47,7 +50,8 @@ import scala.util.parsing.input.OffsetPosition
  *   identifier : javaIdentStart javaIdentPart* // see java docs for what these two rules mean
  * }}}
  *
- * TwirlParser implements a slightly modified version of the above grammar that removes some back-tracking within the 'mixed' non-terminal. It is defined as follows:
+ * TwirlParser implements a slightly modified version of the above grammar that removes some back-tracking within the
+ * 'mixed' non-terminal. It is defined as follows:
  * {{{
  *   parser : comment? whitespace? ('@' parentheses+)? templateContent
  *   templateContent : (importExpression | localDef | template | mixed)*
@@ -82,7 +86,8 @@ import scala.util.parsing.input.OffsetPosition
  *   identifier : javaIdentStart javaIdentPart* // see java docs for what these two rules mean
  * }}}
  *
- * TwirlParser can detect several type of parse errors and provides line information. In all cases, the parser will continue parsing the best it can after encountering an error. The following errors are what can be detected:
+ * TwirlParser can detect several type of parse errors and provides line information. In all cases, the parser will
+ * continue parsing the best it can after encountering an error. The following errors are what can be detected:
  *   - EOF found when more input was expected.
  *   - Unmatched curly braces
  *   - Missing blocks after case and match statements
@@ -107,7 +112,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
     /**
      * Peek `length` characters ahead. Does not check for EOF.
-     * @return string from current offset upto current offset + `length`
+     * @return
+     *   string from current offset upto current offset + `length`
      */
     def apply(length: Int): String = source_.substring(offset_, offset_ + length)
 
@@ -160,9 +166,9 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   private val errorStack: ListBuffer[PosString] = ListBuffer()
 
   /**
-   *  Try to match `str` and advance `str.length` characters.
+   * Try to match `str` and advance `str.length` characters.
    *
-   *  Reports an error if the input does not match `str` or if `str.length` goes past the EOF.
+   * Reports an error if the input does not match `str` or if `str.length` goes past the EOF.
    */
   def accept(str: String): Unit = {
     val len = str.length
@@ -173,11 +179,12 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   /**
-   *  Does `f` applied to the current peek return true or false? If true, advance one character.
+   * Does `f` applied to the current peek return true or false? If true, advance one character.
    *
-   *  Will not advance if at EOF.
+   * Will not advance if at EOF.
    *
-   *  @return true if advancing, false otherwise.
+   * @return
+   *   true if advancing, false otherwise.
    */
   def check(f: Char => Boolean): Boolean = {
     if (!input.isEOF && f(input())) {
@@ -187,11 +194,12 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   /**
-   *  Does the current input match `str`? If so, advance `str.length`.
+   * Does the current input match `str`? If so, advance `str.length`.
    *
-   *  Will not advance if `str.length` surpasses EOF
+   * Will not advance if `str.length` surpasses EOF
    *
-   *  @return true if advancing, false otherwise.
+   * @return
+   *   true if advancing, false otherwise.
    */
   def check(str: String): Boolean = {
     val len = str.length
@@ -218,10 +226,12 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   /**
-   *  Consume characters until input matches `stop`
+   * Consume characters until input matches `stop`
    *
-   *  @param inclusive - should stop be included in the consumed characters?
-   *  @return the consumed characters
+   * @param inclusive
+   *   - should stop be included in the consumed characters?
+   * @return
+   *   the consumed characters
    */
   def anyUntil(stop: String, inclusive: Boolean): String = {
     val sb = new StringBuilder
@@ -232,10 +242,12 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   /**
-   *  Consume characters until `f` returns false on the peek of input.
+   * Consume characters until `f` returns false on the peek of input.
    *
-   *  @param inclusive - should the stopped character be included in the consumed characters?
-   *  @return the consumed characters
+   * @param inclusive
+   *   - should the stopped character be included in the consumed characters?
+   * @return
+   *   the consumed characters
    */
   def anyUntil(f: Char => Boolean, inclusive: Boolean): String = {
     val sb = new StringBuilder
@@ -255,7 +267,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   /**
    * Recursively match pairs of prefixes and suffixes and return the consumed characters
    *
-   *  Terminates at EOF.
+   * Terminates at EOF.
    */
   def recursiveTag(prefix: String, suffix: String, allowStringLiterals: Boolean = false): String = {
     if (check(prefix)) {
@@ -286,8 +298,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   /**
-   * Match a string literal, allowing for escaped quotes.
-   * Terminates at EOF.
+   * Match a string literal, allowing for escaped quotes. Terminates at EOF.
    */
   def stringLiteral(quote: String, escape: String): String = {
     if (check(quote)) {
