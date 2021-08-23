@@ -11,7 +11,6 @@ import xsbti.CompileFailed
 import xsbti.Position
 import xsbti.Problem
 import xsbti.Severity
-
 import scala.io.Codec
 
 object TemplateProblem {

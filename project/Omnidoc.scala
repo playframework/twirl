@@ -3,11 +3,10 @@ import sbt.Package.ManifestAttributes
 import sbt._
 
 /**
- * Copied in from
- * https://github.com/playframework/interplay/blob/master/src/main/scala/interplay/Omnidoc.scala
+ * Copied in from https://github.com/playframework/interplay/blob/master/src/main/scala/interplay/Omnidoc.scala
  *
- * This AutoPlugin adds the `Omnidoc-Source-URL` key on the MANIFEST.MF of artifact-sources.jar so
- * later Omnidoc can use that value to link scaladocs to GitHub sources.
+ * This AutoPlugin adds the `Omnidoc-Source-URL` key on the MANIFEST.MF of artifact-sources.jar so later Omnidoc can use
+ * that value to link scaladocs to GitHub sources.
  */
 object Omnidoc extends AutoPlugin {
 
@@ -45,7 +44,7 @@ object Omnidoc extends AutoPlugin {
             case None if buildDir == projDir => ""                // Same dir (sbt 0.13)
             case Some("")                    => ""                // Same dir (sbt 1.0)
             case Some(childDir)              => prefix + childDir // Child dir
-            case None                        => ""                // Disjoint dirs (Rich: I'm not sure if this can happen)
+            case None => "" // Disjoint dirs (Rich: I'm not sure if this can happen)
           }
         }
         s"https://github.com/${repo}/tree/${tree}${path}"

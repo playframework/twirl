@@ -7,7 +7,6 @@ package test
 import java.util.ArrayList
 import java.util.Optional
 import java.util.{ List => JList }
-
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

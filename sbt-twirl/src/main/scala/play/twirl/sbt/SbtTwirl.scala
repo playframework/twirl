@@ -6,7 +6,6 @@ package play.twirl.sbt
 import play.twirl.compiler.TwirlCompiler
 import sbt.Keys._
 import sbt._
-
 import scala.io.Codec
 
 object Import {
@@ -45,8 +44,8 @@ object SbtTwirl extends AutoPlugin {
 
   def twirlSettings: Seq[Setting[_]] =
     Seq(
-      compileTemplates / includeFilter := "*.scala.*",
-      compileTemplates / excludeFilter := HiddenFileFilter,
+      compileTemplates / includeFilter       := "*.scala.*",
+      compileTemplates / excludeFilter       := HiddenFileFilter,
       (compileTemplates / sourceDirectories) := Seq(sourceDirectory.value / "twirl"),
       (Defaults.ConfigGlobal / watchSources) +=
         WatchSource(
@@ -62,17 +61,17 @@ object SbtTwirl extends AutoPlugin {
         )
         .value,
       (compileTemplates / target) := crossTarget.value / "twirl" / Defaults.nameForSrc(configuration.value.name),
-      compileTemplates := compileTemplatesTask.value,
+      compileTemplates            := compileTemplatesTask.value,
       sourceGenerators += compileTemplates.taskValue,
       managedSourceDirectories += (compileTemplates / target).value
     )
 
   def defaultSettings: Seq[Setting[_]] =
     Seq(
-      templateFormats := defaultFormats,
-      templateImports := TwirlCompiler.DefaultImports,
+      templateFormats        := defaultFormats,
+      templateImports        := TwirlCompiler.DefaultImports,
       constructorAnnotations := Nil,
-      sourceEncoding := scalacEncoding(scalacOptions.value)
+      sourceEncoding         := scalacEncoding(scalacOptions.value)
     )
 
   def positionSettings: Seq[Setting[_]] =

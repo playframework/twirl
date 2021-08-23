@@ -33,7 +33,7 @@ class Html private[api] (elements: immutable.Seq[Html], text: String, escape: Bo
    * to encode it into.
    *
    * An alternative way of implementing this would be to make HtmlFormat.escape return a subclass of Html with a custom
-   * buildString implementation.  While this does significantly improve performance if a template needs to escape a lot
+   * buildString implementation. While this does significantly improve performance if a template needs to escape a lot
    * of Strings, if it doesn't, performance actually goes down (measured 10%), due to the fact that the JVM can't
    * optimise the invocation of buildString as well because there are two different possible implementations.
    */
@@ -252,13 +252,15 @@ object JavaScriptFormat extends Format[JavaScript] {
 
   /**
    * Integrate `text` without performing any escaping process.
-   * @param text Text to integrate
+   * @param text
+   *   Text to integrate
    */
   def raw(text: String): JavaScript = JavaScript(text)
 
   /**
    * Escapes `text` using JavaScript String rules.
-   * @param text Text to integrate
+   * @param text
+   *   Text to integrate
    */
   def escape(text: String): JavaScript = JavaScript(StringEscapeUtils.escapeEcmaScript(text))
 

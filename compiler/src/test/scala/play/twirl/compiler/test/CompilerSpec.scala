@@ -5,7 +5,6 @@ package play.twirl.compiler
 package test
 
 import java.io._
-
 import play.twirl.api.Html
 import play.twirl.parser.TwirlIO
 import org.scalatest.matchers.must.Matchers
@@ -297,7 +296,6 @@ object Helper {
 
   class CompilerHelper(sourceDir: File, generatedDir: File, generatedClasses: File) {
     import java.net._
-
     import scala.collection.mutable
     import scala.reflect.internal.util.Position
     import scala.tools.nsc.reporters.ConsoleReporter
@@ -331,9 +329,9 @@ object Helper {
 
       // is null in Eclipse/OSGI but luckily we don't need it there
       if (scalaObjectSource != null) {
-        val compilerPath      = Class.forName("scala.tools.nsc.Interpreter").getProtectionDomain.getCodeSource.getLocation
-        val libPath           = scalaObjectSource.getLocation
-        val pathList          = List(compilerPath, libPath)
+        val compilerPath = Class.forName("scala.tools.nsc.Interpreter").getProtectionDomain.getCodeSource.getLocation
+        val libPath      = scalaObjectSource.getLocation
+        val pathList     = List(compilerPath, libPath)
         val origBootclasspath = settings.bootclasspath.value
         settings.bootclasspath.value =
           ((origBootclasspath :: pathList) ::: additionalClassPathEntry.toList).mkString(File.pathSeparator)
@@ -346,7 +344,7 @@ object Helper {
           override def display(pos: Position, msg: String, severity: Severity): Unit = {
             pos match {
               case scala.reflect.internal.util.NoPosition => // do nothing
-              case _                                      => compileErrors.append(CompilationError(msg, pos.line, pos.point))
+              case _ => compileErrors.append(CompilationError(msg, pos.line, pos.point))
             }
           }
         }

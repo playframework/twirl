@@ -4,12 +4,14 @@
 package play.twirl.compiler
 
 import java.io.File
-
 import scala.annotation.tailrec
 import scala.io.Codec
 import scala.reflect.internal.Flags
 import play.twirl.parser.TwirlIO
 import play.twirl.parser.TwirlParser
+import scala.util.parsing.input.Position
+import scala.util.parsing.input.OffsetPosition
+import scala.util.parsing.input.NoPosition
 
 object Hash {
   def apply(bytes: Array[Byte], imports: collection.Seq[String]): String = {
@@ -65,21 +67,25 @@ sealed trait AbstractGeneratedSource {
   }
 
   lazy val matrix: Seq[(Int, Int)] = {
-    for (pos <- meta("MATRIX").split('|'); c = pos.split("->"))
-      yield try {
-        Integer.parseInt(c(0)) -> Integer.parseInt(c(1))
-      } catch {
-        case _: Exception => (0, 0) // Skip if MATRIX meta is corrupted
-      }
+    for {
+      pos <- meta("MATRIX").split('|')
+      c = pos.split("->")
+    } yield try {
+      Integer.parseInt(c(0)) -> Integer.parseInt(c(1))
+    } catch {
+      case _: Exception => (0, 0) // Skip if MATRIX meta is corrupted
+    }
   }
 
   lazy val lines: Seq[(Int, Int)] = {
-    for (pos <- meta("LINES").split('|'); c = pos.split("->"))
-      yield try {
-        Integer.parseInt(c(0)) -> Integer.parseInt(c(1))
-      } catch {
-        case _: Exception => (0, 0) // Skip if LINES meta is corrupted
-      }
+    for {
+      pos <- meta("LINES").split('|')
+      c = pos.split("->")
+    } yield try {
+      Integer.parseInt(c(0)) -> Integer.parseInt(c(1))
+    } catch {
+      case _: Exception => (0, 0) // Skip if LINES meta is corrupted
+    }
   }
 
   def mapPosition(generatedPosition: Int): Int = {
@@ -702,10 +708,6 @@ package """ :+ packageName :+ """
 
 /* ------- */
 
-import scala.util.parsing.input.Position
-import scala.util.parsing.input.OffsetPosition
-import scala.util.parsing.input.NoPosition
-
 case class Source(code: String, pos: Position = NoPosition)
 
 object Source {
@@ -754,7 +756,7 @@ object Source {
 }
 
 /**
- * Groups sub sections of Strings.  Basically implements String.grouped, except that it guarantees that it won't break
+ * Groups sub sections of Strings. Basically implements String.grouped, except that it guarantees that it won't break
  * surrogate pairs.
  */
 object StringGrouper {
@@ -762,9 +764,12 @@ object StringGrouper {
   /**
    * Group the given string by the given size.
    *
-   * @param s The string to group.
-   * @param n The size of the groups.
-   * @return A list of strings, grouped by the specific size.
+   * @param s
+   *   The string to group.
+   * @param n
+   *   The size of the groups.
+   * @return
+   *   A list of strings, grouped by the specific size.
    */
   def apply(s: String, n: Int): List[String] = {
     if (s.length <= n + 1 /* because we'll split at n + 1 if character n - 1 is a high surrogate */ ) {

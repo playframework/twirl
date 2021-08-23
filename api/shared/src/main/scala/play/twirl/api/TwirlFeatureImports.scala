@@ -10,18 +10,20 @@ import scala.language.implicitConversions
  *
  * This includes:
  *
- * - @defining
- * - @using
- * - iterable/option/string as boolean for if statements
- * - default values (maybeFoo ? defaultFoo)
+ *   - @defining
+ *   - @using
+ *   - iterable/option/string as boolean for if statements
+ *   - default values (maybeFoo ? defaultFoo)
  */
 object TwirlFeatureImports {
 
   /**
    * Provides the `@defining` language feature, that lets you set a local val that can be reused.
    *
-   * @param t The defined val.
-   * @param handler The block to handle it.
+   * @param t
+   *   The defined val.
+   * @param handler
+   *   The block to handle it.
    */
   def defining[T](t: T)(handler: T => Any): Any = {
     handler(t)
@@ -40,8 +42,8 @@ object TwirlFeatureImports {
   implicit def twirlStringToBoolean(x: String): Boolean = x != null && !x.isEmpty
 
   /**
-   * Provides default values, such that an empty sequence, string, option, false boolean, or null will render
-   * the default value.
+   * Provides default values, such that an empty sequence, string, option, false boolean, or null will render the
+   * default value.
    */
   implicit class TwirlDefaultValue(default: Any) {
     def ?:(x: Any): Any =
