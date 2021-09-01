@@ -5,12 +5,14 @@ import org.scalajs.jsenv.nodejs.NodeJSEnv
 // Binary compatibility is this version
 val previousVersion: Option[String] = Some("1.5.0")
 
-val ScalaTestVersion              = "3.2.9"
-val ScalaParserCombinatorsVersion = "2.0.0"
+val ScalaTestVersion = "3.2.9"
 
-val ScalaXmlVersion = "2.0.1"
-// Next line can be removed when dropping Scala 2.12? See https://github.com/playframework/twirl/pull/424
-ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
+// Do NOT upgrade these dependencies to 2.x or newer! twirl is a sbt-plugin
+// and gets published with Scala 2.12, therefore we need to stay at the same major version
+// like the 2.12.x Scala compiler, otherwise we run into conflicts when using sbt 1.5+
+// See https://github.com/scala/scala/pull/9743
+val ScalaParserCombinatorsVersion = "1.1.2" // Do not upgrade beyond 1.x
+val ScalaXmlVersion               = "1.3.0" // Do not upgrade beyond 1.x
 
 val mimaSettings = Seq(
   mimaPreviousArtifacts := previousVersion.map(organization.value %% name.value % _).toSet
