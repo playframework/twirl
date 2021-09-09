@@ -1,4 +1,5 @@
 import Dependencies._
+
 import sbtcrossproject.crossProject
 import org.scalajs.jsenv.nodejs.NodeJSEnv
 
