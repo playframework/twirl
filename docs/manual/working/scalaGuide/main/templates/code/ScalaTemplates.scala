@@ -99,7 +99,7 @@ object ScalaTemplatesSpec extends Specification {
     "allow comments on the first line" in {
       val body = html.firstLineComment("blah").body
       body must contain("blah")
-      body must not contain ("Home page")
+      body must not contain "Home page"
     }
 
     {
@@ -143,7 +143,7 @@ object ScalaTemplatesSpec extends Specification {
       }
 
       "allow comments" in {
-        body must not contain ("This is a comment")
+        body must not contain "This is a comment"
       }
 
       "allow intering raw HTML" in {
@@ -156,9 +156,9 @@ object ScalaTemplatesSpec extends Specification {
 
       body must contain("User(Foo,Bar)")
       body must contain("value inside option")
-      body must not contain ("Option(value inside option)")
+      body must not contain "Option(value inside option)"
       body must contain("firstlast")
-      body must not contain ("List")
+      body must not contain "List"
       body must contain("helloUser(Foo,Bar)value inside optionfirstlast")
     }
   }

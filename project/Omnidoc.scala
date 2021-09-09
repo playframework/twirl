@@ -1,4 +1,5 @@
 import sbt.Keys._
+
 import sbt.Package.ManifestAttributes
 import sbt._
 

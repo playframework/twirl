@@ -1,4 +1,3 @@
-
 import play.twirl.api._
 
 object Test extends App {
