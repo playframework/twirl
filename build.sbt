@@ -6,7 +6,7 @@ import org.scalajs.jsenv.nodejs.NodeJSEnv
 // Binary compatibility is this version
 val previousVersion: Option[String] = Some("1.5.0")
 
-val ScalaTestVersion = "3.2.9"
+val ScalaTestVersion = "3.2.10"
 
 // Do NOT upgrade these dependencies to 2.x or newer! twirl is a sbt-plugin
 // and gets published with Scala 2.12, therefore we need to stay at the same major version
