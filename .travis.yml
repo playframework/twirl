@@ -18,27 +18,39 @@ jobs:
 
     - name: "Run tests with Scala 2.12 and AdoptOpenJDK 11"
       script: scripts/test-code.sh
+      scala: 2.12.5
       env:
-        - TRAVIS_SCALA_VERSION=2.12.15
         - ADOPTOPENJDK=11
 
     - name: "Run tests with Scala 2.13 and AdoptOpenJDK 11"
       script: scripts/test-code.sh
+      scala: 2.13.6
       env:
-        - TRAVIS_SCALA_VERSION=2.13.6
         - ADOPTOPENJDK=11
 
     - name: "Run tests with Scala 2.12 and AdoptOpenJDK 8"
       script: scripts/test-code.sh
+      scala: 2.12.5
       env:
-        - TRAVIS_SCALA_VERSION=2.12.15
         - ADOPTOPENJDK=8
 
     - name: "Run tests with Scala 2.13 and AdoptOpenJDK 8"
       script: scripts/test-code.sh
+      scala: 2.13.6
       env:
-        - TRAVIS_SCALA_VERSION=2.13.6
         - ADOPTOPENJDK=8
+
+    - name: "Run tests with Scala 2.12 and AdoptOpenJDK 17"
+      script: scripts/test-code.sh
+      scala: 2.12.5
+      env:
+        - ADOPTOPENJDK=17
+
+    - name: "Run tests with Scala 2.13 and AdoptOpenJDK 17"
+      script: scripts/test-code.sh
+      scala: 2.13.6
+      env:
+        - ADOPTOPENJDK=17
 
     - stage: docs
       script: scripts/validate-docs.sh
