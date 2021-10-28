@@ -81,7 +81,7 @@ lazy val parser = project
     mimaSettings,
     name := "twirl-parser",
     libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % ScalaParserCombinatorsVersion % Optional,
-    libraryDependencies += "com.novocode"    % "junit-interface" % "0.11"           % Test,
+    libraryDependencies += "com.github.sbt"    % "junit-interface" % "0.13.2"           % Test,
     libraryDependencies += "org.scalatest" %%% "scalatest"       % ScalaTestVersion % Test,
   )
 
