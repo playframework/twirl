@@ -168,7 +168,7 @@ For example to output raw HTML:
 
 ## String interpolation
 
-The template engine can be used as a [string interpolator](http://docs.scala-lang.org/overviews/core/string-interpolation.html). You basically trade the “@” for a “$”:
+The template engine can be used as a [string interpolator](https://docs.scala-lang.org/overviews/core/string-interpolation.html). You basically trade the “@” for a “$”:
 
 @[string-interpolation](code/ScalaTemplates.scala)
 

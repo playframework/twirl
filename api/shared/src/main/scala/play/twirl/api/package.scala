@@ -9,7 +9,7 @@ package object api {
 
   /**
    * Brings the template engine as a
-   * [[http://docs.scala-lang.org/overviews/core/string-interpolation.html string interpolator]].
+   * [[https://docs.scala-lang.org/overviews/core/string-interpolation.html string interpolator]].
    *
    * Basic usage:
    *
