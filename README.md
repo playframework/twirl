@@ -62,11 +62,11 @@ TwirlKeys.templateImports += "org.example._"
 ### Source directories
 
 To configure the source directories where template files will be found, use the
-`sourceDirectories in compileTemplates` key. For example, to have template
+`compileTemplates / sourceDirectories` key. For example, to have template
 sources alongside Scala or Java source files:
 
 ```scala
-sourceDirectories in (Compile, TwirlKeys.compileTemplates) := (unmanagedSourceDirectories in Compile).value
+Compile / TwirlKeys.compileTemplates / sourceDirectories := (Compile / unmanagedSourceDirectories).value
 ```
 
 ## Credits
