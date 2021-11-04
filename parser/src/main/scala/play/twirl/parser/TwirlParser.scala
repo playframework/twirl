@@ -544,7 +544,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
         result = ScalaExp(ListBuffer(pattern, blk))
         whitespace()
       } else {
-        //error("Expected block after 'case'")
+        // error("Expected block after 'case'")
         input.regressTo(wspos)
       }
     } else if (ws.length > 0) {
