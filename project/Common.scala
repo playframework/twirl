@@ -24,17 +24,20 @@ object Common extends AutoPlugin {
     "-Xlint:unchecked"
   )
 
+  def scalacVersionSpecificParameters(version: String) = {
+    CrossVersion.partialVersion(version) match {
+      case Some((2, n)) if n < 12 =>
+        Seq("-target:jvm-1.8", "-Ywarn-unused:imports", "-Xlint:nullary-unit", "-Xlint", "-Ywarn-dead-code")
+      case _ => Nil
+    }
+  }
+
   val scalacParameters = Seq(
     "-deprecation",
     "-feature",
     "-unchecked",
     "-encoding",
-    "utf8",
-    "-target:jvm-1.8",
-    "-Ywarn-unused:imports",
-    "-Xlint:nullary-unit",
-    "-Xlint",
-    "-Ywarn-dead-code",
+    "utf8"
   )
 
   override def globalSettings =
@@ -46,7 +49,8 @@ object Common extends AutoPlugin {
       licenses             := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
       scalaVersion         := Scala212,
       crossScalaVersions   := ScalaVersions,
-      scalacOptions ++= scalacParameters,
+      semanticdbEnabled    := scalaVersion.value != Scala212,
+      scalacOptions ++= scalacParameters ++ scalacVersionSpecificParameters(scalaVersion.value),
       javacOptions ++= javacParameters,
       developers += Developer(
         "contributors",

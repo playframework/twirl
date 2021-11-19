@@ -1,7 +1,9 @@
 import Dependencies._
 
-import sbtcrossproject.crossProject
+import sbtcrossproject.CrossPlugin.autoImport.crossProject
 import org.scalajs.jsenv.nodejs.NodeJSEnv
+
+Global / onChangedBuildSource := ReloadOnSourceChanges
 
 // Binary compatibility is this version
 val previousVersion: Option[String] = Some("1.5.0")
@@ -56,6 +58,8 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
   .enablePlugins(Common, Playdoc, Omnidoc)
   .configs(Docs)
   .settings(
+    scalaVersion       := Scala212,
+    crossScalaVersions := ScalaVersions,
     mimaSettings,
     name  := "twirl-api",
     jsEnv := nodeJs,
@@ -83,6 +87,8 @@ lazy val parser = project
   .in(file("parser"))
   .enablePlugins(Common, Omnidoc)
   .settings(
+    scalaVersion       := Scala212,
+    crossScalaVersions := ScalaVersions,
     mimaSettings,
     name                                                        := "twirl-parser",
     libraryDependencies += parserCombinators(scalaVersion.value) % Optional,
@@ -93,14 +99,24 @@ lazy val parser = project
 lazy val compiler = project
   .in(file("compiler"))
   .enablePlugins(Common, Omnidoc)
-  .dependsOn(apiJvm, parser % "compile;test->test")
   .settings(
+    scalaVersion       := Scala212,
+    crossScalaVersions := ScalaVersions,
     mimaSettings,
-    name                                                        := "twirl-compiler",
-    libraryDependencies += "org.scala-lang"                      % "scala-compiler" % scalaVersion.value,
-    libraryDependencies += parserCombinators(scalaVersion.value) % "optional",
-    run / fork                                                  := true,
+    name := "twirl-compiler",
+    libraryDependencies ++= {
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((2, _)) =>
+          // only for scala < 3
+          Seq("org.scala-lang" % "scala-compiler" % scalaVersion.value)
+        case _ => Seq("org.scala-lang" %% "scala3-compiler" % scalaVersion.value)
+      }
+    },
+    libraryDependencies += parserCombinators(scalaVersion.value) % Optional,
+    run / fork                                                  := true
   )
+  .aggregate(apiJvm, parser)
+  .dependsOn(apiJvm, parser % "compile->compile;test->test")
 
 lazy val plugin = project
   .in(file("sbt-twirl"))
@@ -112,7 +128,10 @@ lazy val plugin = project
     scalaVersion                            := Scala212,
     libraryDependencies += "org.scalatest" %%% "scalatest" % ScalaTestVersion % Test,
     Compile / resourceGenerators += generateVersionFile.taskValue,
-    scriptedLaunchOpts += version.apply { v => s"-Dproject.version=$v" }.value,
+    scriptedLaunchOpts := {
+      scriptedLaunchOpts.value ++
+        Seq("-Xmx1024M", s"-Dplugin.version=${version.value}", s"-Dproject.version=${version.value}")
+    },
     // both `locally`s are to work around sbt/sbt#6161
     scriptedDependencies := {
       locally { val _ = scriptedDependencies.value }
@@ -127,7 +146,7 @@ lazy val plugin = project
       }
       ()
     },
-    mimaFailOnNoPrevious := false,
+    mimaFailOnNoPrevious := false
   )
 
 // Version file
