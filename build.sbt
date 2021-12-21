@@ -1,6 +1,10 @@
-import interplay.ScalaVersions._
 import sbtcrossproject.crossProject
 import org.scalajs.jsenv.nodejs.NodeJSEnv
+
+val scala210 = "2.10.7"
+val scala211 = "2.11.12"
+val scala212 = "2.12.15"
+val scala213 = "2.13.6"
 
 def binaryCompatibilitySettings(org: String, moduleName: String, scalaBinVersion: String): Set[ModuleID] = {
   val artifact = org % s"${moduleName}_${scalaBinVersion}"
