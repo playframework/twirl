@@ -62,11 +62,11 @@ TwirlKeys.templateImports += "org.example._"
 ### Source directories
 
 To configure the source directories where template files will be found, use the
-`sourceDirectories in compileTemplates` key. For example, to have template
+`compileTemplates / sourceDirectories` key. For example, to have template
 sources alongside Scala or Java source files:
 
 ```scala
-sourceDirectories in (Compile, TwirlKeys.compileTemplates) := (unmanagedSourceDirectories in Compile).value
+Compile / TwirlKeys.compileTemplates / sourceDirectories := (Compile / unmanagedSourceDirectories).value
 ```
 
 ## Credits
@@ -79,7 +79,7 @@ The first stand-alone version of Twirl was created by the [Spray team][spray].
 An optimized version of the Twirl parser was contributed by the
 [Scala IDE team][scala-ide].
 
-[play-site]: http://www.playframework.com
-[docs]: http://www.playframework.com/documentation/latest/ScalaTemplates
+[play-site]: https://www.playframework.com
+[docs]: https://www.playframework.com/documentation/latest/ScalaTemplates
 [spray]: https://github.com/spray
 [scala-ide]: https://github.com/scala-ide

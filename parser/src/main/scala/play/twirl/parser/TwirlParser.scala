@@ -11,7 +11,7 @@ import scala.util.parsing.input.OffsetPosition
 
 /**
  * TwirlParser is a recursive descent parser for a modified grammar of the Play2 template language as loosely defined
- * [[http://www.playframework.com/documentation/latest/Home here]] and more rigorously defined by the original template
+ * [[https://www.playframework.com/documentation/latest/Home here]] and more rigorously defined by the original template
  * parser, `play.templates.ScalaTemplateCompiler.TemplateParser`. TwirlParser is meant to be a near drop in replacement
  * for `play.templates.ScalaTemplateCompiler.TemplateParser`.
  *
@@ -544,7 +544,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
         result = ScalaExp(ListBuffer(pattern, blk))
         whitespace()
       } else {
-        //error("Expected block after 'case'")
+        // error("Expected block after 'case'")
         input.regressTo(wspos)
       }
     } else if (ws.length > 0) {
