@@ -19,7 +19,7 @@ val mimaSettings = Seq(
   mimaPreviousArtifacts := previousVersion.map(organization.value %% name.value % _).toSet
 )
 
-ThisBuild / sonatypeProfileName := "com.typesafe"
+ThisBuild / sonatypeProfileName := "com.typesafe.play"
 
 // Customise sbt-dynver's behaviour to make it work with tags which aren't v-prefixed
 ThisBuild / dynverTagPrefix := ""
@@ -108,7 +108,7 @@ lazy val plugin = project
   .dependsOn(compiler)
   .settings(
     name                                    := "sbt-twirl",
-    organization                            := "com.typesafe.sbt",
+    organization                            := "com.typesafe.play",
     scalaVersion                            := Scala212,
     libraryDependencies += "org.scalatest" %%% "scalatest" % ScalaTestVersion % Test,
     Compile / resourceGenerators += generateVersionFile.taskValue,
