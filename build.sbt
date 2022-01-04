@@ -8,18 +8,18 @@ val previousVersion: Option[String] = Some("1.5.0")
 
 val ScalaTestVersion = "3.2.10"
 
-// Do NOT upgrade these dependencies to 2.x or newer! twirl is a sbt-plugin
-// and gets published with Scala 2.12, therefore we need to stay at the same major version
-// like the 2.12.x Scala compiler, otherwise we run into conflicts when using sbt 1.5+
-// See https://github.com/scala/scala/pull/9743
-val ScalaParserCombinatorsVersion = "1.1.2" // Do not upgrade beyond 1.x
-val ScalaXmlVersion               = "1.3.0" // Do not upgrade beyond 1.x
+def parserCombinators(scalaVersion: String) = "org.scala-lang.modules" %% "scala-parser-combinators" % {
+  CrossVersion.partialVersion(scalaVersion) match {
+    case Some((2, _)) => "1.1.2"
+    case _            => "2.1.0"
+  }
+}
 
 val mimaSettings = Seq(
   mimaPreviousArtifacts := previousVersion.map(organization.value %% name.value % _).toSet
 )
 
-ThisBuild / sonatypeProfileName := "com.typesafe"
+ThisBuild / sonatypeProfileName := "com.typesafe.play"
 
 // Customise sbt-dynver's behaviour to make it work with tags which aren't v-prefixed
 ThisBuild / dynverTagPrefix := ""
@@ -67,8 +67,13 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
         "org.scalatest.tools.ScalaTestFramework"
       )
     ),
-    libraryDependencies += "org.scala-lang.modules" %%% "scala-xml" % ScalaXmlVersion,
-    libraryDependencies += "org.scalatest"          %%% "scalatest" % ScalaTestVersion % Test,
+    libraryDependencies += "org.scala-lang.modules" %%% "scala-xml" % {
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((2, _)) => "1.3.0"
+        case _            => "2.0.1"
+      }
+    },
+    libraryDependencies += "org.scalatest" %%% "scalatest" % ScalaTestVersion % Test,
   )
 
 lazy val apiJvm = api.jvm
@@ -79,10 +84,10 @@ lazy val parser = project
   .enablePlugins(Common, Omnidoc)
   .settings(
     mimaSettings,
-    name := "twirl-parser",
-    libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % ScalaParserCombinatorsVersion % Optional,
-    libraryDependencies += "com.github.sbt"  % "junit-interface" % "0.13.3"         % Test,
-    libraryDependencies += "org.scalatest" %%% "scalatest"       % ScalaTestVersion % Test,
+    name                                                        := "twirl-parser",
+    libraryDependencies += parserCombinators(scalaVersion.value) % Optional,
+    libraryDependencies += "com.github.sbt"                      % "junit-interface" % "0.13.2"         % Test,
+    libraryDependencies += "org.scalatest"                     %%% "scalatest"       % ScalaTestVersion % Test,
   )
 
 lazy val compiler = project
@@ -91,10 +96,10 @@ lazy val compiler = project
   .dependsOn(apiJvm, parser % "compile;test->test")
   .settings(
     mimaSettings,
-    name                                   := "twirl-compiler",
-    libraryDependencies += "org.scala-lang" % "scala-compiler" % scalaVersion.value,
-    libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % ScalaParserCombinatorsVersion % "optional",
-    run / fork := true,
+    name                                                        := "twirl-compiler",
+    libraryDependencies += "org.scala-lang"                      % "scala-compiler" % scalaVersion.value,
+    libraryDependencies += parserCombinators(scalaVersion.value) % "optional",
+    run / fork                                                  := true,
   )
 
 lazy val plugin = project
@@ -103,7 +108,7 @@ lazy val plugin = project
   .dependsOn(compiler)
   .settings(
     name                                    := "sbt-twirl",
-    organization                            := "com.typesafe.sbt",
+    organization                            := "com.typesafe.play",
     scalaVersion                            := Scala212,
     libraryDependencies += "org.scalatest" %%% "scalatest" % ScalaTestVersion % Test,
     Compile / resourceGenerators += generateVersionFile.taskValue,
