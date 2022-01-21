@@ -49,7 +49,7 @@ jobs:
           # Avoid sbt-dynver not seeing the tag
           fetch-depth: 0
 
-      - name: Set up JDK 11
+      - name: "Set up JDK ${{ matrix.java }}"
         uses: olafurpg/setup-scala@v13
         with:
           java-version: "adopt@1.${{ matrix.java }}"
