@@ -97,7 +97,12 @@ lazy val compiler = project
   .settings(
     mimaSettings,
     name                                                        := "twirl-compiler",
-    libraryDependencies += "org.scala-lang"                      % "scala-compiler" % scalaVersion.value,
+    libraryDependencies += scalaVersion { v =>
+      CrossVersion.partialVersion(v) match {
+        case Some((3, _)) => "org.scala-lang" %% "scala3-compiler" % v
+        case _            => "org.scala-lang" %  "scala-compiler"  % v
+      }
+    }.value,
     libraryDependencies += parserCombinators(scalaVersion.value) % "optional",
     run / fork                                                  := true,
   )
