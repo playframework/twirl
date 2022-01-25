@@ -104,6 +104,7 @@ lazy val compiler = project
       }
     }.value,
     libraryDependencies += parserCombinators(scalaVersion.value) % "optional",
+    libraryDependencies += "org.scalameta"                       %% "scalameta"      % "4.4.33" cross CrossVersion.for3Use2_13,
     run / fork                                                  := true,
   )
 
