@@ -500,14 +500,14 @@ package """ :+ packageName :+ """
       def unapply(param: Term.Param): Option[(String, String)] =
         param.decltpe match {
           case Some(t: Type.ByName) => Some((t.toString, t.tpe.toString))
-          case _ => None
+          case _                    => None
         }
     }
 
     def getFunctionMapping(signature: String, returnType: String): (String, String, String) = {
 
-      val obj = s"object FT { def signature$signature }".parse[scala.meta.Stat].get.asInstanceOf[Defn.Object]
-      val templ = obj.templ
+      val obj    = s"object FT { def signature$signature }".parse[scala.meta.Stat].get.asInstanceOf[Defn.Object]
+      val templ  = obj.templ
       val defdef = templ.stats.head.asInstanceOf[Decl.Def]
       val params: List[List[Term.Param]] = defdef.paramss
 
@@ -529,8 +529,8 @@ package """ :+ packageName :+ """
       val renderCall = "def render%s: %s = apply%s".format(
         "(" + params.flatten
           .map {
-            case p@ByNameParam(_, paramType) => p.name.toString + ":" + paramType
-            case p                         => p.name.toString + ":" + filterType(p)
+            case p @ ByNameParam(_, paramType) => p.name.toString + ":" + paramType
+            case p                             => p.name.toString + ":" + filterType(p)
           }
           .mkString(",") + ")",
         returnType,
