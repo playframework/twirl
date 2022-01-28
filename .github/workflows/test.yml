@@ -7,84 +7,29 @@ on:
 
 jobs:
   validate:
-
-    runs-on: ubuntu-20.04
-
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          # Avoid sbt-dynver not seeing the tag
-          fetch-depth: 0
-
-      - name: Set up JDK 11
-        uses: olafurpg/setup-scala@v13
-        with:
-          java-version: "adopt@1.11"
-
-      - name: Cache Coursier cache
-        uses: coursier/cache-action@v6.2
-
-      - name: "Code validations (headerCheck, scalafmt, mima)"
-        run: ./scripts/validate-code.sh
-
+    name: "Code validations (headerCheck, scalafmt, mima)"
+    uses: ihostage/.github/.github/workflows/sbt.yml@main
+    with:
+      command: ./scripts/validate-code.sh
 
   tests:
-
-    runs-on: ubuntu-20.04
-
     needs:
       - validate
 
-    strategy:
-      matrix:
-        java: [8, 11]
-        scala: ["2.12.15", "2.13.7"]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          # Avoid sbt-dynver not seeing the tag
-          fetch-depth: 0
-
-      - name: "Set up JDK ${{ matrix.java }}"
-        uses: olafurpg/setup-scala@v13
-        with:
-          java-version: "adopt@1.${{ matrix.java }}"
-
-      - name: Cache Coursier cache
-        uses: coursier/cache-action@v6.2
-
-      - name: "Run tests with Scala ${{ matrix.scala }} and AdoptOpenJDK ${{ matrix.java }}"
-        run: ./scripts/test-code.sh
-        env:
-          SCALA_VERSION: ${{ matrix.scala }}
-
+    name: "Run tests with Scala ${{ matrix.scala }} and AdoptOpenJDK ${{ matrix.java }}"
+    uses: ihostage/.github/.github/workflows/sbt-matrix.yml@main
+    with:
+      command: ./scripts/test-code.sh
+      java: >-
+        ["8", "11"]
+      scala: >-
+        ["2.12.15", "2.13.7"]
 
   docs:
-
-    runs-on: ubuntu-20.04
-
     needs:
       - tests
 
-    steps:
-
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          # Avoid sbt-dynver not seeing the tag
-          fetch-depth: 0
-
-      - name: Set up JDK 11
-        uses: olafurpg/setup-scala@v13
-        with:
-          java-version: "adopt@1.11"
-
-      - name: Cache Coursier cache
-        uses: coursier/cache-action@v6.2
-
-      - name: "Validate documentation"
-        run: ./scripts/validate-docs.sh
+    name: "Validate documentation"
+    uses: ihostage/.github/.github/workflows/sbt.yml@main
+    with:
+      command: ./scripts/validate-docs.sh
