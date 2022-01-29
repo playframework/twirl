@@ -247,7 +247,7 @@ object TwirlCompiler {
   ) = {
     val templateParser = new TwirlParser(inclusiveDot)
     templateParser.parse(new String(content, codec.charSet)) match {
-      case templateParser.Success(parsed: Template, rest) if rest.atEnd => {
+      case templateParser.Success(parsed: Template, rest) if rest.atEnd() => {
         generateFinalTemplate(
           relativePath,
           content,
@@ -261,7 +261,7 @@ object TwirlCompiler {
         )
       }
       case templateParser.Success(_, rest) => {
-        throw new TemplateCompilationError(new File(relativePath), "Not parsed?", rest.pos.line, rest.pos.column)
+        throw new TemplateCompilationError(new File(relativePath), "Not parsed?", rest.pos().line, rest.pos().column)
       }
       case templateParser.Error(_, rest, errors) => {
         val firstError = errors.head
