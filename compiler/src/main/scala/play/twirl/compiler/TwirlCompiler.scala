@@ -68,7 +68,7 @@ sealed trait AbstractGeneratedSource {
 
   lazy val matrix: Seq[(Int, Int)] = {
     for {
-      pos <- meta("MATRIX").split('|')
+      pos <- meta("MATRIX").split('|').toIndexedSeq
       c = pos.split("->")
     } yield try {
       Integer.parseInt(c(0)) -> Integer.parseInt(c(1))
@@ -79,7 +79,7 @@ sealed trait AbstractGeneratedSource {
 
   lazy val lines: Seq[(Int, Int)] = {
     for {
-      pos <- meta("LINES").split('|')
+      pos <- meta("LINES").split('|').toIndexedSeq
       c = pos.split("->")
     } yield try {
       Integer.parseInt(c(0)) -> Integer.parseInt(c(1))
