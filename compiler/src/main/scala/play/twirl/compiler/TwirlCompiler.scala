@@ -518,10 +518,7 @@ package """ :+ packageName :+ """
       val functionType = "(" + params
         .map(group =>
           "(" + group
-            .map {
-              case ByNameParam(_, paramType) => paramType
-              case p                         => filterType(p)
-            }
+            .map { p => filterType(p) }
             .mkString(",") + ")"
         )
         .mkString(" => ") + " => " + returnType + ")"
