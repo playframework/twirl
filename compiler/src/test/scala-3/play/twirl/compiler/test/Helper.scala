@@ -6,6 +6,7 @@ import java.net.URLClassLoader
 import java.nio.file.{Files, Path, Paths}
 import dotty.tools.dotc.core.Contexts, Contexts.{ Context, ctx }
 import dotty.tools.dotc.{Compiler, Driver}
+import dotty.tools.dotc.reporting.Reporter
 import dotty.tools.io.{ PlainDirectory, Directory, ClassPath }
 import scala.jdk.CollectionConverters._
 
@@ -71,22 +72,26 @@ object Helper {
 
       val driver = new TestDriver(generatedClasses.toPath, compilerArgs, generated.toPath)
 
-      driver.compile()
+      val reporter = driver.compile()
+
+      if (reporter.hasErrors) {
+        val error = reporter.allErrors.head
+        val message = error.msg
+        val pos = error.pos
+        throw CompilationError(message.toString, mapper.mapLine(pos.line + 1), mapper.mapPosition(pos.point))
+      }
 
       new CompiledTemplate[T](className)
     }
 
 
     class TestDriver(outDir: Path, compilerArgs: Array[String], path: Path) extends Driver {
-      def compile(): Unit = {
+      def compile(): Reporter = {
         val Some((toCompile, rootCtx)) = setup(compilerArgs :+ path.toAbsolutePath.toString, initCtx.fresh)
 
         given Context = rootCtx.fresh.setSetting(rootCtx.settings.outputDir, new PlainDirectory(Directory(outDir)))
 
-        if (doCompile(newCompiler, toCompile).hasErrors) {
-          // TODO
-          throw CompilationError("error", 0, 0)
-        }
+        doCompile(newCompiler, toCompile)
       }
     }
   }
