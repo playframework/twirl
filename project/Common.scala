@@ -24,7 +24,7 @@ object Common extends AutoPlugin {
     "-Xlint:unchecked"
   )
 
-  val scalacParameters = Seq(
+  private val scalacOptionsForScala2 = Seq(
     "-deprecation",
     "-feature",
     "-unchecked",
@@ -37,6 +37,28 @@ object Common extends AutoPlugin {
     "-Ywarn-dead-code",
   )
 
+  private val scalacOptionsForScala3 = Seq(
+    "-deprecation",
+    "-feature",
+    "-unchecked",
+    "-encoding",
+    "utf8",
+  )
+
+  private def crossScalacOptions(version: String) =
+    CrossVersion.partialVersion(version) match {
+      case Some((2, _)) => scalacOptionsForScala2
+      case _            => scalacOptionsForScala3
+    }
+
+  override def projectSettings =
+    Seq(
+      scalaVersion         :=  Scala212,
+      crossScalaVersions   :=  ScalaVersions,
+      scalacOptions        ++= crossScalacOptions(scalaVersion.value),
+      javacOptions         ++= javacParameters
+    )
+
   override def globalSettings =
     Seq(
       organization         := "com.typesafe.play",
@@ -44,10 +66,6 @@ object Common extends AutoPlugin {
       organizationHomepage := Some(url("https://www.lightbend.com/")),
       homepage             := Some(url(s"https://github.com/playframework/${repoName}")),
       licenses             := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
-      scalaVersion         := Scala212,
-      crossScalaVersions   := ScalaVersions,
-      scalacOptions ++= scalacParameters,
-      javacOptions ++= javacParameters,
       developers += Developer(
         "contributors",
         "Contributors",
