@@ -161,6 +161,16 @@ class CompilerSpec extends AnyWordSpec with Matchers {
       text must be("123456")
     }
 
+    "compile successfully (call by name)" in {
+      val helper = newCompilerHelper
+      val text = helper
+        .compile[((=> String) => Html)]("callByName.scala.html", "html.callByName")
+        .static("World")
+        .toString
+        .trim
+      text must be("<h1>Hello World!</h1>")
+    }
+
     "fail compilation for error.scala.html" in {
       val helper = newCompilerHelper
       the[CompilationError] thrownBy helper.compile[(() => Html)]("error.scala.html", "html.error") must have(
