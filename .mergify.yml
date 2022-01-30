@@ -12,7 +12,6 @@ pull_request_rules:
     actions:
       merge:
         method: merge
-        strict: smart
         
   - name: Delete the PR branch after merge
     conditions:
