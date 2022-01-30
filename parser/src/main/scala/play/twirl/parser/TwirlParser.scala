@@ -443,11 +443,15 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
               case null =>
                 forExpression() match {
                   case null =>
-                    matchExpOrSafeExpOrExpr() match {
+                    ifExpression() match {
                       case null =>
-                        caseExpression() match {
-                          case null => plain()
-                          case x    => x
+                        matchExpOrSafeExpOrExpr() match {
+                          case null =>
+                            caseExpression() match {
+                              case null => plain()
+                              case x    => x
+                            }
+                          case x => x
                         }
                       case x => x
                     }
@@ -603,6 +607,60 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
     if (result == null)
       input.regressTo(p)
+
+    result
+  }
+
+  def ifExpression(): Display = {
+    var result: Display = null
+    val p               = input.offset()
+    if (check("@if")) {
+      val parens = parentheses()
+      if (parens != null) {
+        val blk = block(blockArgsAllowed = true)
+        if (blk != null) {
+          result = Display(
+            ScalaExp(
+              ListBuffer(
+                // don't include pos of @
+                position(Simple("if" + parens), p + 1),
+                blk,
+                Simple(" else { null } ")
+              ))
+          )
+        } else {
+          val ws = whitespaceNoBreak()
+          val m = mixed()
+          if (m.nonEmpty) {
+            result = Display(
+              ScalaExp(
+                ListBuffer(
+                  // don't include pos of @
+                  position(Simple("if" + parens), p + 1),
+                  Block(ws, None, m),
+                  Simple(" else { null } ")
+                ))
+            )
+          } else {
+            result = null
+          }
+        }
+      }
+    }
+
+    val p2 = input.offset()
+    whitespaceNoBreak()
+
+    if (check("else ")) {
+      result = null
+      input.regressTo(p)
+    } else {
+      if (result == null) {
+        input.regressTo(p)
+      } else {
+        input.regressTo(p2)
+      }
+    }
 
     result
   }
