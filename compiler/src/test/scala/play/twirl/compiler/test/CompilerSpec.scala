@@ -264,6 +264,13 @@ class CompilerSpec extends AnyWordSpec with Matchers {
     }
   }
 
+  "compile successfully (if with brackets)" in {
+    val helper = newCompilerHelper
+    val hello  = helper.compile[(String => Html)]("ifWithBrackets.scala.html", "html.ifWithBrackets")
+    hello.static("twirl").toString.trim must be("twirl")
+    hello.static("something-else").toString.trim must be("")
+  }
+
   "compile successfully (if without brackets)" in {
     val helper = newCompilerHelper
     val hello  = helper.compile[((String, String) => Html)]("ifWithoutBrackets.scala.html", "html.ifWithoutBrackets")
