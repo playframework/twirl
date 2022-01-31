@@ -161,3 +161,4 @@ def generateVersionFile =
   }
 
 addCommandAlias("validateCode", ";headerCheckAll;+scalafmtCheckAll;scalafmtSbtCheck")
+addCommandAlias("format", ";+scalafmtAll;scalafmtSbt")

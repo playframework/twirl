@@ -24,39 +24,34 @@ object Common extends AutoPlugin {
     "-Xlint:unchecked"
   )
 
-  private val scalacOptionsForScala2 = Seq(
+  val scalacParameters = Seq(
     "-deprecation",
     "-feature",
     "-unchecked",
     "-encoding",
-    "utf8",
-    "-target:jvm-1.8",
-    "-Ywarn-unused:imports",
-    "-Xlint:nullary-unit",
-    "-Xlint",
-    "-Ywarn-dead-code",
+    "utf8"
   )
 
-  private val scalacOptionsForScala3 = Seq(
-    "-deprecation",
-    "-feature",
-    "-unchecked",
-    "-encoding",
-    "utf8",
-  )
-
-  private def crossScalacOptions(version: String) =
+  def crossScalacOptions(version: String) = {
     CrossVersion.partialVersion(version) match {
-      case Some((2, _)) => scalacOptionsForScala2
-      case _            => scalacOptionsForScala3
+      case Some((2, n)) if n < 12 =>
+        scalacParameters ++ Seq(
+          "-target:jvm-1.8",
+          "-Ywarn-unused:imports",
+          "-Xlint:nullary-unit",
+          "-Xlint",
+          "-Ywarn-dead-code"
+        )
+      case _ => scalacParameters
     }
+  }
 
   override def projectSettings =
     Seq(
-      scalaVersion         :=  Scala212,
-      crossScalaVersions   :=  ScalaVersions,
-      scalacOptions        ++= crossScalacOptions(scalaVersion.value),
-      javacOptions         ++= javacParameters
+      scalaVersion       := Scala212,
+      crossScalaVersions := ScalaVersions,
+      scalacOptions ++= crossScalacOptions(scalaVersion.value),
+      javacOptions ++= javacParameters
     )
 
   override def globalSettings =
@@ -66,11 +61,6 @@ object Common extends AutoPlugin {
       organizationHomepage := Some(url("https://www.lightbend.com/")),
       homepage             := Some(url(s"https://github.com/playframework/${repoName}")),
       licenses             := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
-      scalaVersion         := Scala212,
-      crossScalaVersions   := ScalaVersions,
-      semanticdbEnabled    := scalaVersion.value != Scala212,
-      scalacOptions ++= scalacParameters ++ scalacVersionSpecificParameters(scalaVersion.value),
-      javacOptions ++= javacParameters,
       developers += Developer(
         "contributors",
         "Contributors",

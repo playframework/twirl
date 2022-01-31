@@ -629,11 +629,12 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
                 position(Simple("if" + parens), p + 1),
                 blk,
                 Simple(" else { null } ")
-              ))
+              )
+            )
           )
         } else {
           val ws = whitespaceNoBreak()
-          val m = mixed()
+          val m  = mixed()
           if (m.nonEmpty) {
             result = Display(
               ScalaExp(
@@ -642,7 +643,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
                   position(Simple("if" + parens), p + 1),
                   Block(ws, None, m),
                   Simple(" else { null } ")
-                ))
+                )
+              )
             )
           } else {
             result = null

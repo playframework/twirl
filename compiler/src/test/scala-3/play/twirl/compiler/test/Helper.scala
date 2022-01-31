@@ -1,15 +1,24 @@
+/*
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
+ */
 package play.twirl.compiler
 package test
 
 import java.io._
 import java.net.URLClassLoader
-import java.nio.file.{Files, Path, Paths}
-import dotty.tools.dotc.core.Contexts, Contexts.{ Context, ctx }
-import dotty.tools.dotc.{Compiler, Driver}
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import dotty.tools.dotc.core.Contexts
+import Contexts.Context
+import Contexts.ctx
+import dotty.tools.dotc.Compiler
+import dotty.tools.dotc.Driver
 import dotty.tools.dotc.reporting.Reporter
-import dotty.tools.io.{ PlainDirectory, Directory, ClassPath }
+import dotty.tools.io.PlainDirectory
+import dotty.tools.io.Directory
+import dotty.tools.io.ClassPath
 import scala.jdk.CollectionConverters._
-
 
 object Helper {
   case class CompilationError(message: String, line: Int, column: Int) extends RuntimeException(message)
@@ -47,9 +56,9 @@ object Helper {
     }
 
     def compile[T](
-      templateName: String,
-      className: String,
-      additionalImports: Seq[String] = Nil
+        templateName: String,
+        className: String,
+        additionalImports: Seq[String] = Nil
     ): CompiledTemplate[T] = {
       val templateFile = new File(sourceDir, templateName)
       val Some(generated) = twirlCompiler.compile(
@@ -75,15 +84,14 @@ object Helper {
       val reporter = driver.compile()
 
       if (reporter.hasErrors) {
-        val error = reporter.allErrors.head
+        val error   = reporter.allErrors.head
         val message = error.msg
-        val pos = error.pos
+        val pos     = error.pos
         throw CompilationError(message.toString, mapper.mapLine(pos.line + 1), mapper.mapPosition(pos.point))
       }
 
       new CompiledTemplate[T](className)
     }
-
 
     class TestDriver(outDir: Path, compilerArgs: Array[String], path: Path) extends Driver {
       def compile(): Reporter = {

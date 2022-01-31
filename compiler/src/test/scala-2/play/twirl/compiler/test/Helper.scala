@@ -1,8 +1,10 @@
+/*
+ * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
+ */
 package play.twirl.compiler
 package test
 
 import java.io._
-
 
 object Helper {
   case class CompilationError(message: String, line: Int, column: Int) extends RuntimeException(message)
