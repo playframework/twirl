@@ -778,6 +778,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
   def ifExpression(): Display = {
     val result: ListBuffer[ScalaExpPart] = ListBuffer.empty
+    // In Scala3, `if` without `else` part returns `()`. So we always need `else` part.
+    // If the `if` expression has no `else` part, this will be appended.
     val defaultElse                      = Simple(" else {null} ")
     val p                                = input.offset()
     var positional: Simple               = null
