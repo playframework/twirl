@@ -1,3 +1,0 @@
-_extends: .github:release-drafter/base.yml
-
-name-template: 'Twirl $NEXT_PATCH_VERSION'
