@@ -24,21 +24,40 @@ object Common extends AutoPlugin {
     "-Xlint:unchecked"
   )
 
-  def scalacVersionSpecificParameters(version: String) = {
-    CrossVersion.partialVersion(version) match {
-      case Some((2, n)) if n < 12 =>
-        Seq("-target:jvm-1.8", "-Ywarn-unused:imports", "-Xlint:nullary-unit", "-Xlint", "-Ywarn-dead-code")
-      case _ => Nil
-    }
-  }
-
-  val scalacParameters = Seq(
+  private val scalacOptionsForScala2 = Seq(
     "-deprecation",
     "-feature",
     "-unchecked",
     "-encoding",
-    "utf8"
+    "utf8",
+    "-target:jvm-1.8",
+    "-Ywarn-unused:imports",
+    "-Xlint:nullary-unit",
+    "-Xlint",
+    "-Ywarn-dead-code",
   )
+
+  private val scalacOptionsForScala3 = Seq(
+    "-deprecation",
+    "-feature",
+    "-unchecked",
+    "-encoding",
+    "utf8",
+  )
+
+  private def crossScalacOptions(version: String) =
+    CrossVersion.partialVersion(version) match {
+      case Some((2, _)) => scalacOptionsForScala2
+      case _            => scalacOptionsForScala3
+    }
+
+  override def projectSettings =
+    Seq(
+      scalaVersion         :=  Scala212,
+      crossScalaVersions   :=  ScalaVersions,
+      scalacOptions        ++= crossScalacOptions(scalaVersion.value),
+      javacOptions         ++= javacParameters
+    )
 
   override def globalSettings =
     Seq(
