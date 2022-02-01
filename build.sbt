@@ -1,5 +1,9 @@
 import Dependencies._
 
+import com.typesafe.tools.mima.core.IncompatibleMethTypeProblem
+import com.typesafe.tools.mima.core.MissingClassProblem
+import com.typesafe.tools.mima.core.Problem
+import com.typesafe.tools.mima.core.ProblemFilters
 import sbtcrossproject.CrossPlugin.autoImport.crossProject
 import org.scalajs.jsenv.nodejs.NodeJSEnv
 
@@ -18,7 +22,18 @@ def parserCombinators(scalaVersion: String) = "org.scala-lang.modules" %% "scala
 }
 
 val mimaSettings = Seq(
-  mimaPreviousArtifacts := previousVersion.map(organization.value %% name.value % _).toSet
+  mimaPreviousArtifacts := {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      // No release for Scala 3 yet
+      case Some((3, _)) => Set.empty
+      case _            => previousVersion.map(organization.value %% name.value % _).toSet
+    }
+  },
+  mimaBinaryIssueFilters ++= Seq(
+    ProblemFilters.exclude[Problem]("play.twirl.parser.*"),
+    ProblemFilters.exclude[MissingClassProblem]("play.twirl.compiler.*"),
+    ProblemFilters.exclude[IncompatibleMethTypeProblem]("play.twirl.compiler.*"),
+  )
 )
 
 ThisBuild / sonatypeProfileName := "com.typesafe.play"

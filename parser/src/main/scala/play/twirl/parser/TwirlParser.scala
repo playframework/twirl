@@ -7,6 +7,7 @@ import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
+import scala.reflect.ClassTag
 import scala.util.parsing.input.OffsetPosition
 
 /**
@@ -330,7 +331,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
   /** Match zero or more `parser` */
   def several[T, BufferType <: mutable.Buffer[T]](parser: () => T, provided: BufferType = null)(implicit
-      manifest: Manifest[BufferType]
+      manifest: ClassTag[BufferType]
   ): BufferType = {
     val ab =
       if (provided != null) provided else manifest.runtimeClass.getConstructor().newInstance().asInstanceOf[BufferType]
@@ -749,7 +750,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
             if (check(".")) {
               methodCall() match {
                 case m: String => nextLink = m
-                case _         =>
+                case null      =>
               }
             }
 
