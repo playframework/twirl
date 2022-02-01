@@ -1,0 +1,18 @@
+name: Release Drafter
+
+on:
+  push:
+    branches:
+      - 1.5.x
+
+jobs:
+  update_release_draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: release-drafter/release-drafter@v5
+        with:
+          # name: "Twirl $RESOLVED_VERSION"
+          config-name: release-drafts/minor-release.yml # located in .github/ in the default branch within this or the .github repo
+          commitish: ${{ env.GITHUB_REF_NAME }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
