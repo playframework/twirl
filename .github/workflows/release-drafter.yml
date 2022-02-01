@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: release-drafter/release-drafter@v5
         with:
-          # name: "Twirl $RESOLVED_VERSION"
+          name: "Twirl $RESOLVED_VERSION"
           config-name: release-drafts/major-release.yml # located in .github/ in the default branch within this or the .github repo
           commitish: ${{ env.GITHUB_REF_NAME }}
         env:
