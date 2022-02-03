@@ -9,4 +9,4 @@ on:
 jobs:
   publish-artifacts:
     name: Publish / Artifacts
-    uses: ihostage/.github/.github/workflows/publish.yml@main
+    uses: playframework/.github/.github/workflows/publish.yml@master
