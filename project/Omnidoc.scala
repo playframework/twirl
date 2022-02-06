@@ -4,7 +4,7 @@ import sbt.Package.ManifestAttributes
 import sbt._
 
 /**
- * Copied in from https://github.com/playframework/interplay/blob/master/src/main/scala/interplay/Omnidoc.scala
+ * Copied in from https://github.com/playframework/interplay/blob/main/src/main/scala/interplay/Omnidoc.scala
  *
  * This AutoPlugin adds the `Omnidoc-Source-URL` key on the MANIFEST.MF of artifact-sources.jar so later Omnidoc can use
  * that value to link scaladocs to GitHub sources.
@@ -33,7 +33,7 @@ object Omnidoc extends AutoPlugin {
   override def projectSettings =
     Seq(
       omnidocSourceUrl := omnidocGithubRepo.map { repo =>
-        val development: String = (omnidocSnapshotBranch ?? "master").value
+        val development: String = (omnidocSnapshotBranch ?? "main").value
         val tagged: String      = omnidocTagPrefix.getOrElse("v") + version.value
         val tree: String        = if (isSnapshot.value) development else tagged
         val prefix: String      = "/" + (omnidocPathPrefix ?? "").value
