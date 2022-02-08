@@ -13,6 +13,6 @@ jobs:
         with:
           name: "Twirl $RESOLVED_VERSION"
           config-name: release-drafts/increasing-patch-version.yml # located in .github/ in the default branch within this or the .github repo
-          commitish: ${{ env.GITHUB_REF_NAME }}
+          commitish: ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
