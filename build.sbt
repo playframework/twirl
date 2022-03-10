@@ -142,10 +142,7 @@ lazy val plugin = project
     scalaVersion                            := Scala212,
     libraryDependencies += "org.scalatest" %%% "scalatest" % ScalaTestVersion % Test,
     Compile / resourceGenerators += generateVersionFile.taskValue,
-    scriptedLaunchOpts := {
-      scriptedLaunchOpts.value ++
-        Seq("-Xmx1024M", s"-Dplugin.version=${version.value}", s"-Dproject.version=${version.value}")
-    },
+    scriptedLaunchOpts += version.apply { v => s"-Dproject.version=$v" }.value,
     // both `locally`s are to work around sbt/sbt#6161
     scriptedDependencies := {
       locally { val _ = scriptedDependencies.value }
