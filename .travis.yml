@@ -31,7 +31,7 @@ jobs:
     - name: "Run tests with Scala 3 and AdoptOpenJDK 11"
       script: scripts/test-code.sh
       env:
-        - TRAVIS_SCALA_VERSION=3.1.0
+        - SCALA_VERSION=3.1.0
         - ADOPTOPENJDK=11
 
     - name: "Run tests with Scala 2.12 and AdoptOpenJDK 8"
@@ -49,7 +49,7 @@ jobs:
     - name: "Run tests with Scala 3 and AdoptOpenJDK 8"
       script: scripts/test-code.sh
       env:
-        - TRAVIS_SCALA_VERSION=3.1.0
+        - SCALA_VERSION=3.1.0
         - ADOPTOPENJDK=8
 
     - stage: docs
