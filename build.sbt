@@ -7,8 +7,6 @@ import com.typesafe.tools.mima.core.ProblemFilters
 import sbtcrossproject.CrossPlugin.autoImport.crossProject
 import org.scalajs.jsenv.nodejs.NodeJSEnv
 
-Global / onChangedBuildSource := ReloadOnSourceChanges
-
 // Binary compatibility is this version
 val previousVersion: Option[String] = Some("1.5.0")
 
