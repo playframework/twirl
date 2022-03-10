@@ -34,9 +34,6 @@ object Helper {
       Class.forName("play.twirl.compiler.TwirlCompiler").getClassLoader,
     )
 
-    // A list of the compile errors from the most recent compiler run
-    val compileErrors = new mutable.ListBuffer[CompilationError]
-
     class CompiledTemplate[T](className: String) {
       private def getF(template: Any) = {
         template.getClass.getMethod("f").invoke(template).asInstanceOf[T]
