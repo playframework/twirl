@@ -7,6 +7,7 @@ import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
+import scala.reflect.ClassTag
 import scala.util.parsing.input.OffsetPosition
 
 /**
@@ -58,7 +59,7 @@ import scala.util.parsing.input.OffsetPosition
  *   templateDeclaration : '@' identifier squareBrackets? parentheses*
  *   localDef : templateDeclaration (' ' | '\t')* '=' (' ' | '\t') scalaBlock
  *   template : templateDeclaration (' ' | '\t')* '=' (' ' | '\t') '{' templateContent '}'
- *   mixed : (comment | scalaBlockDisplayed | forExpression | matchExpOrSafeExpOrExpr | caseExpression | plain) | ('{' mixed* '}')
+ *   mixed : (comment | scalaBlockDisplayed | forExpression | ifExpression | matchExpOrSafeExpOrExpr | caseExpression | plain) | ('{' mixed* '}')
  *   matchExpOrSafeExpOrExpr : (expression | safeExpression) (whitespaceNoBreak 'match' block)?
  *   scalaBlockDisplayed : scalaBlock
  *   scalaBlockChained : scalaBlock
@@ -69,10 +70,11 @@ import scala.util.parsing.input.OffsetPosition
  *   simpleExpr : methodCall expressionPart*
  *   complexExpr : parentheses
  *   safeExpression : '@' parentheses
- *   elseCall : whitespaceNoBreak? "else" whitespaceNoBreak?
- *   elseIfCall : whitespaceNoBreak? "else if" parentheses  whitespaceNoBreak?
+ *   ifExpression : '@' "if" parentheses expressionPart (elseIfCall)* elseCall?
+ *   elseCall : whitespaceNoBreak? "else" expressionPart whitespaceNoBreak?
+ *   elseIfCall : whitespaceNoBreak? "else if" parentheses expressionPart whitespaceNoBreak?
  *   chainedMethods : ('.' methodCall)+
- *   expressionPart : chainedMethods | block | (whitespaceNoBreak scalaBlockChained) | elseIfCall | elseCall | parentheses
+ *   expressionPart : chainedMethods | block | (whitespaceNoBreak scalaBlockChained) | parentheses
  *   expression : '@' methodCall expressionPart*
  *   methodCall : identifier squareBrackets? parentheses?
  *   blockArgs : [^'=>' '\n']* '=>'
@@ -329,7 +331,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
   /** Match zero or more `parser` */
   def several[T, BufferType <: mutable.Buffer[T]](parser: () => T, provided: BufferType = null)(implicit
-      manifest: Manifest[BufferType]
+      manifest: ClassTag[BufferType]
   ): BufferType = {
     val ab =
       if (provided != null) provided else manifest.runtimeClass.getConstructor().newInstance().asInstanceOf[BufferType]
@@ -444,11 +446,15 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
               case null =>
                 forExpression() match {
                   case null =>
-                    matchExpOrSafeExpOrExpr() match {
+                    ifExpression() match {
                       case null =>
-                        caseExpression() match {
-                          case null => plain()
-                          case x    => x
+                        matchExpOrSafeExpOrExpr() match {
+                          case null =>
+                            caseExpression() match {
+                              case null => plain()
+                              case x    => x
+                            }
+                          case x => x
                         }
                       case x => x
                     }
@@ -684,16 +690,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
         block(blockArgsAllowed) match {
           case null =>
             wsThenScalaBlockChained() match {
-              case null =>
-                elseIfCall() match {
-                  case null =>
-                    elseCall() match {
-                      case null => simpleParens()
-                      case x    => x
-                    }
-                  case x => x
-                }
-              case x => x
+              case null => simpleParens()
+              case x    => x
             }
           case x => x
         }
@@ -752,7 +750,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
             if (check(".")) {
               methodCall() match {
                 case m: String => nextLink = m
-                case _         =>
+                case null      =>
               }
             }
 
@@ -779,27 +777,77 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       exclusiveDot()
   }
 
-  def elseIfCall(): Simple = {
+  def ifExpression(): Display = {
+    val result: ListBuffer[ScalaExpPart] = ListBuffer.empty
+    val defaultElse                      = Simple(" else {null} ")
+    val p                                = input.offset()
+    var positional: Simple               = null
+    if (check("@if")) {
+      val parens = parentheses()
+      if (parens != null) {
+        val blk = expressionPart(blockArgsAllowed = true)
+        if (blk != null) {
+          positional = Simple("if" + parens)
+          result += Simple("if" + parens)
+          result += blk
+
+          val elseIfCallParts = several[Seq[ScalaExpPart], ArrayBuffer[Seq[ScalaExpPart]]] { () => elseIfCall() }
+          result ++= elseIfCallParts.flatten
+
+          val elseCallPart = elseCall()
+          if (elseCallPart == null) {
+            result += defaultElse
+          } else {
+            result ++= elseCallPart
+          }
+        }
+      }
+    }
+
+    if (result.isEmpty) {
+      input.regressTo(p)
+      null
+    } else {
+      position(positional, p + 1)
+      Display(ScalaExp(result))
+    }
+  }
+
+  def elseIfCall(): Seq[ScalaExpPart] = {
     val reset = input.offset()
     whitespaceNoBreak()
-    val p = input.offset()
     if (check("else if")) {
       whitespaceNoBreak()
-      val args = several[String, ArrayBuffer[String]] { () => parentheses() }
-      position(Simple("else if" + args.mkString(",")), p)
+      val args = parentheses()
+      if (args != null) {
+        val blk = expressionPart(blockArgsAllowed = true)
+        if (blk != null) {
+          whitespaceNoBreak()
+          Seq(Simple("else if" + args), blk)
+        } else {
+          null
+        }
+      } else {
+        null
+      }
     } else {
       input.regressTo(reset)
       null
     }
   }
 
-  def elseCall(): Simple = {
+  def elseCall(): Seq[ScalaExpPart] = {
     val reset = input.offset()
     whitespaceNoBreak()
-    val p = input.offset()
     if (check("else")) {
       whitespaceNoBreak()
-      position(Simple("else"), p)
+      val blk = expressionPart(blockArgsAllowed = true)
+      if (blk != null) {
+        whitespaceNoBreak()
+        Seq(Simple("else"), blk)
+      } else {
+        null
+      }
     } else {
       input.regressTo(reset)
       null

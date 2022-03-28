@@ -1,6 +1,10 @@
 import Dependencies._
 
-import sbtcrossproject.crossProject
+import com.typesafe.tools.mima.core.IncompatibleMethTypeProblem
+import com.typesafe.tools.mima.core.MissingClassProblem
+import com.typesafe.tools.mima.core.Problem
+import com.typesafe.tools.mima.core.ProblemFilters
+import sbtcrossproject.CrossPlugin.autoImport.crossProject
 import org.scalajs.jsenv.nodejs.NodeJSEnv
 
 // Binary compatibility is this version
@@ -16,7 +20,18 @@ def parserCombinators(scalaVersion: String) = "org.scala-lang.modules" %% "scala
 }
 
 val mimaSettings = Seq(
-  mimaPreviousArtifacts := previousVersion.map(organization.value %% name.value % _).toSet
+  mimaPreviousArtifacts := {
+    CrossVersion.partialVersion(scalaVersion.value) match {
+      // No release for Scala 3 yet
+      case Some((3, _)) => Set.empty
+      case _            => previousVersion.map(organization.value %% name.value % _).toSet
+    }
+  },
+  mimaBinaryIssueFilters ++= Seq(
+    ProblemFilters.exclude[Problem]("play.twirl.parser.*"),
+    ProblemFilters.exclude[MissingClassProblem]("play.twirl.compiler.*"),
+    ProblemFilters.exclude[IncompatibleMethTypeProblem]("play.twirl.compiler.*"),
+  )
 )
 
 ThisBuild / sonatypeProfileName := "com.typesafe.play"
@@ -56,6 +71,8 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
   .enablePlugins(Common, Playdoc, Omnidoc)
   .configs(Docs)
   .settings(
+    scalaVersion       := Scala212,
+    crossScalaVersions := ScalaVersions,
     mimaSettings,
     name  := "twirl-api",
     jsEnv := nodeJs,
@@ -83,6 +100,8 @@ lazy val parser = project
   .in(file("parser"))
   .enablePlugins(Common, Omnidoc)
   .settings(
+    scalaVersion       := Scala212,
+    crossScalaVersions := ScalaVersions,
     mimaSettings,
     name                                                        := "twirl-parser",
     libraryDependencies += parserCombinators(scalaVersion.value) % Optional,
@@ -93,14 +112,25 @@ lazy val parser = project
 lazy val compiler = project
   .in(file("compiler"))
   .enablePlugins(Common, Omnidoc)
-  .dependsOn(apiJvm, parser % "compile;test->test")
   .settings(
+    scalaVersion       := Scala212,
+    crossScalaVersions := ScalaVersions,
     mimaSettings,
-    name                                                        := "twirl-compiler",
-    libraryDependencies += "org.scala-lang"                      % "scala-compiler" % scalaVersion.value,
-    libraryDependencies += parserCombinators(scalaVersion.value) % "optional",
-    run / fork                                                  := true,
+    name := "twirl-compiler",
+    libraryDependencies ++= {
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((2, _)) =>
+          // only for scala < 3
+          Seq("org.scala-lang" % "scala-compiler" % scalaVersion.value)
+        case _ => Seq("org.scala-lang" %% "scala3-compiler" % scalaVersion.value)
+      }
+    },
+    libraryDependencies += parserCombinators(scalaVersion.value) % Optional,
+    libraryDependencies += ("org.scalameta" %% "scalameta" % "4.4.33").cross(CrossVersion.for3Use2_13),
+    run / fork := true
   )
+  .aggregate(apiJvm, parser)
+  .dependsOn(apiJvm, parser % "compile->compile;test->test")
 
 lazy val plugin = project
   .in(file("sbt-twirl"))
@@ -127,7 +157,7 @@ lazy val plugin = project
       }
       ()
     },
-    mimaFailOnNoPrevious := false,
+    mimaFailOnNoPrevious := false
   )
 
 // Version file
@@ -141,3 +171,4 @@ def generateVersionFile =
   }
 
 addCommandAlias("validateCode", ";headerCheckAll;+scalafmtCheckAll;scalafmtSbtCheck")
+addCommandAlias("format", ";+scalafmtAll;scalafmtSbt")
