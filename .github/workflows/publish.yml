@@ -9,4 +9,9 @@ on:
 jobs:
   publish-artifacts:
     name: Publish / Artifacts
-    uses: playframework/.github/.github/workflows/publish.yml@master
+    uses: playframework/.github/.github/workflows/publish.yml@v1
+    secrets:
+      username: ${{ secrets.SONATYPE_USERNAME }}
+      password: ${{ secrets.SONATYPE_PASSWORD }}
+      pgp_passphrase: ${{ secrets.PGP_PASSPHRASE }}
+      pgp_secret: ${{ secrets.PGP_SECRET }}
