@@ -1,35 +1,44 @@
-name: Tests
+name: Check
 
 on:
   push:
     branches: [ main ]
   pull_request:
 
+concurrency:
+  # Only run once for latest commit per ref and cancel other (previous) runs.
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  validate:
-    name: "Code validations (headerCheck, scalafmt, mima)"
-    uses: playframework/.github/.github/workflows/sbt.yml@master
+  check-code-style:
+    name: Code Style
+    uses: playframework/.github/.github/workflows/sbt.yml@v1
     with:
-      cmd: ./scripts/validate-code.sh
+      cmd: sbt validateCode
+
+  check-binary-compatibility:
+    name: Binary Compatibility
+    uses: playframework/.github/.github/workflows/binary-check.yml@v1
+
+  check-docs:
+    name: Docs
+    uses: playframework/.github/.github/workflows/sbt.yml@v1
+    with:
+      cmd: |
+        cd docs
+        sbt evaluateSbtFiles validateDocs headerCheckAll test
 
   tests:
-    needs:
-      - validate
-
-    name: "Run tests with Scala ${{ matrix.scala }} and AdoptOpenJDK ${{ matrix.java }}"
-    uses: playframework/.github/.github/workflows/sbt-matrix.yml@master
-    with:
-      cmd: ./scripts/test-code.sh
+    name: Tests
+    needs: # Waiting more lightweight checks
+      - "check-code-style"
+      - "check-binary-compatibility"
+      - "check-docs"
+    uses: playframework/.github/.github/workflows/sbt-matrix.yml@v1
+    with: # Should be sync with Mergify conditions (.mergify.yml)
       java: >-
-        ["8", "11"]
+        [ "11", "8" ]
       scala: >-
-        ["2.12.15", "2.13.7"]
-
-  docs:
-    needs:
-      - tests
-
-    name: "Validate documentation"
-    uses: playframework/.github/.github/workflows/sbt.yml@master
-    with:
-      cmd: ./scripts/validate-docs.sh
+        [ "2.12.15", "2.13.8", "3.1.1" ]
+      cmd: scripts/test-code.sh
