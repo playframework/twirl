@@ -10,8 +10,8 @@ import scala.language.implicitConversions
  *
  * This includes:
  *
- *   - @defining
- *   - @using
+ *   - \@defining
+ *   - \@using
  *   - iterable/option/string as boolean for if statements
  *   - default values (maybeFoo ? defaultFoo)
  */
