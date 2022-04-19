@@ -2,28 +2,12 @@ queue_rules:
   - name: default
     conditions:
       # Conditions to get out of the queue (= merged)
-      - check-success~=^Code Style / JDK (\d+)$
-      - check-success~=^Binary Compatibility / JDK (\d+)$
-      - check-success~=^Docs / JDK (\d+)$
-      - check-success~=^Tests / Scala 2\.12\.(\d+) & JDK 11$
-      - check-success~=^Tests / Scala 2\.13\.(\d+) & JDK 11$
-      - check-success~=^Tests / Scala 3\.(\d+)\.(\d+)(-RC\d+)? & JDK 11$
-      - check-success~=^Tests / Scala 2\.12\.(\d+) & JDK 8$
-      - check-success~=^Tests / Scala 2\.13\.(\d+) & JDK 8$
-      - check-success~=^Tests / Scala 3\.(\d+)\.(\d+)(-RC\d+)? & JDK 8$
+      - check-success~=/ Ready To Merge$
 
 pull_request_rules:
   - name: Merge PRs that are ready
     conditions:
-      - check-success~=^Code Style / JDK (\d+)$
-      - check-success~=^Binary Compatibility / JDK (\d+)$
-      - check-success~=^Docs / JDK (\d+)$
-      - check-success~=^Tests / Scala 2\.12\.(\d+) & JDK 11$
-      - check-success~=^Tests / Scala 2\.13\.(\d+) & JDK 11$
-      - check-success~=^Tests / Scala 3\.(\d+)\.(\d+)(-RC\d+)? & JDK 11$
-      - check-success~=^Tests / Scala 2\.12\.(\d+) & JDK 8$
-      - check-success~=^Tests / Scala 2\.13\.(\d+) & JDK 8$
-      - check-success~=^Tests / Scala 3\.(\d+)\.(\d+)(-RC\d+)? & JDK 8$
+      - check-success~=/ Ready To Merge$
       - check-success=typesafe-cla-validator
       - "#approved-reviews-by>=1"
       - "#review-requested=0"

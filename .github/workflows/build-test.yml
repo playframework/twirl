@@ -42,3 +42,9 @@ jobs:
       scala: >-
         [ "2.12.15", "2.13.8", "3.1.2" ]
       cmd: scripts/test-code.sh
+
+  finish:
+    name: Finish
+    needs: # Should be last
+      - "tests"
+    uses: playframework/.github/.github/workflows/rtm.yml@v1
