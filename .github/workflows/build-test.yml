@@ -36,7 +36,7 @@ jobs:
       - "check-binary-compatibility"
       - "check-docs"
     uses: playframework/.github/.github/workflows/sbt-matrix.yml@v1
-    with: # Should be sync with Mergify conditions (.mergify.yml)
+    with:
       java: >-
         [ "11", "8" ]
       scala: >-
