@@ -14,7 +14,6 @@ import Contexts.Context
 import Contexts.ctx
 import dotty.tools.dotc.Compiler
 import dotty.tools.dotc.Driver
-import dotty.tools.dotc.reporting.ConsoleReporter
 import dotty.tools.dotc.reporting.Reporter
 import dotty.tools.io.PlainDirectory
 import dotty.tools.io.Directory
@@ -95,18 +94,7 @@ object Helper {
       def compile(): Reporter = {
         val Some((toCompile, rootCtx)) = setup(compilerArgs :+ path.toAbsolutePath.toString, initCtx.fresh)
 
-        val silentReporter = new ConsoleReporter.AbstractConsoleReporter {
-          def printMessage(msg: String): Unit = {
-            // We want to suppress compile errors log.
-            //
-            // Some of Twirl's tests verify that the template cannot be compiled.
-            // It would be confusing to the developer if a compile error message were displayed at that time.
-          }
-        }
-
-        given Context = rootCtx.fresh
-          .setSetting(rootCtx.settings.outputDir, new PlainDirectory(Directory(outDir)))
-          .setReporter(silentReporter)
+        given Context = rootCtx.fresh.setSetting(rootCtx.settings.outputDir, new PlainDirectory(Directory(outDir)))
 
         doCompile(newCompiler, toCompile)
       }
