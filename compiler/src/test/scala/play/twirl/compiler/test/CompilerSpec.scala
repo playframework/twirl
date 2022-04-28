@@ -179,6 +179,14 @@ class CompilerSpec extends AnyWordSpec with Matchers {
       )
     }
 
+    "fail compilation for errorInTemplateArgs.scala.html" in {
+      val helper = newCompilerHelper
+      the[CompilationError] thrownBy helper.compile[(() => Html)]("errorInTemplateArgs.scala.html", "html.errorInTemplateArgs") must have(
+        Symbol("line")(1),
+        Symbol("column")(6)
+      )
+    }
+
     "compile templates that have contiguous strings > than 64k" in {
       val helper = newCompilerHelper
       val input  = TwirlIO.readFileAsString(new File(sourceDir, "long.scala.html"))
