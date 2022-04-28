@@ -181,7 +181,8 @@ class CompilerSpec extends AnyWordSpec with Matchers {
 
     "fail compilation for errorInTemplateArgs.scala.html" in {
       val helper = newCompilerHelper
-      the[CompilationError] thrownBy helper.compile[(() => Html)]("errorInTemplateArgs.scala.html", "html.errorInTemplateArgs") must have(
+      the[CompilationError] thrownBy helper
+        .compile[(() => Html)]("errorInTemplateArgs.scala.html", "html.errorInTemplateArgs") must have(
         Symbol("line")(1),
         Symbol("column")(6)
       )
