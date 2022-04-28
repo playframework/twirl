@@ -82,7 +82,7 @@ object Helper {
       val reporter = driver.compile()
 
       if (reporter.hasErrors) {
-        val error   = reporter.allErrors.head
+        val error   = reporter.allErrors.sortBy(_.pos.point).head
         val message = error.msg
         val pos     = error.pos
         throw CompilationError(message.toString, mapper.mapLine(pos.line + 1), mapper.mapPosition(pos.point))
