@@ -495,6 +495,7 @@ package """ :+ packageName :+ """
 
   object TemplateAsFunctionCompiler {
     import scala.meta._
+    import scala.meta.parsers.ParseException
 
     object ByNameParam {
       def unapply(param: Term.Param): Option[(String, String)] =
@@ -506,10 +507,15 @@ package """ :+ packageName :+ """
 
     def getFunctionMapping(signature: String, returnType: String): (String, String, String) = {
 
-      val obj    = s"object FT { def signature$signature }".parse[scala.meta.Stat].get.asInstanceOf[Defn.Object]
-      val templ  = obj.templ
-      val defdef = templ.stats.head.asInstanceOf[Decl.Def]
-      val params: List[List[Term.Param]] = defdef.paramss
+      val params: List[List[Term.Param]] =
+        try {
+          val obj    = s"object FT { def signature$signature }".parse[scala.meta.Stat].get.asInstanceOf[Defn.Object]
+          val templ  = obj.templ
+          val defdef = templ.stats.head.asInstanceOf[Decl.Def]
+          defdef.paramss
+        } catch {
+          case e: ParseException => Nil
+        }
 
       def filterType(p: Term.Param) =
         if (p.decltpe.get.toString.endsWith("*")) s"Array[${p.decltpe.get.toString}]".replace("*", "")
