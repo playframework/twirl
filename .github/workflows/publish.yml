@@ -4,7 +4,8 @@ on:
   push:
     branches: # Snapshots
       - main
-    tags: ['**'] # Releases
+    tags: # Releases
+      - '**'
 
 jobs:
   publish-artifacts:
