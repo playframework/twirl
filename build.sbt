@@ -166,5 +166,19 @@ def generateVersionFile =
     Seq(file)
   }
 
-addCommandAlias("validateCode", "headerCheckAll; scalafmtSbtCheck; scalafmtCheckAll")
-addCommandAlias("format", ";+scalafmtAll;scalafmtSbt")
+addCommandAlias(
+  "validateCode",
+  List(
+    "headerCheckAll",
+    "scalafmtSbtCheck",
+    "scalafmtCheckAll",
+  ).mkString(";")
+)
+
+addCommandAlias(
+  "format",
+  List(
+    "scalafmtSbt",
+    "scalafmtAll",
+  ).mkString(";")
+)
