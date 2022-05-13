@@ -51,7 +51,7 @@ abstract class BufferedContent[A <: BufferedContent[A]](
    * This should only ever be called at the top level element to avoid unneeded memory allocation.
    */
   private lazy val builtBody = {
-    val builder = new StringBuilder()
+    val builder = new StringBuilder
     buildString(builder)
     builder.toString
   }

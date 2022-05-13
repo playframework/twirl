@@ -122,8 +122,8 @@ case class GeneratedSource(file: File, codec: Codec = TwirlIO.defaultCodec) exte
   def needRecompilation(imports: collection.Seq[String]): Boolean =
     !file.exists ||
       // A generated source already exist but
-      source.isDefined && ((source.get.lastModified > file.lastModified) || // the source has been modified
-        (meta("HASH") != Hash(TwirlIO.readFile(source.get), imports)))      // or the hash don't match
+      source.isDefined && (source.get.lastModified > file.lastModified || // the source has been modified
+        meta("HASH") != Hash(TwirlIO.readFile(source.get), imports))      // or the hash don't match
 
   def toSourcePosition(marker: Int): (Int, Int) = {
     try {
@@ -626,8 +626,8 @@ object Source {
       case s: String => source.append(s)
       case Source(code, pos @ OffsetPosition(_, offset)) => {
         source.append("/*" + pos + "*/")
-        positions += (source.length                -> offset)
-        lines += (source.toString.split('\n').size -> pos.line)
+        positions += source.length                -> offset
+        lines += source.toString.split('\n').size -> pos.line
         source.append(code)
       }
       case Source(code, NoPosition) => source.append(code)

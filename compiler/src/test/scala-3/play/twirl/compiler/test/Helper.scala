@@ -93,7 +93,7 @@ object Helper {
 
     class TestDriver(outDir: Path, compilerArgs: Array[String], path: Path) extends Driver {
       def compile(): Reporter = {
-        val Some((toCompile, rootCtx)) = setup(compilerArgs :+ path.toAbsolutePath.toString, initCtx.fresh)
+        val Some(toCompile, rootCtx) = setup(compilerArgs :+ path.toAbsolutePath.toString, initCtx.fresh)
 
         val silentReporter = new ConsoleReporter.AbstractConsoleReporter {
           def printMessage(msg: String): Unit = {

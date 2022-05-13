@@ -34,7 +34,7 @@ object Common extends AutoPlugin {
 
   def crossScalacOptions(version: String) = {
     CrossVersion.partialVersion(version) match {
-      case Some((2, n)) if n < 12 =>
+      case Some(2, n) if n < 12 =>
         scalacParameters ++ Seq(
           "-target:jvm-1.8",
           "-Ywarn-unused:imports",

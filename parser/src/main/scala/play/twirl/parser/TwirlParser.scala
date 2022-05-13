@@ -143,7 +143,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     /** Backtrack to a known offset */
     def regressTo(offset: Int): Unit = offset_ = offset
 
-    def isPastEOF(len: Int): Boolean = (offset_ + len - 1) >= length_
+    def isPastEOF(len: Int): Boolean = offset_ + len - 1 >= length_
 
     def isEOF: Boolean = isPastEOF(1)
 
@@ -508,7 +508,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       val startsWithParenthesis = result.trim.startsWith("(") || result.trim.stripPrefix("case").trim.startsWith("(")
       val endsWithParenthesis   = result.stripSuffix("=>").trim.endsWith(")")
 
-      noContainsOpenParenthesis || (startsWithParenthesis && endsWithParenthesis)
+      noContainsOpenParenthesis || startsWithParenthesis && endsWithParenthesis
     }
 
     val p      = input.offset()

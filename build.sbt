@@ -14,8 +14,8 @@ val ScalaTestVersion = "3.2.12"
 
 def parserCombinators(scalaVersion: String) = "org.scala-lang.modules" %% "scala-parser-combinators" % {
   CrossVersion.partialVersion(scalaVersion) match {
-    case Some((2, _)) => "1.1.2"
-    case _            => "2.1.0"
+    case Some(2, _) => "1.1.2"
+    case _          => "2.1.0"
   }
 }
 
@@ -23,8 +23,8 @@ val mimaSettings = Seq(
   mimaPreviousArtifacts := {
     CrossVersion.partialVersion(scalaVersion.value) match {
       // No release for Scala 3 yet
-      case Some((3, _)) => Set.empty
-      case _            => previousVersion.map(organization.value %% name.value % _).toSet
+      case Some(3, _) => Set.empty
+      case _          => previousVersion.map(organization.value %% name.value % _).toSet
     }
   },
   mimaBinaryIssueFilters ++= Seq(
@@ -59,7 +59,7 @@ lazy val nodeJs = {
   if (System.getProperty("NODE_PATH") != null)
     new NodeJSEnv(NodeJSEnv.Config().withExecutable(System.getProperty("NODE_PATH")))
   else
-    new NodeJSEnv()
+    new NodeJSEnv
 }
 
 lazy val api = crossProject(JVMPlatform, JSPlatform)
@@ -82,8 +82,8 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
     ),
     libraryDependencies += "org.scala-lang.modules" %%% "scala-xml" % {
       CrossVersion.partialVersion(scalaVersion.value) match {
-        case Some((2, _)) => "1.3.0"
-        case _            => "2.0.1"
+        case Some(2, _) => "1.3.0"
+        case _          => "2.0.1"
       }
     },
     libraryDependencies += "org.scalatest" %%% "scalatest" % ScalaTestVersion % Test,
@@ -115,7 +115,7 @@ lazy val compiler = project
     name := "twirl-compiler",
     libraryDependencies ++= {
       CrossVersion.partialVersion(scalaVersion.value) match {
-        case Some((2, _)) =>
+        case Some(2, _) =>
           // only for scala < 3
           Seq("org.scala-lang" % "scala-compiler" % scalaVersion.value)
         case _ => Seq("org.scala-lang" %% "scala3-compiler" % scalaVersion.value)

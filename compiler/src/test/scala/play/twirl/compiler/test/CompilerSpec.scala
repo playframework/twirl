@@ -37,7 +37,7 @@ class CompilerSpec extends AnyWordSpec with Matchers {
         .toString
         .trim
 
-      tmpl must (include("<h1>Hello World</h1>").and(include("You have 2 items")).and(include("EA")).and(include("EB")))
+      tmpl must include("<h1>Hello World</h1>").and(include("You have 2 items")).and(include("EA")).and(include("EB"))
     }
 
     "compile successfully (static)" in {

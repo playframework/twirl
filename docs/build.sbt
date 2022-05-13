@@ -32,7 +32,7 @@ def overrideTwirlSettings: Seq[Setting[_]] =
     Test / sourceGenerators := Nil
   ) ++ inConfig(Test)(SbtTwirl.twirlSettings) ++ SbtTwirl.defaultSettings ++ SbtTwirl.positionSettings ++ Seq(
     Test / TwirlKeys.compileTemplates / sourceDirectories ++=
-      (PlayDocsKeys.javaManualSourceDirectories.value ++ PlayDocsKeys.scalaManualSourceDirectories.value)
+      PlayDocsKeys.javaManualSourceDirectories.value ++ PlayDocsKeys.scalaManualSourceDirectories.value
   )
 
 // the twirl plugin automatically adds this dependency, but this overrides it so

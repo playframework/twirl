@@ -50,7 +50,7 @@ object Omnidoc extends AutoPlugin {
         }
         s"https://github.com/${repo}/tree/${tree}${path}"
       },
-      (Compile / packageSrc / packageOptions) ++= omnidocSourceUrl.value.toSeq.map { url =>
+      Compile / packageSrc / packageOptions ++= omnidocSourceUrl.value.toSeq.map { url =>
         ManifestAttributes(SourceUrlKey -> url)
       }
     )

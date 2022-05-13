@@ -31,7 +31,7 @@ class StringInterpolationSpec extends AnyWordSpec with Matchers {
       html"${Some("a")} $None".body mustBe "a "
       html"${Optional.of("a")} $None".body mustBe "a "
       html"${Seq("a", "b")}".body mustBe "ab"
-      val javaList: JList[String] = new ArrayList();
+      val javaList: JList[String] = new ArrayList;
       javaList.add("a")
       javaList.add("b")
       html"${javaList}".body mustBe "ab"
