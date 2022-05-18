@@ -34,8 +34,6 @@ val mimaSettings = Seq(
   )
 )
 
-ThisBuild / sonatypeProfileName := "com.typesafe.play"
-
 // Customise sbt-dynver's behaviour to make it work with tags which aren't v-prefixed
 ThisBuild / dynverTagPrefix := ""
 
