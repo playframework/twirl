@@ -53,8 +53,8 @@ sealed trait AbstractGeneratedSource {
           .split('\n')
           .map { m =>
             m.trim match {
-              case Meta(key, value)   => (key -> value)
-              case UndefinedMeta(key) => (key -> "")
+              case Meta(key, value)   => key -> value
+              case UndefinedMeta(key) => key -> ""
               case _                  => ("UNDEFINED", "")
             }
           }
