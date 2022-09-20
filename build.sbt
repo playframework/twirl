@@ -103,8 +103,8 @@ lazy val releaseSettings: Seq[Setting[_]] = Seq(
 )
 
 val commonSettings = javaCompilerSettings ++ headerSettings ++ Seq(
-  scalaVersion := scala212,
-  crossScalaVersions := Seq(scala210, scala212, "2.13.4"), // scala213 (=2.13.5) does not work because "Error downloading org.scala-js:scalajs-compiler_2.13.5:0.6.33"
+  scalaVersion := "2.12.17",
+  crossScalaVersions := Seq(scala210, "2.12.17", "2.13.9"),
   scalacOptions ++= scalacCompilerSettings(scalaVersion.value),
 )
 
@@ -177,7 +177,7 @@ lazy val plugin = project
     headerSettings,
     name := "sbt-twirl",
     organization := "com.typesafe.sbt",
-    scalaVersion := scala212,
+    scalaVersion := "2.12.17",
     libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest(scalaVersion.value) % "test",
     resourceGenerators in Compile += generateVersionFile.taskValue,
     scriptedDependencies := {
@@ -230,8 +230,10 @@ def scalaParserCombinators(scalaVersion: String): Seq[ModuleID] = scalaVersion m
 
 def scalaXml = Def.setting {
   CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((x, y)) if x > 2 || (x == 2 && y >= 11) =>
+    case Some((x, y)) if y == 11 =>
       Seq("org.scala-lang.modules" %%% "scala-xml" % "1.2.0")
+    case Some((x, y)) if y >= 12 =>
+      Seq("org.scala-lang.modules" %%% "scala-xml" % "2.1.0")
     case _ =>
       Seq.empty
   }
