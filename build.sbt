@@ -78,13 +78,8 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
         "org.scalatest.tools.ScalaTestFramework"
       )
     ),
-    libraryDependencies += "org.scala-lang.modules" %%% "scala-xml" % {
-      CrossVersion.partialVersion(scalaVersion.value) match {
-        case Some((2, 12)) => "1.3.0"
-        case _             => "2.1.0"
-      }
-    },
-    libraryDependencies += "org.scalatest" %%% "scalatest" % ScalaTestVersion % Test,
+    libraryDependencies += "org.scala-lang.modules" %%% "scala-xml" % "2.1.0",
+    libraryDependencies += "org.scalatest"          %%% "scalatest" % ScalaTestVersion % Test,
   )
 
 lazy val apiJvm = api.jvm
