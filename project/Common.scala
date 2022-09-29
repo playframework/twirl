@@ -16,10 +16,8 @@ object Common extends AutoPlugin {
     "-encoding",
     "UTF-8",
     "-Xlint:-options",
-    "-source",
-    "1.8",
-    "-target",
-    "1.8",
+    "--release",
+    "11",
     "-Xlint:deprecation",
     "-Xlint:unchecked"
   )
@@ -36,7 +34,7 @@ object Common extends AutoPlugin {
     CrossVersion.partialVersion(version) match {
       case Some((2, n)) if n < 12 =>
         scalacParameters ++ Seq(
-          "-target:jvm-1.8",
+          "-release:11",
           "-Ywarn-unused:imports",
           "-Xlint:nullary-unit",
           "-Xlint",
