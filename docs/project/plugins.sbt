@@ -7,7 +7,7 @@ lazy val sbtTwirl = ProjectRef(Path.fileProperty("user.dir").getParentFile, "plu
 
 resolvers ++= DefaultOptions.resolvers(snapshot = true)
 
-addSbtPlugin("com.typesafe.play" % "play-docs-sbt-plugin" % sys.props.getOrElse("play.version", "2.8.0"))
+addSbtPlugin("com.typesafe.play" % "play-docs-sbt-plugin" % sys.props.getOrElse("play.version", "2.9.0-M2"))
 addSbtPlugin("de.heikoseeberger" % "sbt-header"           % "5.7.0")
 addSbtPlugin("org.scalameta"     % "sbt-scalafmt"         % "2.4.6")
 addSbtPlugin("com.github.sbt"    % "sbt-native-packager"  % "1.9.11") // TODO: remove when Play itself pulls in 1.9.11+
