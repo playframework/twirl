@@ -86,6 +86,10 @@ sources alongside Scala or Java source files:
 Compile / TwirlKeys.compileTemplates / sourceDirectories := (Compile / unmanagedSourceDirectories).value
 ```
 
+## Releasing a new version
+
+See https://github.com/playframework/.github/blob/main/RELEASING.md
+
 ## Credits
 
 The name *twirl* was thought up by the [Spray team][spray] and refers to the
