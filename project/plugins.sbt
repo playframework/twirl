@@ -1,4 +1,4 @@
-addSbtPlugin("com.github.sbt" % "sbt-ci-release" % "1.5.10")
+addSbtPlugin("com.github.sbt" % "sbt-ci-release" % "1.5.11")
 
 // For the Cross Build
 addSbtPlugin("org.scala-js"       % "sbt-scalajs"              % "1.11.0")
