@@ -495,6 +495,9 @@ package """ :+ packageName :+ """
 
   object TemplateAsFunctionCompiler {
     import scala.meta._
+    import scala.meta.inputs.Input
+    import scala.meta.tokens.Tokens
+    import scala.meta.parsers.Parse
     import scala.meta.parsers.ParseException
 
     object ByNameParam {
@@ -509,9 +512,11 @@ package """ :+ packageName :+ """
 
       val params: List[List[Term.Param]] =
         try {
-          val obj    = s"object FT { def signature$signature }".parse[scala.meta.Stat].get.asInstanceOf[Defn.Object]
-          val templ  = obj.templ
-          val defdef = templ.stats.head.asInstanceOf[Decl.Def]
+          val dialect = Dialect.current
+          val input   = Input.String(s"object FT { def signature$signature }")
+          val obj     = implicitly[Parse[Stat]].apply(input, dialect).get.asInstanceOf[Defn.Object]
+          val templ   = obj.templ
+          val defdef  = templ.stats.head.asInstanceOf[Decl.Def]
           defdef.paramss
         } catch {
           case e: ParseException => Nil
