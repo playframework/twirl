@@ -110,16 +110,16 @@ lazy val compiler = project
       CrossVersion.partialVersion(scalaVersion.value) match {
         case Some((2, _)) =>
           // only for scala < 3
-          Seq("org.scala-lang" % "scala-compiler" % scalaVersion.value)
-        case _ => Seq("org.scala-lang" %% "scala3-compiler" % scalaVersion.value)
+          Seq("org.scala-lang" % "scala-compiler" % scalaVersion.value % Test)
+        case _ => Seq("org.scala-lang" %% "scala3-compiler" % scalaVersion.value % Test)
       }
     },
     libraryDependencies += parserCombinators(scalaVersion.value) % Optional,
     libraryDependencies += ("org.scalameta" %% "scalameta" % "4.6.0").cross(CrossVersion.for3Use2_13),
     run / fork := true
   )
-  .aggregate(apiJvm, parser)
-  .dependsOn(apiJvm, parser % "compile->compile;test->test")
+  .aggregate(parser)
+  .dependsOn(apiJvm % Test, parser % "compile->compile;test->test")
 
 lazy val plugin = project
   .in(file("sbt-twirl"))
