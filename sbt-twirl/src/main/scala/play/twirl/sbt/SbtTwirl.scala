@@ -17,8 +17,6 @@ object Import {
       "twirl-constructor-annotations",
       "Annotations added to constructors in injectable templates"
     )
-    @deprecated("No longer supported", "1.2.0")
-    val useOldParser = SettingKey[Boolean]("twirl-use-old-parser", "No longer supported")
     val sourceEncoding =
       TaskKey[String]("twirl-source-encoding", "Source encoding for template files and generated scala files")
     val compileTemplates =

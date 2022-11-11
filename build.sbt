@@ -8,7 +8,7 @@ import sbtcrossproject.CrossPlugin.autoImport.crossProject
 import org.scalajs.jsenv.nodejs.NodeJSEnv
 
 // Binary compatibility is this version
-val previousVersion: Option[String] = Some("1.5.0")
+val previousVersion: Option[String] = Some("1.5.1")
 
 val ScalaTestVersion = "3.2.14"
 
@@ -31,6 +31,7 @@ val mimaSettings = Seq(
     ProblemFilters.exclude[Problem]("play.twirl.parser.*"),
     ProblemFilters.exclude[MissingClassProblem]("play.twirl.compiler.*"),
     ProblemFilters.exclude[IncompatibleMethTypeProblem]("play.twirl.compiler.*"),
+    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.TemplateMagic*"),
   )
 )
 

@@ -9,29 +9,6 @@ import scala.io.Codec
 import sbt.internal.inc.LoggedReporter
 
 object TemplateCompiler {
-  @deprecated("Use other compile method", "1.2.0")
-  def compile(
-      sourceDirectories: Seq[File],
-      targetDirectory: File,
-      templateFormats: Map[String, String],
-      templateImports: Seq[String],
-      includeFilter: FileFilter,
-      excludeFilter: FileFilter,
-      codec: Codec,
-      useOldParser: Boolean,
-      log: Logger
-  ): Seq[File] =
-    compile(
-      sourceDirectories,
-      targetDirectory,
-      templateFormats,
-      templateImports,
-      Nil,
-      includeFilter,
-      excludeFilter,
-      codec,
-      log
-    )
 
   def compile(
       sourceDirectories: Seq[File],

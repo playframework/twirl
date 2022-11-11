@@ -1040,9 +1040,4 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     val a = input.regressionStatistics.toArray.sortBy { case (_, (c, _)) => c }
     a.mkString("\n")
   }
-
-  // TODO - only for debugging purposes, remove before release
-  def setSource(source: String): Unit = {
-    input.reset(source)
-  }
 }
