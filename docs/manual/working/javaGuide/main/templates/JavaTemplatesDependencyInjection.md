@@ -1,3 +1,5 @@
+<!--- Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com> -->
+
 # Dependency Injection with Templates
 
 Twirl templates can be generated as a class rather than a static object by declaring a constructor using a special @this(args) syntax at the top of the template. This means that Twirl templates can be injected into controllers directly and can manage their own dependencies, rather than the controller having to manage dependencies not only for itself, but also for the templates it has to render.

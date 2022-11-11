@@ -1,4 +1,5 @@
-<!--- Copyright (C) Lightbend Inc. <http://www.typesafe.com> -->
+<!--- Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com> -->
+
 # Adding support for a custom format to the template engine
 
 The built-in template engine supports common template formats (HTML, XML, etc.) but you can easily add support for your own formats, if needed. This page summarizes the steps to follow to support a custom format.

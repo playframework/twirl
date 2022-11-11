@@ -1,4 +1,5 @@
-<!--- Copyright (C) Lightbend Inc. <http://www.typesafe.com> -->
+<!--- Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com> -->
+
 # Common template use cases
 
 Templates, being simple functions, can be composed in any way you want. Below are a few examples of some common scenarios.
