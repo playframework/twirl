@@ -476,6 +476,10 @@ package """ :+ packageName :+ """
     imports.map(i => Seq(Source(i.code, i.pos), "\n"))
   }
 
+  def formatImports(templateImports: Seq[String], extension: String): Seq[String] = {
+    templateImports.map(_.replace("%format%", extension))
+  }
+
   def generateFinalTemplate(
       relativePath: String,
       contents: Array[Byte],
