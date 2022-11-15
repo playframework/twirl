@@ -25,7 +25,7 @@ object TemplateCompiler {
       syncGenerated(targetDirectory, codec)
       val templates = collectTemplates(sourceDirectories, templateFormats, includeFilter, excludeFilter)
       for ((template, sourceDirectory, extension, format) <- templates) {
-        val imports = formatImports(templateImports, extension)
+        val imports = TwirlCompiler.formatImports(templateImports, extension)
         TwirlCompiler.compile(
           template,
           sourceDirectory,
@@ -75,7 +75,4 @@ object TemplateCompiler {
     }
   }
 
-  def formatImports(templateImports: Seq[String], extension: String): Seq[String] = {
-    templateImports.map(_.replace("%format%", extension))
-  }
 }
