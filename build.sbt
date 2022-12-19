@@ -95,8 +95,6 @@ lazy val releaseSettings: Seq[Setting[_]] = Seq(
       releaseStepTask(playBuildExtraTests in thisProjectRef.value),
       releaseStepCommandAndRemaining("+publishSigned"),
       releaseStepTask(playBuildExtraPublish in thisProjectRef.value),
-      ifDefinedAndTrue(playBuildPromoteBintray, releaseStepTask(bintrayRelease in thisProjectRef.value)),
-      ifDefinedAndTrue(playBuildPromoteSonatype, releaseStepCommand("sonatypeBundleRelease")),
       pushChanges
     )
   }
