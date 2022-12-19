@@ -104,7 +104,7 @@ lazy val releaseSettings: Seq[Setting[_]] = Seq(
 
 val commonSettings = javaCompilerSettings ++ headerSettings ++ Seq(
   scalaVersion := "2.12.17",
-  crossScalaVersions := Seq(scala210, "2.12.17", "2.13.9"),
+  crossScalaVersions := Seq(scala210, "2.12.17", scala213),
   scalacOptions ++= scalacCompilerSettings(scalaVersion.value),
 )
 
