@@ -182,7 +182,7 @@ lazy val plugin = project
     javaCompilerSettings,
     headerSettings,
     name := "sbt-twirl",
-    organization := "com.typesafe.sbt",
+    organization := "com.typesafe.play",
     scalaVersion := (buildForSbt013 match {
       case true => scala210
       case _    => "2.12.17"

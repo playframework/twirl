@@ -1,1 +1,1 @@
-addSbtPlugin("com.typesafe.sbt" % "sbt-twirl" % sys.props("project.version"))
+addSbtPlugin("com.typesafe.play" % "sbt-twirl" % sys.props("project.version"))
