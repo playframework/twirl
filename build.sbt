@@ -95,14 +95,22 @@ lazy val releaseSettings: Seq[Setting[_]] = Seq(
       releaseStepTask(playBuildExtraTests in thisProjectRef.value),
       releaseStepCommandAndRemaining("+publishSigned"),
       releaseStepTask(playBuildExtraPublish in thisProjectRef.value),
+      ifDefinedAndTrue(playBuildPromoteSonatype, releaseStepCommand("sonatypeBundleRelease")),
       pushChanges
     )
   }
 )
+def buildForSbt013 = System.getProperty("sbt013", "").trim.equals("true")
 
 val commonSettings = javaCompilerSettings ++ headerSettings ++ Seq(
-  scalaVersion := "2.12.17",
-  crossScalaVersions := Seq(scala210, "2.12.17", scala213),
+  scalaVersion := (buildForSbt013 match {
+    case true => scala210
+    case _    => "2.12.17"
+  }),
+  crossScalaVersions := (buildForSbt013 match {
+    case true => Seq(scala210)
+    case _    => Seq("2.12.17", "2.13.10")
+  }),
   scalacOptions ++= scalacCompilerSettings(scalaVersion.value),
 )
 
@@ -175,7 +183,14 @@ lazy val plugin = project
     headerSettings,
     name := "sbt-twirl",
     organization := "com.typesafe.sbt",
-    scalaVersion := "2.12.17",
+    scalaVersion := (buildForSbt013 match {
+      case true => scala210
+      case _    => "2.12.17"
+    }),
+    crossScalaVersions := (buildForSbt013 match {
+      case true => Seq(scala210)
+      case _    => Seq("2.12.17")
+    }),
     libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest(scalaVersion.value) % "test",
     resourceGenerators in Compile += generateVersionFile.taskValue,
     scriptedDependencies := {
@@ -213,13 +228,14 @@ def generateVersionFile = Def.task {
 // Dependencies
 
 def scalatest(scalaV: String): String = scalaV match {
-  case _ => "3.1.1"
+  case `scala210` => "3.0.8"
+  case _          => "3.1.1"
 }
 
 def scalaCompiler(version: String) = "org.scala-lang" % "scala-compiler" % version
 
 def scalaParserCombinators(scalaVersion: String): Seq[ModuleID] = scalaVersion match {
-  case interplay.ScalaVersions.scala210 => Seq.empty
+  case `scala210` => Seq.empty
   case _ =>
     Seq(
       "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2" % "optional"

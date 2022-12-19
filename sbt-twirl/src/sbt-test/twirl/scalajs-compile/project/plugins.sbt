@@ -1,3 +1,7 @@
 addSbtPlugin("com.typesafe.sbt" % "sbt-twirl" % sys.props("project.version"))
 
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.33")
+def buildForSbt013 = System.getProperty("sbt013", "").trim.equals("true")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % (buildForSbt013 match {
+  case true => "0.6.33"
+  case _    => "1.12.0"
+}))

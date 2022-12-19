@@ -1,4 +1,6 @@
-lazy val root = (project in file(".")).enablePlugins({
+lazy val root = (project in file(".")).settings(
+     scalaVersion := sys.props("scala.version")
+  ).enablePlugins({
   // Make sure scalajs plugin is not available
   val sjsPluginName = "org.scalajs.sbtplugin.ScalaJSPlugin"
   try Class.forName(sjsPluginName) catch {
