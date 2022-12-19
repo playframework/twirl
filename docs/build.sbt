@@ -1,3 +1,10 @@
+// Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com>
+
+import de.heikoseeberger.sbtheader.HeaderPlugin.autoImport.HeaderPattern.commentBetween
+import de.heikoseeberger.sbtheader.CommentStyle
+import de.heikoseeberger.sbtheader.FileType
+import de.heikoseeberger.sbtheader.LineCommentCreator
+
 lazy val docs = project
   .in(file("."))
   .enablePlugins(PlayDocsPlugin)
@@ -14,11 +21,17 @@ lazy val docs = project
     headerLicense := {
       Some(
         HeaderLicense.Custom(
-          s"Copyright (C) Lightbend Inc. <https://www.lightbend.com>"
+          s"Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com>"
         )
       )
     },
-    headerEmptyLine := false
+    headerMappings ++= Map(
+      FileType("sbt") -> HeaderCommentStyle.cppStyleLineComment,
+      FileType("properties") -> HeaderCommentStyle.hashLineComment,
+      FileType("md") -> CommentStyle(new LineCommentCreator("<!---", "-->"), commentBetween("<!---", "*", "-->")),
+    ),
+    (Compile / headerSources) ++=
+      ((baseDirectory.value ** ("*.properties" || "*.sbt" || "*.md" || "*.scala")) --- (baseDirectory.value ** "target" ** "*")).get
   )
   .settings(overrideTwirlSettings: _*)
   .dependsOn(twirlApi)

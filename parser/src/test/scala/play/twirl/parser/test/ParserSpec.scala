@@ -1,6 +1,7 @@
 /*
- * Copyright (C) Lightbend Inc. <https://www.lightbend.com>
+ * Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com>
  */
+
 package play.twirl.parser
 package test
 
@@ -195,15 +196,15 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
 
     "fail for" when {
       "unclosedBracket.scala.html" in {
-        parseFailure("unclosedBracket.scala.html", "Expected '}' but found 'EOF'", 12, 6)
+        parseFailure("unclosedBracket.scala.html", "Expected '}' but found 'EOF'", 16, 6)
       }
 
       "unclosedBracket2.scala.html" in {
-        parseFailure("unclosedBracket2.scala.html", "Expected '}' but found 'EOF'", 32, 1)
+        parseFailure("unclosedBracket2.scala.html", "Expected '}' but found 'EOF'", 36, 1)
       }
 
       "invalidAt.scala.html" in {
-        parseFailure("invalidAt.scala.html", "Invalid '@' symbol", 5, 5)
+        parseFailure("invalidAt.scala.html", "Invalid '@' symbol", 9, 5)
       }
     }
   }

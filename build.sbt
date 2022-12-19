@@ -1,3 +1,5 @@
+// Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com>
+
 import Dependencies._
 
 import com.typesafe.tools.mima.core.IncompatibleMethTypeProblem
@@ -50,7 +52,12 @@ lazy val twirl = project
   .disablePlugins(MimaPlugin)
   .settings(
     crossScalaVersions := Nil, // workaround so + uses project-defined variants
-    publish / skip     := true
+    publish / skip     := true,
+    (Compile / headerSources) ++=
+      ((baseDirectory.value ** ("*.properties" || "*.md" || "*.sbt" || "*.scala.html"))
+        --- (baseDirectory.value ** "target" ** "*")
+        --- (baseDirectory.value / "docs" ** "*")).get ++
+        (baseDirectory.value / "project" ** "*.scala" --- (baseDirectory.value ** "target" ** "*")).get
   )
   .aggregate(apiJvm, apiJs, parser, compiler, plugin)
 
