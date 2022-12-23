@@ -104,6 +104,7 @@ lazy val releaseSettings: Seq[Setting[_]] = Seq(
 def buildForSbt013 = System.getProperty("sbt013", "").trim.equals("true")
 
 val commonSettings = javaCompilerSettings ++ headerSettings ++ Seq(
+  sonatypeProfileName := "com.typesafe.play",
   scalaVersion := (buildForSbt013 match {
     case true => scala210
     case _    => "2.12.17"
