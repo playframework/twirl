@@ -61,6 +61,7 @@ Global / concurrentRestrictions := Seq(
 
 // Customise sbt-dynver's behaviour to make it work with tags which aren't v-prefixed
 dynverVTagPrefix in ThisBuild := false
+dynverSonatypeSnapshots in ThisBuild := true
 
 // Sanity-check: assert that version comes from a tag (e.g. not a too-shallow clone)
 // https://github.com/dwijnand/sbt-dynver/#sanity-checking-the-version
@@ -95,16 +96,22 @@ lazy val releaseSettings: Seq[Setting[_]] = Seq(
       releaseStepTask(playBuildExtraTests in thisProjectRef.value),
       releaseStepCommandAndRemaining("+publishSigned"),
       releaseStepTask(playBuildExtraPublish in thisProjectRef.value),
-      ifDefinedAndTrue(playBuildPromoteBintray, releaseStepTask(bintrayRelease in thisProjectRef.value)),
       ifDefinedAndTrue(playBuildPromoteSonatype, releaseStepCommand("sonatypeBundleRelease")),
       pushChanges
     )
   }
 )
+def buildForSbt013 = System.getProperty("sbt013", "").trim.equals("true")
 
 val commonSettings = javaCompilerSettings ++ headerSettings ++ Seq(
-  scalaVersion := scala212,
-  crossScalaVersions := Seq(scala210, scala212, "2.13.4"), // scala213 (=2.13.5) does not work because "Error downloading org.scala-js:scalajs-compiler_2.13.5:0.6.33"
+  scalaVersion := (buildForSbt013 match {
+    case true => scala210
+    case _    => "2.12.17"
+  }),
+  crossScalaVersions := (buildForSbt013 match {
+    case true => Seq(scala210)
+    case _    => Seq("2.12.17", "2.13.10")
+  }),
   scalacOptions ++= scalacCompilerSettings(scalaVersion.value),
 )
 
@@ -176,8 +183,15 @@ lazy val plugin = project
     javaCompilerSettings,
     headerSettings,
     name := "sbt-twirl",
-    organization := "com.typesafe.sbt",
-    scalaVersion := scala212,
+    organization := "com.typesafe.play",
+    scalaVersion := (buildForSbt013 match {
+      case true => scala210
+      case _    => "2.12.17"
+    }),
+    crossScalaVersions := (buildForSbt013 match {
+      case true => Seq(scala210)
+      case _    => Seq("2.12.17")
+    }),
     libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest(scalaVersion.value) % "test",
     resourceGenerators in Compile += generateVersionFile.taskValue,
     scriptedDependencies := {
@@ -215,13 +229,14 @@ def generateVersionFile = Def.task {
 // Dependencies
 
 def scalatest(scalaV: String): String = scalaV match {
-  case _ => "3.0.8"
+  case `scala210` => "3.0.8"
+  case _          => "3.1.1"
 }
 
 def scalaCompiler(version: String) = "org.scala-lang" % "scala-compiler" % version
 
 def scalaParserCombinators(scalaVersion: String): Seq[ModuleID] = scalaVersion match {
-  case interplay.ScalaVersions.scala210 => Seq.empty
+  case `scala210` => Seq.empty
   case _ =>
     Seq(
       "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2" % "optional"
@@ -230,8 +245,10 @@ def scalaParserCombinators(scalaVersion: String): Seq[ModuleID] = scalaVersion m
 
 def scalaXml = Def.setting {
   CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((x, y)) if x > 2 || (x == 2 && y >= 11) =>
+    case Some((x, y)) if y == 11 =>
       Seq("org.scala-lang.modules" %%% "scala-xml" % "1.2.0")
+    case Some((x, y)) if y >= 12 =>
+      Seq("org.scala-lang.modules" %%% "scala-xml" % "2.1.0")
     case _ =>
       Seq.empty
   }

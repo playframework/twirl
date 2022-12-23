@@ -76,7 +76,7 @@ object SbtTwirl extends AutoPlugin {
     libraryDependencies += {
       val crossVer = crossVersion.value
       val isScalaJS = CrossVersion(crossVer, scalaVersion.value, scalaBinaryVersion.value) match {
-        case Some(f) => f("").contains("_sjs0.6") // detect ScalaJS CrossVersion
+        case Some(f) => f("").contains("_sjs0.6") || f("").contains("_sjs1") // detect ScalaJS CrossVersion
         case None    => false
       }
       // TODO: use %%% from sbt-crossproject when we add support for scalajs 1.0
