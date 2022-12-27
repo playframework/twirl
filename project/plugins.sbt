@@ -1,4 +1,4 @@
-addSbtPlugin("com.typesafe.play" % "interplay" % sys.props.get("interplay.version").getOrElse("2.1.6"))
+addSbtPlugin("com.typesafe.play" % "interplay" % sys.props.get("interplay.version").getOrElse("2.1.10"))
 
 def buildForSbt013 = System.getProperty("sbt013", "").trim.equals("true")
 
