@@ -12,7 +12,7 @@ import org.scalajs.jsenv.nodejs.NodeJSEnv
 // Binary compatibility is this version
 val previousVersion: Option[String] = Some("1.5.1")
 
-val ScalaTestVersion = "3.2.14"
+val ScalaTestVersion = "3.2.15"
 
 def parserCombinators(scalaVersion: String) = "org.scala-lang.modules" %% "scala-parser-combinators" % {
   CrossVersion.partialVersion(scalaVersion) match {
