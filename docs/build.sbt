@@ -26,7 +26,7 @@ lazy val docs = project
       )
     },
     headerMappings ++= Map(
-      FileType("sbt") -> HeaderCommentStyle.cppStyleLineComment,
+      FileType("sbt")        -> HeaderCommentStyle.cppStyleLineComment,
       FileType("properties") -> HeaderCommentStyle.hashLineComment,
       FileType("md") -> CommentStyle(new LineCommentCreator("<!---", "-->"), commentBetween("<!---", "*", "-->")),
     ),
