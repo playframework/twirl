@@ -123,7 +123,7 @@ lazy val compiler = project
       }
     },
     libraryDependencies += parserCombinators(scalaVersion.value) % Optional,
-    libraryDependencies += ("org.scalameta"                     %% "parsers" % "4.7.4").cross(CrossVersion.for3Use2_13),
+    libraryDependencies += ("org.scalameta"                     %% "parsers" % "4.7.5").cross(CrossVersion.for3Use2_13),
     run / fork                                                  := true
   )
   .aggregate(parser)
