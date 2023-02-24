@@ -406,14 +406,14 @@ object TwirlCompiler {
           t.params.pos
         ) :+ ":" :+ resultType :+ " = {_display_(" :+ templateCode(t, resultType) :+ ")};"
       }
-      case Def(name, params, block) => {
+      case Def(name, params, resultType, block) => {
         Nil :+ (if (name.str.startsWith("implicit")) "implicit def " else "def ") :+ Source(
           name.str,
           name.pos
         ) :+ Source(
           params.str,
           params.pos
-        ) :+ " = {" :+ block.code :+ "};"
+        ) :+ resultType.map(":" + _.str).getOrElse("") :+ " = {" :+ block.code :+ "};"
       }
     }
 

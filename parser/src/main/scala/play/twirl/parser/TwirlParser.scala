@@ -404,11 +404,41 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     val templDecl     = templateDeclaration()
     if (templDecl != null) {
       anyUntil(c => c != ' ' && c != '\t', inclusive = false)
-      if (check("=")) {
-        anyUntil(c => c != ' ' && c != '\t', inclusive = false)
-        val code = scalaBlock()
-        if (code != null) {
-          result = Def(templDecl._1, templDecl._2, code)
+      var next = ""
+      if (check(":")) {
+        next = ":"
+      } else if (check("=")) {
+        next = "="
+      }
+      if (next == ":" || next == "=") {
+        var resultType: Option[PosString] = None
+        if (next == ":") {
+          anyUntil(c => c != ' ' && c != '\t', inclusive = false)
+          val resultTypePos = input.offset()
+          val rt = identifier() match {
+            case null => null
+            case id   => id
+          }
+          if (rt != null) {
+            val types = Option(squareBrackets()).getOrElse("")
+            resultType = Some(position(PosString(rt + types), resultTypePos))
+
+            anyUntil(c => c != ' ' && c != '\t', inclusive = false)
+            if (check("=")) {
+              next = "="
+            } else {
+              next = ""
+            }
+          } else {
+            next = ""
+          }
+        }
+        if (next == "=") {
+          anyUntil(c => c != ' ' && c != '\t', inclusive = false)
+          val code = scalaBlock()
+          if (code != null) {
+            result = Def(templDecl._1, templDecl._2, resultType, code)
+          }
         }
       }
     }

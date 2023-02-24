@@ -26,12 +26,12 @@ object TreeNodes {
   case class PosString(str: String) extends Positional {
     override def toString: String = str
   }
-  case class Def(name: PosString, params: PosString, code: Simple) extends Positional
-  case class Plain(text: String)                                   extends TemplateTree with Positional
-  case class Display(exp: ScalaExp)                                extends TemplateTree with Positional
-  case class Comment(msg: String)                                  extends TemplateTree with Positional
-  case class ScalaExp(parts: collection.Seq[ScalaExpPart])         extends TemplateTree with Positional
-  case class Simple(code: String)                                  extends ScalaExpPart with Positional
+  case class Def(name: PosString, params: PosString, resultType: Option[PosString], code: Simple) extends Positional
+  case class Plain(text: String)                           extends TemplateTree with Positional
+  case class Display(exp: ScalaExp)                        extends TemplateTree with Positional
+  case class Comment(msg: String)                          extends TemplateTree with Positional
+  case class ScalaExp(parts: collection.Seq[ScalaExpPart]) extends TemplateTree with Positional
+  case class Simple(code: String)                          extends ScalaExpPart with Positional
   case class Block(whitespace: String, args: Option[PosString], content: collection.Seq[TemplateTree])
       extends ScalaExpPart
       with Positional
