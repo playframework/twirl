@@ -180,6 +180,140 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
       }
     }
 
+    "handle local definitions" when {
+      "resultType is given" in {
+        val tmpl = parseTemplateString(
+          """@implicitField: FieldConstructor = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        )
+        val localDef = tmpl.defs(0)
+
+        localDef.name.str mustBe "implicitField"
+        localDef.name.pos.line mustBe 1
+        localDef.name.pos.column mustBe 2
+
+        val resultType = localDef.resultType.get
+        resultType.str mustBe "FieldConstructor"
+        resultType.pos.line mustBe 1
+        resultType.pos.column mustBe 17
+
+        localDef.params.str mustBe ""
+
+        localDef.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+      }
+      "resultType is given without implicit prefixed" in {
+        val tmpl = parseTemplateString(
+          """@field: FieldConstructor = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        )
+        val localDef = tmpl.defs(0)
+
+        localDef.name.str mustBe "field"
+        localDef.name.pos.line mustBe 1
+        localDef.name.pos.column mustBe 2
+
+        val resultType = localDef.resultType.get
+        resultType.str mustBe "FieldConstructor"
+        resultType.pos.line mustBe 1
+        resultType.pos.column mustBe 9
+
+        localDef.params.str mustBe ""
+
+        localDef.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+      }
+      "resultType with type is given" in {
+        val tmpl = parseTemplateString(
+          """@implicitField: FieldConstructor[FooType] = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        )
+        val localDef = tmpl.defs(0)
+
+        localDef.name.str mustBe "implicitField"
+        localDef.name.pos.line mustBe 1
+        localDef.name.pos.column mustBe 2
+
+        val resultType = localDef.resultType.get
+        resultType.str mustBe "FieldConstructor[FooType]"
+        resultType.pos.line mustBe 1
+        resultType.pos.column mustBe 17
+
+        localDef.params.str mustBe ""
+
+        localDef.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+      }
+      "resultType is given without spaces" in {
+        val tmpl = parseTemplateString(
+          """@implicitField:FieldConstructor=@{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        )
+        val localDef = tmpl.defs(0)
+
+        localDef.name.str mustBe "implicitField"
+        localDef.name.pos.line mustBe 1
+        localDef.name.pos.column mustBe 2
+
+        val resultType = localDef.resultType.get
+        resultType.str mustBe "FieldConstructor"
+        resultType.pos.line mustBe 1
+        resultType.pos.column mustBe 16
+
+        localDef.params.str mustBe ""
+
+        localDef.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+      }
+      "resultType and params are given" in {
+        val tmpl = parseTemplateString(
+          """@implicitField(foo: String, bar: Int): FieldConstructor = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        )
+        val localDef = tmpl.defs(0)
+
+        localDef.name.str mustBe "implicitField"
+        localDef.name.pos.line mustBe 1
+        localDef.name.pos.column mustBe 2
+
+        val resultType = localDef.resultType.get
+        resultType.str mustBe "FieldConstructor"
+        resultType.pos.line mustBe 1
+        resultType.pos.column mustBe 40
+
+        localDef.params.str mustBe "(foo: String, bar: Int)"
+        localDef.params.pos.line mustBe 1
+        localDef.params.pos.column mustBe 15
+
+        localDef.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+      }
+      "no resultType and no params are given" in {
+        val tmpl = parseTemplateString(
+          """@implicitField = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        )
+        val localDef = tmpl.defs(0)
+
+        localDef.name.str mustBe "implicitField"
+        localDef.name.pos.line mustBe 1
+        localDef.name.pos.column mustBe 2
+
+        localDef.resultType mustBe None
+
+        localDef.params.str mustBe ""
+
+        localDef.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+      }
+      "no resultType but params are given" in {
+        val tmpl = parseTemplateString(
+          """@implicitField(foo: String, bar: Int) = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        )
+        val localDef = tmpl.defs(0)
+
+        localDef.name.str mustBe "implicitField"
+        localDef.name.pos.line mustBe 1
+        localDef.name.pos.column mustBe 2
+
+        localDef.resultType mustBe None
+
+        localDef.params.str mustBe "(foo: String, bar: Int)"
+        localDef.params.pos.line mustBe 1
+        localDef.params.pos.column mustBe 15
+
+        localDef.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+      }
+    }
+
     "handle string literals within parentheses" when {
       "with left parenthesis" in {
         parseStringSuccess("""@foo("(")""")

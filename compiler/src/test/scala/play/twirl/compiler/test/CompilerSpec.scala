@@ -300,6 +300,15 @@ class CompilerSpec extends AnyWordSpec with Matchers {
     hello.static("twirl", "something-else").toString.trim must include("""<header class="twirl">""")
   }
 
+  "compile successfully (local definitions)" in {
+    val helper = newCompilerHelper
+    val hello =
+      helper.compile[(() => Html)]("localDef.scala.html", "html.localDef")
+    hello.static().toString.trim must be(
+      "Play-Framework-Vienna-Austria-Europe-The High Velocity Web Framework For Java and Scala-2023"
+    )
+  }
+
   "compile successfully (block with tuple)" in {
     val helper = newCompilerHelper
     val hello  = helper.compile[(Seq[(String, String)] => Html)]("blockWithTuple.scala.html", "html.blockWithTuple")
