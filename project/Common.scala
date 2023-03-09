@@ -64,9 +64,9 @@ object Common extends AutoPlugin {
       homepage             := Some(url(s"https://github.com/playframework/${repoName}")),
       licenses             := Seq("Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.html")),
       developers += Developer(
-        "contributors",
-        "Contributors",
-        "https://gitter.im/playframework/contributors",
+        "playframework",
+        "Play Framework Team",
+        "contact@playframework.com",
         url("https://github.com/playframework")
       ),
       description := "Twirl"
