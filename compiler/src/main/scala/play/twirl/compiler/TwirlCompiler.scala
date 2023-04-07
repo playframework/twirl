@@ -522,7 +522,7 @@ package """ :+ packageName :+ """
           val obj     = implicitly[Parse[Stat]].apply(input, dialect).get.asInstanceOf[Defn.Object]
           val templ   = obj.templ
           val defdef  = templ.stats.head.asInstanceOf[Decl.Def]
-          defdef.paramss
+          defdef.paramClauseGroups.headOption.map(_.paramClauses.map(_.values)).getOrElse(Nil)
         } catch {
           case e: ParseException => Nil
         }
