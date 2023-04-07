@@ -107,7 +107,7 @@ class CompilerSpec extends AnyWordSpec with Matchers {
       val helper = newCompilerHelper
       val result = helper
         .compile[((java.io.File, java.net.URL) => Html)]("argImports.scala.html", "html.argImports")
-        .static(new java.io.File("example"), new java.net.URL("http://example.org"))
+        .static(new java.io.File("example"), new java.net.URI("http://example.org").toURL)
         .toString
         .trim
       result must be("<p>file: example, url: http://example.org</p>")
