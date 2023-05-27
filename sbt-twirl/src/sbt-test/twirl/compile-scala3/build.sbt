@@ -6,11 +6,11 @@ lazy val root = (project in file(".")).enablePlugins {
   try Class.forName(sjsPluginName)
   catch {
     case _: ClassNotFoundException => // do nothing
-    case _ => throw new IllegalStateException(s"Found $sjsPluginName, but scalajs should not be required!")
+    case _: Throwable => throw new IllegalStateException(s"Found $sjsPluginName, but scalajs should not be required!")
   }
   // Add the twirl plugin
   SbtTwirl
 }.settings(
   scalaVersion := "3.3.0",
-  scalacOptions ++= Seq("-source:future")
+  scalacOptions ++= Seq("-source:future", "-feature")
 )
