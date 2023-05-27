@@ -161,14 +161,32 @@ case class GeneratedSourceVirtual(path: String) extends AbstractGeneratedSource 
 }
 
 object TwirlCompiler {
-  val DefaultImports = Seq(
-    "_root_.play.twirl.api.TwirlFeatureImports._",
-    "_root_.play.twirl.api.TwirlHelperImports._",
-    "_root_.play.twirl.api.Html",
-    "_root_.play.twirl.api.JavaScript",
-    "_root_.play.twirl.api.Txt",
-    "_root_.play.twirl.api.Xml"
-  )
+
+  def defaultImports(scalaVersion: String) = {
+    val implicits = if (scalaVersion.startsWith("3.")) {
+      Seq(
+        "_root_.play.twirl.api.TwirlFeatureImports.*",
+        "_root_.play.twirl.api.TwirlHelperImports.*",
+        "scala.language.adhocExtensions"
+      )
+    } else {
+      Seq(
+        "_root_.play.twirl.api.TwirlFeatureImports._",
+        "_root_.play.twirl.api.TwirlHelperImports._",
+      )
+    }
+
+    val formats =
+      Seq(
+        "_root_.play.twirl.api.Html",
+        "_root_.play.twirl.api.JavaScript",
+        "_root_.play.twirl.api.Txt",
+        "_root_.play.twirl.api.Xml"
+      )
+
+    implicits ++ formats
+
+  }
 
   import play.twirl.parser.TreeNodes._
 

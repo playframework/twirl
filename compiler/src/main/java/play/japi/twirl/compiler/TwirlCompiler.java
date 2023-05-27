@@ -24,8 +24,9 @@ public class TwirlCompiler {
   public static final Set<String> DEFAULT_IMPORTS;
   static {
     Set<String> imports = new HashSet<>();
+    String scalaVersion = scala.util.Properties$.MODULE$.versionNumberString();
     imports.addAll(JavaConverters$.MODULE$
-        .seqAsJavaListConverter(play.twirl.compiler.TwirlCompiler$.MODULE$.DefaultImports()).asJava());
+        .seqAsJavaListConverter(play.twirl.compiler.TwirlCompiler$.MODULE$.defaultImports(scalaVersion)).asJava());
     DEFAULT_IMPORTS = Collections.unmodifiableSet(imports);
   }
 
