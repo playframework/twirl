@@ -1,8 +1,8 @@
-import com.typesafe.tools.mima.core.DirectMissingMethodProblem
 // Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com>
 
 import Dependencies._
 
+import com.typesafe.tools.mima.core.DirectMissingMethodProblem
 import com.typesafe.tools.mima.core.IncompatibleMethTypeProblem
 import com.typesafe.tools.mima.core.MissingClassProblem
 import com.typesafe.tools.mima.core.Problem
