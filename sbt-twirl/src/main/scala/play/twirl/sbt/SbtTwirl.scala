@@ -68,7 +68,7 @@ object SbtTwirl extends AutoPlugin {
   def defaultSettings: Seq[Setting[_]] =
     Seq(
       templateFormats        := defaultFormats,
-      templateImports        := TwirlCompiler.DefaultImports,
+      templateImports        := TwirlCompiler.defaultImports(scalaVersion.value),
       constructorAnnotations := Nil,
       sourceEncoding         := scalacEncoding(scalacOptions.value)
     )

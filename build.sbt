@@ -2,6 +2,7 @@
 
 import Dependencies._
 
+import com.typesafe.tools.mima.core.DirectMissingMethodProblem
 import com.typesafe.tools.mima.core.IncompatibleMethTypeProblem
 import com.typesafe.tools.mima.core.MissingClassProblem
 import com.typesafe.tools.mima.core.Problem
@@ -34,6 +35,7 @@ val mimaSettings = Seq(
     ProblemFilters.exclude[MissingClassProblem]("play.twirl.compiler.*"),
     ProblemFilters.exclude[IncompatibleMethTypeProblem]("play.twirl.compiler.*"),
     ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.TemplateMagic*"),
+    ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.compiler.TwirlCompiler.DefaultImports"),
   )
 )
 
@@ -108,7 +110,7 @@ lazy val parser = project
 
 lazy val compiler = project
   .in(file("compiler"))
-  .enablePlugins(Common, Omnidoc)
+  .enablePlugins(Common, Omnidoc, BuildInfoPlugin)
   .settings(
     scalaVersion       := Scala212,
     crossScalaVersions := ScalaVersions,
@@ -124,7 +126,9 @@ lazy val compiler = project
     },
     libraryDependencies += parserCombinators(scalaVersion.value) % Optional,
     libraryDependencies += ("org.scalameta"                     %% "parsers" % "4.7.8").cross(CrossVersion.for3Use2_13),
-    run / fork                                                  := true
+    run / fork                                                  := true,
+    buildInfoKeys                                               := Seq[BuildInfoKey](scalaVersion),
+    buildInfoPackage                                            := "play.twirl.compiler"
   )
   .aggregate(parser)
   .dependsOn(apiJvm % Test, parser % "compile->compile;test->test")

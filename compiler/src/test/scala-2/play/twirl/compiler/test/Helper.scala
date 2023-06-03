@@ -92,13 +92,14 @@ object Helper {
         className: String,
         additionalImports: Seq[String] = Nil
     ): CompiledTemplate[T] = {
+      val scalaVersion = play.twirl.compiler.BuildInfo.scalaVersion
       val templateFile = new File(sourceDir, templateName)
       val Some(generated) = twirlCompiler.compile(
         templateFile,
         sourceDir,
         generatedDir,
         "play.twirl.api.HtmlFormat",
-        additionalImports = TwirlCompiler.DefaultImports ++ additionalImports
+        additionalImports = TwirlCompiler.defaultImports(scalaVersion) ++ additionalImports
       )
 
       val mapper = GeneratedSource(generated)
