@@ -58,7 +58,7 @@ object Helper {
         className: String,
         additionalImports: Seq[String] = Nil
     ): CompiledTemplate[T] = {
-      val scalaVersion = scala.util.Properties.versionNumberString
+      val scalaVersion = play.twirl.compiler.BuildInfo.scalaVersion
       val templateFile = new File(sourceDir, templateName)
       val Some(generated) = twirlCompiler.compile(
         templateFile,
