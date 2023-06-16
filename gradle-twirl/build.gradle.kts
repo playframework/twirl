@@ -45,8 +45,8 @@ testing {
 gradlePlugin {
     // Define the plugin
     val greeting by plugins.creating {
-        id = "play.twirl.gradle.greeting"
-        implementationClass = "play.twirl.gradle.GradleTwirlPlugin"
+        id = "com.playframework.twirl"
+        implementationClass = "play.twirl.gradle.TwirlPlugin"
     }
 }
 
