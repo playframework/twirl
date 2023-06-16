@@ -10,6 +10,7 @@
 plugins {
     // Apply the Java Gradle plugin development plugin to add support for developing Gradle plugins
     `java-gradle-plugin`
+    id("com.diffplug.spotless") version "6.19.0"
 }
 
 repositories {
@@ -51,6 +52,12 @@ gradlePlugin {
 }
 
 gradlePlugin.testSourceSets.add(sourceSets["functionalTest"])
+
+spotless {
+    java {
+        googleJavaFormat()
+    }
+}
 
 tasks.named<Task>("check") {
     // Include functionalTest as part of the check lifecycle
