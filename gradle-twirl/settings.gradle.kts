@@ -9,4 +9,3 @@
  */
 
 rootProject.name = "gradle-twirl"
-include("plugin")
