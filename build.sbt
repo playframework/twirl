@@ -177,6 +177,7 @@ addCommandAlias(
     "headerCheckAll",
     "scalafmtSbtCheck",
     "scalafmtCheckAll",
+    "javafmtCheckAll",
   ).mkString(";")
 )
 
@@ -185,5 +186,6 @@ addCommandAlias(
   List(
     "scalafmtSbt",
     "scalafmtAll",
+    "javafmtAll",
   ).mkString(";")
 )
