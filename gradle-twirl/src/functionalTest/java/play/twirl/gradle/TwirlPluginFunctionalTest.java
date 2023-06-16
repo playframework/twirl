@@ -3,21 +3,21 @@
  */
 package play.twirl.gradle;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.io.FileWriter;
-import java.nio.file.Files;
-import org.gradle.testkit.runner.GradleRunner;
 import org.gradle.testkit.runner.BuildResult;
+import org.gradle.testkit.runner.GradleRunner;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * A simple functional test for the 'play.twirl.gradle.greeting' plugin.
+ * A simple functional test for the 'com.playframework.twirl' plugin.
  */
-class GradleTwirlPluginFunctionalTest {
+class TwirlPluginFunctionalTest {
     @TempDir
     File projectDir;
 
@@ -33,7 +33,7 @@ class GradleTwirlPluginFunctionalTest {
         writeString(getSettingsFile(), "");
         writeString(getBuildFile(),
             "plugins {" +
-            "  id('play.twirl.gradle.greeting')" +
+            "  id('com.playframework.twirl')" +
             "}");
 
         // Run the build
@@ -45,7 +45,7 @@ class GradleTwirlPluginFunctionalTest {
         BuildResult result = runner.build();
 
         // Verify the result
-        assertTrue(result.getOutput().contains("Hello from plugin 'play.twirl.gradle.greeting'"));
+        assertTrue(result.getOutput().contains("Hello from plugin 'com.playframework.twirl'"));
     }
 
     private void writeString(File file, String string) throws IOException {
