@@ -29,7 +29,7 @@ class TwirlPluginFunctionalTest {
   @Test
   void canRunTask() throws IOException {
     writeString(getSettingsFile(), "");
-    writeString(getBuildFile(), "plugins {" + "  id('com.playframework.twirl')" + "}");
+    writeString(getBuildFile(), "plugins {" + "  id('com.typesafe.play.twirl')" + "}");
 
     // Run the build
     GradleRunner runner = GradleRunner.create();
