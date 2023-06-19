@@ -4,3 +4,4 @@
 
 sbt "++$MATRIX_SCALA test" || exit 1
 sbt +publishLocal plugin/test plugin/scripted || exit 1
+(cd gradle-twirl && ./gradlew clean check -x spotlessCheck --no-daemon) || exit 1
