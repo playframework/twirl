@@ -58,7 +58,7 @@ lazy val twirl = project
     (Compile / headerSources) ++=
       ((baseDirectory.value ** ("*.properties" || "*.md" || "*.sbt" || "*.scala.html"))
         --- (baseDirectory.value ** "target" ** "*")
-        --- (baseDirectory.value ** "gradle-twirl" ** "*") // TODO: add headers to gradle plugin sources
+        --- (baseDirectory.value ** "gradle-twirl" ** "*") // Gradle Spotless plugin is used
         --- (baseDirectory.value / "docs" ** "*")).get ++
         (baseDirectory.value / "project" ** "*.scala" --- (baseDirectory.value ** "target" ** "*")).get
   )
