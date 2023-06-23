@@ -27,6 +27,7 @@ jobs:
       gradle-build-root: gradle-twirl
       cmd: |
         sbt validateCode
+        sbt compiler/publishM2
         cd gradle-twirl && ./gradlew clean spotlessCheck --no-daemon
 
   check-binary-compatibility:
