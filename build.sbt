@@ -9,6 +9,8 @@ import com.typesafe.tools.mima.core.Problem
 import com.typesafe.tools.mima.core.ProblemFilters
 import sbtcrossproject.CrossPlugin.autoImport.crossProject
 import org.scalajs.jsenv.nodejs.NodeJSEnv
+import java.util.Properties
+import java.io.StringWriter
 
 // Binary compatibility is this version
 val previousVersion: Option[String] = Some("1.5.1")
@@ -58,6 +60,7 @@ lazy val twirl = project
     (Compile / headerSources) ++=
       ((baseDirectory.value ** ("*.properties" || "*.md" || "*.sbt" || "*.scala.html"))
         --- (baseDirectory.value ** "target" ** "*")
+        --- (baseDirectory.value / "compiler" / "version.properties")
         --- (baseDirectory.value ** "gradle-twirl" ** "*") // Gradle Spotless plugin is used
         --- (baseDirectory.value / "docs" ** "*")).get ++
         (baseDirectory.value / "project" ** "*.scala" --- (baseDirectory.value ** "target" ** "*")).get
@@ -129,7 +132,10 @@ lazy val compiler = project
     libraryDependencies += ("org.scalameta" %% "parsers" % "4.8.8").cross(CrossVersion.for3Use2_13),
     run / fork                              := true,
     buildInfoKeys                           := Seq[BuildInfoKey](scalaVersion),
-    buildInfoPackage                        := "play.twirl.compiler"
+    buildInfoPackage                        := "play.twirl.compiler",
+    publishM2                               := publishM2.dependsOn(saveCompilerVersion).value,
+    publish                                 := publish.dependsOn(saveCompilerVersion).value,
+    publishLocal                            := publishLocal.dependsOn(saveCompilerVersion).value
   )
   .aggregate(parser)
   .dependsOn(apiJvm % Test, parser % "compile->compile;test->test")
@@ -169,6 +175,17 @@ def generateVersionFile =
     val file    = (Compile / resourceManaged).value / "twirl.version.properties"
     val content = s"twirl.api.version=$version"
     IO.write(file, content)
+    Seq(file)
+  }
+
+def saveCompilerVersion =
+  Def.task {
+    val props  = new Properties()
+    val writer = new StringWriter()
+    val file   = baseDirectory.value / "version.properties"
+    props.setProperty("twirl.compiler.version", version.value)
+    props.store(writer, "")
+    IO.write(file, writer.getBuffer.toString)
     Seq(file)
   }
 
