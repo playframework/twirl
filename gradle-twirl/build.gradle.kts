@@ -4,6 +4,7 @@
 
 import java.time.Duration
 import java.util.Base64
+import java.util.Properties
 import kotlin.text.Charsets.UTF_8
 
 plugins {
@@ -13,13 +14,22 @@ plugins {
     signing
 }
 
+val compilerVersion: String =
+    Properties().apply {
+        val file = file("$projectDir/../compiler/version.properties")
+        if (!file.exists()) throw GradleException("Install Twirl Compiler to local Maven repository by `sbt compiler/publishM2` command")
+        file.inputStream().use { load(it) }
+        if (this.getProperty("twirl.compiler.version").isNullOrEmpty()) throw GradleException("`twirl.compiler.version` key didn't find in ${file.absolutePath}")
+    }.getProperty("twirl.compiler.version")
+
 // group = "com.playframework" // group and plugin id must use same top level namespace
 group = "com.typesafe.play" // TODO: uncomment line above and remove this
-version = "0.0.1-SNAPSHOT"
+version = compilerVersion
 
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
+    mavenLocal()
 }
 
 testing {
