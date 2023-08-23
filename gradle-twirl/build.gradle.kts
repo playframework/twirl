@@ -75,7 +75,7 @@ gradlePlugin {
     website.set("https://www.playframework.com/documentation/latest/ScalaTemplates")
     vcsUrl.set("https://github.com/playframework/twirl")
     // Define the plugin
-    val greeting by plugins.creating {
+    val twirl by plugins.creating {
         id = "com.typesafe.play.twirl" // TODO: rename to "com.playframework.twirl"
         displayName = "Twirl Plugin"
         description = "A Gradle plugin to compile Twirl templates"
