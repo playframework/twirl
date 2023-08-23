@@ -3,8 +3,6 @@
 */
 package play.twirl.gradle;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -29,18 +27,17 @@ class TwirlPluginFunctionalTest {
   @Test
   void canRunTask() throws IOException {
     writeString(getSettingsFile(), "");
-    writeString(getBuildFile(), "plugins {" + "  id('com.typesafe.play.twirl')" + "}");
+    writeString(
+        getBuildFile(),
+        "plugins {" + "id 'application'\n" + "  id('com.typesafe.play.twirl')" + "}");
 
     // Run the build
     GradleRunner runner = GradleRunner.create();
     runner.forwardOutput();
     runner.withPluginClasspath();
-    runner.withArguments("greeting");
+    runner.withArguments("compileTwirl");
     runner.withProjectDir(projectDir);
     BuildResult result = runner.build();
-
-    // Verify the result
-    assertTrue(result.getOutput().contains("Hello from plugin 'com.playframework.twirl'"));
   }
 
   private void writeString(File file, String string) throws IOException {
