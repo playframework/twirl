@@ -15,9 +15,11 @@ class TwirlPluginTest {
   void pluginRegistersATask() {
     // Create a test project and apply the plugin
     Project project = ProjectBuilder.builder().build();
+    project.getPlugins().apply("application");
     project.getPlugins().apply("com.typesafe.play.twirl");
 
     // Verify the result
-    assertNotNull(project.getTasks().findByName("greeting"));
+    assertNotNull(project.getTasks().findByName("compileTwirl"));
+    assertNotNull(project.getTasks().findByName("compileTestTwirl"));
   }
 }
