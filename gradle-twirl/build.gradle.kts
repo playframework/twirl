@@ -17,7 +17,7 @@ plugins {
 val compilerVersion: String =
     Properties().apply {
         val file = file("$projectDir/../compiler/version.properties")
-        if (!file.exists()) throw GradleException("Install Twirl Compiler to local Maven repository by `sbt compiler/publishM2` command")
+        if (!file.exists()) throw GradleException("Install Twirl Compiler to local Maven repository by `sbt +compiler/publishM2` command")
         file.inputStream().use { load(it) }
         if (this.getProperty("twirl.compiler.version").isNullOrEmpty()) throw GradleException("`twirl.compiler.version` key didn't find in ${file.absolutePath}")
     }.getProperty("twirl.compiler.version")
@@ -30,6 +30,16 @@ repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
     mavenLocal()
+}
+
+dependencies {
+    compileOnly("com.typesafe.play:twirl-compiler_2.13:$compilerVersion")
+}
+
+tasks.jar {
+    manifest {
+        attributes("Implementation-Version" to version)
+    }
 }
 
 testing {
