@@ -6,6 +6,8 @@ package play.twirl.gradle;
 import javax.inject.Inject;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.internal.lambdas.SerializableLambdas;
 import org.gradle.api.internal.tasks.DefaultSourceSet;
 import org.gradle.api.model.ObjectFactory;
@@ -30,7 +32,25 @@ public class TwirlPlugin implements Plugin<Project> {
   public void apply(final Project project) {
     project.getPluginManager().apply(ScalaBasePlugin.class);
 
+    Configuration twirlConfiguration = createDefaultTwirlConfiguration(project);
+
     configureSourceSetDefaults(project);
+  }
+
+  private Configuration createDefaultTwirlConfiguration(Project project) {
+    // Get Twirl version from Gradle Plugin MANIFEST.MF
+    String twirlVersion = getClass().getPackage().getImplementationVersion();
+    Configuration conf = project.getConfigurations().create("twirl");
+    conf.setDescription("The Twirl compiler library.");
+    conf.setVisible(false);
+    conf.setTransitive(true);
+    conf.defaultDependencies(
+        dependencies ->
+            dependencies.add(
+                project
+                    .getDependencies()
+                    .create("com.typesafe.play:twirl-compiler_2.13:" + twirlVersion)));
+    return conf;
   }
 
   private void configureSourceSetDefaults(final Project project) {
@@ -64,11 +84,15 @@ public class TwirlPlugin implements Plugin<Project> {
                 twirlCompile -> {
                   twirlCompile.setDescription("Compiles the " + twirlSource + ".");
                   twirlCompile.setSource(twirlSource);
+                  DirectoryProperty buildDirectory = project.getLayout().getBuildDirectory();
                   twirlCompile
                       .getDestinationDirectory()
-                      .convention(project.getLayout().getBuildDirectory())
-                      .dir(
-                          "generated/sources/" + twirlSource.getName() + "/" + sourceSet.getName());
+                      .convention(
+                          buildDirectory.dir(
+                              "generated/sources/"
+                                  + twirlSource.getName()
+                                  + "/"
+                                  + sourceSet.getName()));
                 });
   }
 
