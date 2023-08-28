@@ -1,10 +1,9 @@
 /*
  * Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com>
  */
-package play.twirl.gradle;
+package play.twirl.gradle.internal;
 
 import org.gradle.workers.WorkAction;
-import play.twirl.gradle.internal.TwirlCompileParams;
 
 public abstract class TwirlCompileAction implements WorkAction<TwirlCompileParams> {
 
