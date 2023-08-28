@@ -29,6 +29,7 @@ public abstract class TwirlCompile extends SourceTask {
           TwirlCompileAction.class,
           parameters -> {
             parameters.getSourceFile().set(sourceFile);
+            parameters.getDestinationDirectory().set(getDestinationDirectory());
           });
     }
   }
