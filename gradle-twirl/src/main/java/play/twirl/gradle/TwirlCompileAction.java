@@ -4,6 +4,7 @@
 package play.twirl.gradle;
 
 import org.gradle.workers.WorkAction;
+import play.twirl.gradle.internal.TwirlCompileParams;
 
 public abstract class TwirlCompileAction implements WorkAction<TwirlCompileParams> {
 
@@ -11,7 +12,10 @@ public abstract class TwirlCompileAction implements WorkAction<TwirlCompileParam
   public void execute() {
     try {
       System.out.println(
-          "Compile Twirl template " + getParameters().getSourceFile().getAsFile().get().getName());
+          "Compile Twirl template "
+              + getParameters().getSourceFile().getAsFile().get().getName()
+              + " into "
+              + getParameters().getDestinationDirectory().getAsFile().get().getCanonicalPath());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
