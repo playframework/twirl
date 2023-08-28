@@ -1,7 +1,6 @@
 /*
-* Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com>
-*/
-
+ * Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com>
+ */
 import java.time.Duration
 import java.util.Base64
 import java.util.Properties
@@ -98,7 +97,7 @@ gradlePlugin.testSourceSets.add(sourceSets["functionalTest"])
 
 val headerLicense = "Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com>"
 val headerLicenseHash = "# $headerLicense"
-val headerLicenseJava = "/*\n* $headerLicense\n*/"
+val headerLicenseJava = "/*\n * $headerLicense\n */"
 
 spotless {
     java {
