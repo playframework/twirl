@@ -5,14 +5,20 @@ package play.twirl.gradle;
 
 import java.io.File;
 import javax.inject.Inject;
+import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.SourceTask;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.workers.WorkQueue;
 import org.gradle.workers.WorkerExecutor;
+import play.twirl.gradle.internal.TwirlCompileAction;
 
 public abstract class TwirlCompile extends SourceTask {
+
+  @InputFiles
+  public abstract ConfigurableFileCollection getTwirlClasspath();
 
   @OutputDirectory
   public abstract DirectoryProperty getDestinationDirectory();
@@ -22,7 +28,12 @@ public abstract class TwirlCompile extends SourceTask {
 
   @TaskAction
   void compile() {
-    WorkQueue workQueue = getWorkerExecutor().noIsolation();
+    WorkQueue workQueue =
+        getWorkerExecutor()
+            .classLoaderIsolation(
+                workerSpec -> {
+                  workerSpec.getClasspath().from(getTwirlClasspath());
+                });
 
     for (File sourceFile : getSource().getFiles()) {
       workQueue.submit(

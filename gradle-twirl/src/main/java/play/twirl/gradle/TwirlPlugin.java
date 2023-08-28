@@ -34,7 +34,7 @@ public class TwirlPlugin implements Plugin<Project> {
 
     Configuration twirlConfiguration = createDefaultTwirlConfiguration(project);
 
-    configureSourceSetDefaults(project);
+    configureSourceSetDefaults(project, twirlConfiguration);
   }
 
   private Configuration createDefaultTwirlConfiguration(Project project) {
@@ -53,7 +53,8 @@ public class TwirlPlugin implements Plugin<Project> {
     return conf;
   }
 
-  private void configureSourceSetDefaults(final Project project) {
+  private void configureSourceSetDefaults(
+      final Project project, final Configuration twirlConfiguration) {
     javaPluginExtension(project)
         .getSourceSets()
         .all(
@@ -69,12 +70,15 @@ public class TwirlPlugin implements Plugin<Project> {
                           (element) -> twirlSource.contains(element.getFile())));
               sourceSet.getAllJava().source(twirlSource);
               sourceSet.getAllSource().source(twirlSource);
-              createTwirlCompileTask(project, sourceSet, twirlSource);
+              createTwirlCompileTask(project, sourceSet, twirlSource, twirlConfiguration);
             });
   }
 
   private void createTwirlCompileTask(
-      final Project project, final SourceSet sourceSet, TwirlSourceDirectorySet twirlSource) {
+      final Project project,
+      final SourceSet sourceSet,
+      TwirlSourceDirectorySet twirlSource,
+      final Configuration twirlConfiguration) {
     final TaskProvider<TwirlCompile> twirlTask =
         project
             .getTasks()
@@ -83,6 +87,7 @@ public class TwirlPlugin implements Plugin<Project> {
                 TwirlCompile.class,
                 twirlCompile -> {
                   twirlCompile.setDescription("Compiles the " + twirlSource + ".");
+                  twirlCompile.getTwirlClasspath().setFrom(twirlConfiguration);
                   twirlCompile.setSource(twirlSource);
                   DirectoryProperty buildDirectory = project.getLayout().getBuildDirectory();
                   twirlCompile
