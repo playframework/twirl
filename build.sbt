@@ -102,10 +102,10 @@ lazy val parser = project
     scalaVersion       := Scala212,
     crossScalaVersions := ScalaVersions,
     mimaSettings,
-    name                                                        := "twirl-parser",
-    libraryDependencies += parserCombinators(scalaVersion.value) % Optional,
-    libraryDependencies += "com.github.sbt"                      % "junit-interface" % "0.13.3"         % Test,
-    libraryDependencies += "org.scalatest"                     %%% "scalatest"       % ScalaTestVersion % Test,
+    name := "twirl-parser",
+    libraryDependencies += parserCombinators(scalaVersion.value),
+    libraryDependencies += "com.github.sbt"  % "junit-interface" % "0.13.3"         % Test,
+    libraryDependencies += "org.scalatest" %%% "scalatest"       % ScalaTestVersion % Test,
   )
 
 lazy val compiler = project
@@ -124,11 +124,11 @@ lazy val compiler = project
         case _ => Seq("org.scala-lang" %% "scala3-compiler" % scalaVersion.value % Test)
       }
     },
-    libraryDependencies += parserCombinators(scalaVersion.value) % Optional,
-    libraryDependencies += ("org.scalameta"                     %% "parsers" % "4.8.8").cross(CrossVersion.for3Use2_13),
-    run / fork                                                  := true,
-    buildInfoKeys                                               := Seq[BuildInfoKey](scalaVersion),
-    buildInfoPackage                                            := "play.twirl.compiler"
+    libraryDependencies += parserCombinators(scalaVersion.value),
+    libraryDependencies += ("org.scalameta" %% "parsers" % "4.8.8").cross(CrossVersion.for3Use2_13),
+    run / fork                              := true,
+    buildInfoKeys                           := Seq[BuildInfoKey](scalaVersion),
+    buildInfoPackage                        := "play.twirl.compiler"
   )
   .aggregate(parser)
   .dependsOn(apiJvm % Test, parser % "compile->compile;test->test")
