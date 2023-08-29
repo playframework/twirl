@@ -3,6 +3,7 @@
  */
 package play.twirl.gradle;
 
+import java.util.Map;
 import javax.inject.Inject;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -20,6 +21,17 @@ import play.twirl.gradle.internal.DefaultTwirlSourceDirectorySet;
 
 /** A simple 'hello world' plugin. */
 public class TwirlPlugin implements Plugin<Project> {
+
+  private static final Map<String, String> DEFAULT_TEMPLATE_FORMATS =
+      Map.of(
+          "html",
+          "play.twirl.api.HtmlFormat",
+          "txt",
+          "play.twirl.api.TxtFormat",
+          "xml",
+          "play.twirl.api.XmlFormat",
+          "js",
+          "play.twirl.api.JavaScriptFormat");
 
   private final ObjectFactory objectFactory;
 
@@ -89,6 +101,7 @@ public class TwirlPlugin implements Plugin<Project> {
                   twirlCompile.setDescription("Compiles the " + twirlSource + ".");
                   twirlCompile.getTwirlClasspath().setFrom(twirlConfiguration);
                   twirlCompile.setSource(twirlSource);
+                  twirlCompile.getTemplateFormats().convention(twirlSource.getTemplateFormats());
                   DirectoryProperty buildDirectory = project.getLayout().getBuildDirectory();
                   twirlCompile
                       .getDestinationDirectory()
@@ -108,6 +121,7 @@ public class TwirlPlugin implements Plugin<Project> {
             DefaultTwirlSourceDirectorySet.class,
             objectFactory.sourceDirectorySet("twirl", displayName + " Twirl source"));
     twirlSourceDirectorySet.getFilter().include("**/*.scala.*");
+    twirlSourceDirectorySet.getTemplateFormats().convention(DEFAULT_TEMPLATE_FORMATS);
     return twirlSourceDirectorySet;
   }
 
