@@ -11,5 +11,7 @@ public interface TwirlCompileParams extends WorkParameters {
 
   RegularFileProperty getSourceFile();
 
+  DirectoryProperty getSourceDirectory();
+
   DirectoryProperty getDestinationDirectory();
 }
