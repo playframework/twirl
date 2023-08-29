@@ -3,10 +3,12 @@
  */
 package play.twirl.gradle;
 
-import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javax.inject.Inject;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.internal.file.RelativeFile;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.SourceTask;
@@ -30,18 +32,28 @@ public abstract class TwirlCompile extends SourceTask {
   void compile() {
     WorkQueue workQueue =
         getWorkerExecutor()
-            .classLoaderIsolation(
-                workerSpec -> {
-                  workerSpec.getClasspath().from(getTwirlClasspath());
-                });
+            .classLoaderIsolation(spec -> spec.getClasspath().from(getTwirlClasspath()));
 
-    for (File sourceFile : getSource().getFiles()) {
+    for (RelativeFile sourceFile : getSourceAsRelativeFiles()) {
       workQueue.submit(
           TwirlCompileAction.class,
           parameters -> {
-            parameters.getSourceFile().set(sourceFile);
+            parameters.getSourceFile().set(sourceFile.getFile());
+            parameters.getSourceDirectory().set(sourceFile.getBaseDir());
             parameters.getDestinationDirectory().set(getDestinationDirectory());
           });
     }
+  }
+
+  private Iterable<RelativeFile> getSourceAsRelativeFiles() {
+    List<RelativeFile> relativeFiles = new ArrayList<>();
+    getSource()
+        .visit(
+            fvd -> {
+              if (fvd.getFile().isFile()) {
+                relativeFiles.add(new RelativeFile(fvd.getFile(), fvd.getRelativePath()));
+              }
+            });
+    return relativeFiles;
   }
 }
