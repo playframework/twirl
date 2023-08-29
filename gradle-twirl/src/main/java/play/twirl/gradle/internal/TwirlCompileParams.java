@@ -5,6 +5,7 @@ package play.twirl.gradle.internal;
 
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.provider.Property;
 import org.gradle.workers.WorkParameters;
 
 public interface TwirlCompileParams extends WorkParameters {
@@ -14,4 +15,6 @@ public interface TwirlCompileParams extends WorkParameters {
   DirectoryProperty getSourceDirectory();
 
   DirectoryProperty getDestinationDirectory();
+
+  Property<String> getFormatterType();
 }
