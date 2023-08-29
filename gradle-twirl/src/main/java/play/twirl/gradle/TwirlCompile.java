@@ -3,16 +3,22 @@
  */
 package play.twirl.gradle;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import javax.inject.Inject;
+import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.internal.file.RelativeFile;
+import org.gradle.api.provider.MapProperty;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.SourceTask;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.internal.FileUtils;
 import org.gradle.workers.WorkQueue;
 import org.gradle.workers.WorkerExecutor;
 import play.twirl.gradle.internal.TwirlCompileAction;
@@ -25,6 +31,9 @@ public abstract class TwirlCompile extends SourceTask {
   @OutputDirectory
   public abstract DirectoryProperty getDestinationDirectory();
 
+  @Input
+  public abstract MapProperty<String, String> getTemplateFormats();
+
   @Inject
   public abstract WorkerExecutor getWorkerExecutor();
 
@@ -34,6 +43,7 @@ public abstract class TwirlCompile extends SourceTask {
         getWorkerExecutor()
             .classLoaderIsolation(spec -> spec.getClasspath().from(getTwirlClasspath()));
 
+    Map<String, String> templateFormats = getTemplateFormats().get();
     for (RelativeFile sourceFile : getSourceAsRelativeFiles()) {
       workQueue.submit(
           TwirlCompileAction.class,
@@ -41,8 +51,23 @@ public abstract class TwirlCompile extends SourceTask {
             parameters.getSourceFile().set(sourceFile.getFile());
             parameters.getSourceDirectory().set(sourceFile.getBaseDir());
             parameters.getDestinationDirectory().set(getDestinationDirectory());
+            parameters
+                .getFormatterType()
+                .set(getFormatterType(templateFormats, sourceFile.getFile()));
           });
     }
+  }
+
+  private String getFormatterType(Map<String, String> formats, File file) {
+    return formats.keySet().stream()
+        .filter(ext -> FileUtils.hasExtensionIgnoresCase(file.getName(), ext))
+        .findFirst()
+        .orElseThrow(
+            () ->
+                new GradleException(
+                    String.format(
+                        "Unknown template format of '%s'. Possible extentions: [%s]",
+                        file.getName(), String.join(", ", formats.keySet()))));
   }
 
   private Iterable<RelativeFile> getSourceAsRelativeFiles() {
