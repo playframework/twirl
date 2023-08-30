@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.internal.lambdas.SerializableLambdas;
 import org.gradle.api.internal.tasks.DefaultSourceSet;
@@ -21,6 +22,8 @@ import play.twirl.gradle.internal.DefaultTwirlSourceDirectorySet;
 
 /** A simple 'hello world' plugin. */
 public class TwirlPlugin implements Plugin<Project> {
+
+  private static final String DEFAULT_SCALA_VERSION = "2.13";
 
   private static final Map<String, String> DEFAULT_TEMPLATE_FORMATS =
       Map.of(
@@ -44,24 +47,33 @@ public class TwirlPlugin implements Plugin<Project> {
   public void apply(final Project project) {
     project.getPluginManager().apply(ScalaBasePlugin.class);
 
-    Configuration twirlConfiguration = createDefaultTwirlConfiguration(project);
+    TwirlExtension twirlExtension = project.getExtensions().create("twirl", TwirlExtension.class);
+    twirlExtension.getScalaVersion().convention(DEFAULT_SCALA_VERSION);
+
+    Configuration twirlConfiguration = createDefaultTwirlConfiguration(project, twirlExtension);
 
     configureSourceSetDefaults(project, twirlConfiguration);
   }
 
-  private Configuration createDefaultTwirlConfiguration(Project project) {
+  private Configuration createDefaultTwirlConfiguration(
+      Project project, TwirlExtension twirlExtension) {
     // Get Twirl version from Gradle Plugin MANIFEST.MF
     String twirlVersion = getClass().getPackage().getImplementationVersion();
     Configuration conf = project.getConfigurations().create("twirl");
     conf.setDescription("The Twirl compiler library.");
     conf.setVisible(false);
     conf.setTransitive(true);
-    conf.defaultDependencies(
-        dependencies ->
-            dependencies.add(
-                project
-                    .getDependencies()
-                    .create("com.typesafe.play:twirl-compiler_2.13:" + twirlVersion)));
+    project.afterEvaluate(
+        __ -> {
+          Dependency twirlCompiler =
+              project
+                  .getDependencies()
+                  .create(
+                      String.format(
+                          "com.typesafe.play:twirl-compiler_%s:%s",
+                          twirlExtension.getScalaVersion().get(), twirlVersion));
+          conf.defaultDependencies(dependencies -> dependencies.add(twirlCompiler));
+        });
     return conf;
   }
 
@@ -102,6 +114,7 @@ public class TwirlPlugin implements Plugin<Project> {
                   twirlCompile.getTwirlClasspath().setFrom(twirlConfiguration);
                   twirlCompile.setSource(twirlSource);
                   twirlCompile.getTemplateFormats().convention(twirlSource.getTemplateFormats());
+                  twirlCompile.getTemplateImports().convention(twirlSource.getTemplateImports());
                   DirectoryProperty buildDirectory = project.getLayout().getBuildDirectory();
                   twirlCompile
                       .getDestinationDirectory()

@@ -13,6 +13,7 @@ import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.internal.file.RelativeFile;
 import org.gradle.api.provider.MapProperty;
+import org.gradle.api.provider.SetProperty;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputDirectory;
@@ -34,6 +35,9 @@ public abstract class TwirlCompile extends SourceTask {
   @Input
   public abstract MapProperty<String, String> getTemplateFormats();
 
+  @Input
+  public abstract SetProperty<String> getTemplateImports();
+
   @Inject
   public abstract WorkerExecutor getWorkerExecutor();
 
@@ -54,6 +58,7 @@ public abstract class TwirlCompile extends SourceTask {
             parameters
                 .getFormatterType()
                 .set(getFormatterType(templateFormats, sourceFile.getFile()));
+            parameters.getTemplateImports().set(getTemplateImports());
           });
     }
   }
