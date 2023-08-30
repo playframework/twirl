@@ -4,6 +4,7 @@
 package play.twirl.gradle;
 
 import org.gradle.api.file.SourceDirectorySet;
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.SetProperty;
 
@@ -16,4 +17,6 @@ public interface TwirlSourceDirectorySet extends SourceDirectorySet {
   MapProperty<String, String> getTemplateFormats();
 
   SetProperty<String> getTemplateImports();
+
+  ListProperty<String> getConstructorAnnotations();
 }
