@@ -115,6 +115,9 @@ public class TwirlPlugin implements Plugin<Project> {
                   twirlCompile.setSource(twirlSource);
                   twirlCompile.getTemplateFormats().convention(twirlSource.getTemplateFormats());
                   twirlCompile.getTemplateImports().convention(twirlSource.getTemplateImports());
+                  twirlCompile
+                      .getConstructorAnnotations()
+                      .convention(twirlSource.getConstructorAnnotations());
                   DirectoryProperty buildDirectory = project.getLayout().getBuildDirectory();
                   twirlCompile
                       .getDestinationDirectory()

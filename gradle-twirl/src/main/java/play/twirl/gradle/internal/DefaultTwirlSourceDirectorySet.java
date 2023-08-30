@@ -8,6 +8,7 @@ import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.internal.file.DefaultSourceDirectorySet;
 import org.gradle.api.internal.tasks.TaskDependencyFactory;
 import org.gradle.api.model.ObjectFactory;
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.SetProperty;
 import play.twirl.gradle.TwirlSourceDirectorySet;
@@ -19,6 +20,8 @@ public class DefaultTwirlSourceDirectorySet extends DefaultSourceDirectorySet
 
   private final SetProperty<String> templateImports;
 
+  private final ListProperty<String> constructorAnnotations;
+
   @Inject
   public DefaultTwirlSourceDirectorySet(
       SourceDirectorySet sourceDirectorySet,
@@ -27,6 +30,7 @@ public class DefaultTwirlSourceDirectorySet extends DefaultSourceDirectorySet
     super(sourceDirectorySet, taskDependencyFactory); // Gradle 8+
     this.templateFormats = objectFactory.mapProperty(String.class, String.class);
     this.templateImports = objectFactory.setProperty(String.class);
+    this.constructorAnnotations = objectFactory.listProperty(String.class);
   }
 
   @Override
@@ -37,5 +41,10 @@ public class DefaultTwirlSourceDirectorySet extends DefaultSourceDirectorySet
   @Override
   public SetProperty<String> getTemplateImports() {
     return templateImports;
+  }
+
+  @Override
+  public ListProperty<String> getConstructorAnnotations() {
+    return constructorAnnotations;
   }
 }
