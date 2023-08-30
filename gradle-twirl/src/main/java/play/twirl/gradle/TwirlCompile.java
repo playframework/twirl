@@ -77,6 +77,7 @@ public abstract class TwirlCompile extends SourceTask {
     return formats.keySet().stream()
         .filter(ext -> FileUtils.hasExtensionIgnoresCase(file.getName(), ext))
         .findFirst()
+        .map(formats::get)
         .orElseThrow(
             () ->
                 new GradleException(
