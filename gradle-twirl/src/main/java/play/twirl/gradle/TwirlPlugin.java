@@ -16,6 +16,7 @@ import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.ExtensionAware;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.plugins.scala.ScalaBasePlugin;
+import org.gradle.api.tasks.ScalaSourceDirectorySet;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
 import play.twirl.gradle.internal.DefaultTwirlSourceDirectorySet;
@@ -55,10 +56,13 @@ public class TwirlPlugin implements Plugin<Project> {
     configureSourceSetDefaults(project, twirlConfiguration);
   }
 
+  /** Get Twirl version from Gradle Plugin MANIFEST.MF */
+  private String getDefaultTwirlVersion() {
+    return getClass().getPackage().getImplementationVersion();
+  }
+
   private Configuration createDefaultTwirlConfiguration(
       Project project, TwirlExtension twirlExtension) {
-    // Get Twirl version from Gradle Plugin MANIFEST.MF
-    String twirlVersion = getClass().getPackage().getImplementationVersion();
     Configuration conf = project.getConfigurations().create("twirl");
     conf.setDescription("The Twirl compiler library.");
     conf.setVisible(false);
@@ -71,7 +75,7 @@ public class TwirlPlugin implements Plugin<Project> {
                   .create(
                       String.format(
                           "com.typesafe.play:twirl-compiler_%s:%s",
-                          twirlExtension.getScalaVersion().get(), twirlVersion));
+                          twirlExtension.getScalaVersion().get(), getDefaultTwirlVersion()));
           conf.defaultDependencies(dependencies -> dependencies.add(twirlCompiler));
         });
     return conf;
@@ -94,41 +98,44 @@ public class TwirlPlugin implements Plugin<Project> {
                           (element) -> twirlSource.contains(element.getFile())));
               sourceSet.getAllJava().source(twirlSource);
               sourceSet.getAllSource().source(twirlSource);
-              createTwirlCompileTask(project, sourceSet, twirlSource, twirlConfiguration);
+
+              TaskProvider<TwirlCompile> twirlTask =
+                  createTwirlCompileTask(project, sourceSet, twirlSource, twirlConfiguration);
+
+              extensionOf(sourceSet, ScalaSourceDirectorySet.class).srcDir(twirlTask);
             });
   }
 
-  private void createTwirlCompileTask(
+  private TaskProvider<TwirlCompile> createTwirlCompileTask(
       final Project project,
       final SourceSet sourceSet,
       TwirlSourceDirectorySet twirlSource,
       final Configuration twirlConfiguration) {
-    final TaskProvider<TwirlCompile> twirlTask =
-        project
-            .getTasks()
-            .register(
-                sourceSet.getCompileTaskName("twirl"),
-                TwirlCompile.class,
-                twirlCompile -> {
-                  twirlCompile.setDescription("Compiles the " + twirlSource + ".");
-                  twirlCompile.getTwirlClasspath().setFrom(twirlConfiguration);
-                  twirlCompile.setSource(twirlSource);
-                  twirlCompile.getTemplateFormats().convention(twirlSource.getTemplateFormats());
-                  twirlCompile.getTemplateImports().convention(twirlSource.getTemplateImports());
-                  twirlCompile.getSourceEncoding().convention(twirlSource.getSourceEncoding());
-                  twirlCompile
-                      .getConstructorAnnotations()
-                      .convention(twirlSource.getConstructorAnnotations());
-                  DirectoryProperty buildDirectory = project.getLayout().getBuildDirectory();
-                  twirlCompile
-                      .getDestinationDirectory()
-                      .convention(
-                          buildDirectory.dir(
-                              "generated/sources/"
-                                  + twirlSource.getName()
-                                  + "/"
-                                  + sourceSet.getName()));
-                });
+    return project
+        .getTasks()
+        .register(
+            sourceSet.getCompileTaskName("twirl"),
+            TwirlCompile.class,
+            twirlCompile -> {
+              twirlCompile.setDescription("Compiles the " + twirlSource + ".");
+              twirlCompile.getTwirlClasspath().setFrom(twirlConfiguration);
+              twirlCompile.setSource(twirlSource);
+              twirlCompile.getTemplateFormats().convention(twirlSource.getTemplateFormats());
+              twirlCompile.getTemplateImports().convention(twirlSource.getTemplateImports());
+              twirlCompile.getSourceEncoding().convention(twirlSource.getSourceEncoding());
+              twirlCompile
+                  .getConstructorAnnotations()
+                  .convention(twirlSource.getConstructorAnnotations());
+              DirectoryProperty buildDirectory = project.getLayout().getBuildDirectory();
+              twirlCompile
+                  .getDestinationDirectory()
+                  .convention(
+                      buildDirectory.dir(
+                          "generated/sources/"
+                              + twirlSource.getName()
+                              + "/"
+                              + sourceSet.getName()));
+            });
   }
 
   private TwirlSourceDirectorySet getTwirlSourceDirectorySet(SourceSet sourceSet) {
