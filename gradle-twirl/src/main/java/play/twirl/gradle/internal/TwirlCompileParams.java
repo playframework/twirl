@@ -23,4 +23,6 @@ public interface TwirlCompileParams extends WorkParameters {
   SetProperty<String> getTemplateImports();
 
   ListProperty<String> getConstructorAnnotations();
+
+  Property<String> getSourceEncoding();
 }
