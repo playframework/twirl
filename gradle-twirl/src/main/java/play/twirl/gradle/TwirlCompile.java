@@ -12,6 +12,7 @@ import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.internal.file.RelativeFile;
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.SetProperty;
 import org.gradle.api.tasks.Input;
@@ -38,6 +39,9 @@ public abstract class TwirlCompile extends SourceTask {
   @Input
   public abstract SetProperty<String> getTemplateImports();
 
+  @Input
+  public abstract ListProperty<String> getConstructorAnnotations();
+
   @Inject
   public abstract WorkerExecutor getWorkerExecutor();
 
@@ -59,6 +63,7 @@ public abstract class TwirlCompile extends SourceTask {
                 .getFormatterType()
                 .set(getFormatterType(templateFormats, sourceFile.getFile()));
             parameters.getTemplateImports().set(getTemplateImports());
+            parameters.getConstructorAnnotations().set(getConstructorAnnotations());
           });
     }
   }
