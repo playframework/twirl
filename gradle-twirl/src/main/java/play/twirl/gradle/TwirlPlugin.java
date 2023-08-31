@@ -67,8 +67,8 @@ public class TwirlPlugin implements Plugin<Project> {
     conf.setDescription("The Twirl compiler library.");
     conf.setVisible(false);
     conf.setTransitive(true);
-    project.afterEvaluate(
-        __ -> {
+    conf.defaultDependencies(
+        dependencies -> {
           Dependency twirlCompiler =
               project
                   .getDependencies()
@@ -76,7 +76,7 @@ public class TwirlPlugin implements Plugin<Project> {
                       String.format(
                           "com.typesafe.play:twirl-compiler_%s:%s",
                           twirlExtension.getScalaVersion().get(), getDefaultTwirlVersion()));
-          conf.defaultDependencies(dependencies -> dependencies.add(twirlCompiler));
+          dependencies.add(twirlCompiler);
         });
     return conf;
   }
