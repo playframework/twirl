@@ -10,7 +10,6 @@ import java.nio.charset.StandardCharsets;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.internal.artifacts.configurations.DefaultConfiguration;
-import org.gradle.api.internal.project.DefaultProject;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.testfixtures.ProjectBuilder;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +26,6 @@ class TwirlPluginTest {
     project = ProjectBuilder.builder().build();
     project.getPluginManager().apply("application");
     project.getPluginManager().apply("com.typesafe.play.twirl");
-    ((DefaultProject) project).evaluate();
   }
 
   @Test
