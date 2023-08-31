@@ -33,6 +33,7 @@ repositories {
 
 dependencies {
     compileOnly("com.typesafe.play:twirl-compiler_2.13:$compilerVersion")
+    testImplementation("org.assertj:assertj-core:3.24.2")
 }
 
 tasks.jar {
