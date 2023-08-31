@@ -149,7 +149,7 @@ public class TwirlPlugin implements Plugin<Project> {
     return twirlSourceDirectorySet;
   }
 
-  private static JavaPluginExtension javaPluginExtension(Project project) {
+  static JavaPluginExtension javaPluginExtension(Project project) {
     return extensionOf(project, JavaPluginExtension.class);
   }
 
