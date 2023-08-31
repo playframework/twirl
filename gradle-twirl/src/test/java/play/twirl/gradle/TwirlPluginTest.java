@@ -3,23 +3,85 @@
  */
 package play.twirl.gradle;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static play.twirl.gradle.TwirlPlugin.javaPluginExtension;
 
+import java.nio.charset.StandardCharsets;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.internal.artifacts.configurations.DefaultConfiguration;
+import org.gradle.api.internal.project.DefaultProject;
+import org.gradle.api.tasks.SourceSet;
 import org.gradle.testfixtures.ProjectBuilder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-/** A simple unit test for the 'com.playframework.twirl' plugin. */
+/** A simple unit test to check a Twirl Gradle Plugin */
 class TwirlPluginTest {
-  @Test
-  void pluginRegistersATask() {
-    // Create a test project and apply the plugin
-    Project project = ProjectBuilder.builder().build();
-    project.getPlugins().apply("application");
-    project.getPlugins().apply("com.typesafe.play.twirl");
 
-    // Verify the result
-    assertNotNull(project.getTasks().findByName("compileTwirl"));
-    assertNotNull(project.getTasks().findByName("compileTestTwirl"));
+  private Project project;
+
+  @BeforeEach
+  void init() {
+    project = ProjectBuilder.builder().build();
+    project.getPluginManager().apply("application");
+    project.getPluginManager().apply("com.typesafe.play.twirl");
+    ((DefaultProject) project).evaluate();
+  }
+
+  @Test
+  @DisplayName("Twirl extension should be registered")
+  void extensionShouldBeRegistered() {
+    TwirlExtension ext = (TwirlExtension) project.getExtensions().findByName("twirl");
+    assertThat(ext).isNotNull();
+    assertThat((ext).getScalaVersion().getOrNull()).isEqualTo("2.13");
+  }
+
+  @Test
+  @DisplayName("Twirl configuration should be registered")
+  void configurationShouldBeRegistered() {
+    Configuration conf = project.getConfigurations().findByName("twirl");
+    assertThat(conf).isNotNull();
+    assertThat(conf.isTransitive()).isTrue();
+    assertThat(conf.isVisible()).isFalse();
+    ((DefaultConfiguration) conf).runDependencyActions();
+    assertThat(conf.getDependencies())
+        .anyMatch(
+            dependency ->
+                "com.typesafe.play".equals(dependency.getGroup())
+                    && dependency.getName().startsWith("twirl-compiler"));
+  }
+
+  @Test
+  @DisplayName("Twirl source directory set should be registered for main source set")
+  void sourceDirectorySetShouldBeRegisteredForMainSourceSet() {
+    checkSourceDirectorySet(javaPluginExtension(project).getSourceSets().getByName("main"));
+  }
+
+  @Test
+  @DisplayName("Twirl source directory set should be registered for test source set")
+  void sourceDirectorySetShouldBeRegisteredForTestSourceSet() {
+    checkSourceDirectorySet(javaPluginExtension(project).getSourceSets().getByName("test"));
+  }
+
+  @Test
+  @DisplayName("Twirl compile task should be registered for main/test source sets")
+  void compileTasksShouldBeRegistered() {
+    assertThat(project.getTasks().findByName("compileTwirl")).isNotNull();
+    assertThat(project.getTasks().findByName("compileTestTwirl")).isNotNull();
+  }
+
+  private void checkSourceDirectorySet(SourceSet sourceSet) {
+    assertThat(sourceSet).isNotNull();
+    TwirlSourceDirectorySet twirlSourceSet =
+        sourceSet.getExtensions().findByType(TwirlSourceDirectorySet.class);
+    assertThat(twirlSourceSet).isNotNull();
+    assertThat(twirlSourceSet.getName()).isEqualTo("twirl");
+    assertThat(twirlSourceSet.getSourceEncoding().getOrNull())
+        .isEqualTo(StandardCharsets.UTF_8.name());
+    assertThat(twirlSourceSet.getTemplateImports().get()).isEmpty();
+    assertThat(twirlSourceSet.getConstructorAnnotations().get()).isEmpty();
+    assertThat(twirlSourceSet.getTemplateFormats().get()).containsKeys("html", "txt", "js", "xml");
   }
 }
