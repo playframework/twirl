@@ -34,6 +34,8 @@ repositories {
 dependencies {
     compileOnly("com.typesafe.play:twirl-compiler_2.13:$compilerVersion")
     testImplementation("org.assertj:assertj-core:3.24.2")
+    testImplementation("commons-io:commons-io:2.13.0")
+    testImplementation("org.freemarker:freemarker:2.3.32")
 }
 
 tasks.jar {
@@ -44,23 +46,17 @@ tasks.jar {
 
 testing {
     suites {
-        // Configure the built-in test suite
         val test by getting(JvmTestSuite::class) {
-            // Use JUnit Jupiter test framework
             useJUnitJupiter("5.9.1")
-        }
-
-        // Create a new test suite
-        val functionalTest by registering(JvmTestSuite::class) {
-            dependencies {
-                // functionalTest test suite depends on the production code in tests
-                implementation(project())
-            }
-
             targets {
                 all {
-                    // This test suite should run after the built-in test suite has run its tests
-                    testTask.configure { shouldRunAfter(test) }
+                    testTask.configure {
+                        systemProperty("twirl.version", compilerVersion)
+                        project.findProperty("scala.version")?.let { scalaVersion ->
+                            val ver = (scalaVersion as String).trimEnd { !it.isDigit() }
+                            systemProperty("scala.version", ver)
+                        }
+                    }
                 }
             }
         }
@@ -94,8 +90,6 @@ gradlePlugin {
     }
 }
 
-gradlePlugin.testSourceSets.add(sourceSets["functionalTest"])
-
 val headerLicense = "Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com>"
 val headerLicenseHash = "# $headerLicense"
 val headerLicenseJava = "/*\n * $headerLicense\n */"
@@ -113,9 +107,4 @@ spotless {
         targetExclude("gradle/**")
         licenseHeader(headerLicenseHash, "[^#]")
     }
-}
-
-tasks.named<Task>("check") {
-    // Include functionalTest as part of the check lifecycle
-    dependsOn(testing.suites.named("functionalTest"))
 }

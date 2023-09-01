@@ -24,7 +24,7 @@ import play.twirl.gradle.internal.DefaultTwirlSourceDirectorySet;
 /** A simple 'hello world' plugin. */
 public class TwirlPlugin implements Plugin<Project> {
 
-  private static final String DEFAULT_SCALA_VERSION = "2.13";
+  static final String DEFAULT_SCALA_VERSION = "2.13";
 
   private static final Map<String, String> DEFAULT_TEMPLATE_FORMATS =
       Map.of(
@@ -58,7 +58,7 @@ public class TwirlPlugin implements Plugin<Project> {
 
   /** Get Twirl version from Gradle Plugin MANIFEST.MF */
   private String getDefaultTwirlVersion() {
-    return getClass().getPackage().getImplementationVersion();
+    return System.getProperty("twirl.version", getClass().getPackage().getImplementationVersion());
   }
 
   private Configuration createDefaultTwirlConfiguration(
