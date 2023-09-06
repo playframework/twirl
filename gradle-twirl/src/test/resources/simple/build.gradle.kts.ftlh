@@ -15,3 +15,12 @@ dependencies {
 twirl {
   scalaVersion.set("${scalaVersion}")
 }
+
+sourceSets {
+  main {
+    twirl {
+      templateImports.add("java.lang._")
+      constructorAnnotations.add("@java.lang.Deprecated()")
+    }
+  }
+}

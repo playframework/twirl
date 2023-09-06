@@ -7,13 +7,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
-import freemarker.template.TemplateException;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
@@ -59,7 +59,7 @@ abstract class AbstractFunctionalTest {
   }
 
   @BeforeEach
-  void init() throws IOException, TemplateException {
+  void init() throws IOException {
     projectSourceDir = getProjectSourceDir();
     runner = GradleRunner.create().withProjectDir(projectDir).withPluginClasspath().forwardOutput();
 
@@ -87,7 +87,15 @@ abstract class AbstractFunctionalTest {
     return writer.toString();
   }
 
-  protected BuildResult build(String... args) {
-    return runner.withArguments(args).build();
+  protected BuildResult build(String gradleVersion, String... args) {
+    return runner.withGradleVersion(gradleVersion).withArguments(args).build();
+  }
+
+  static Stream<String> gradleVersions() {
+    // https://docs.gradle.org/current/userguide/scala_plugin.html#sec:configure_zinc_compiler
+    if (getScalaVersion().equals("3")) { // Gradle 7.5+
+      return Stream.of("7.6.2", "8.0.2", "8.3");
+    }
+    return Stream.of("7.1.1", "7.6.2", "8.0.2", "8.3");
   }
 }
