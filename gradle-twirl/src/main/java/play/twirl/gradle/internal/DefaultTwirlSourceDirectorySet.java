@@ -39,6 +39,19 @@ public class DefaultTwirlSourceDirectorySet extends DefaultSourceDirectorySet
     this.sourceEncoding = objectFactory.property(String.class).convention(UTF_8.name());
   }
 
+  /**
+   * @deprecated Constructor for support Gradle 7.x
+   */
+  @Deprecated
+  public DefaultTwirlSourceDirectorySet(
+      SourceDirectorySet sourceDirectorySet, ObjectFactory objectFactory) {
+    super(sourceDirectorySet);
+    this.templateFormats = objectFactory.mapProperty(String.class, String.class);
+    this.templateImports = objectFactory.setProperty(String.class);
+    this.constructorAnnotations = objectFactory.listProperty(String.class);
+    this.sourceEncoding = objectFactory.property(String.class).convention(UTF_8.name());
+  }
+
   @Override
   public MapProperty<String, String> getTemplateFormats() {
     return templateFormats;
