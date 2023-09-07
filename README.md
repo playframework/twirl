@@ -88,6 +88,108 @@ sources alongside Scala or Java source files:
 Compile / TwirlKeys.compileTemplates / sourceDirectories := (Compile / unmanagedSourceDirectories).value
 ```
 
+## gradle-twirl
+
+⚠️ `com.typesafe.play.twirl` plugin requires Gradle 7.1 or higher.
+
+To use the Twirl plugin in your project add the gradle plugin and 
+Twirl API as a dependency into `build.gradle.kts`:
+
+```kotlin
+plugins {
+  ...
+  id("com.typesafe.play.twirl") version "LATEST_VERSION"
+}
+
+dependencies {
+  implementation("com.typesafe.play", "twirl-api_${scalaVersion}", "LATEST_VERSION")
+}
+```
+
+Replacing the `LATEST_VERSION` with the latest version published, which should be [![Latest version](https://index.scala-lang.org/playframework/twirl/twirl-api/latest.svg?color=orange)](https://index.scala-lang.org/playframework/twirl/twirl-api).
+
+### Template files
+
+Twirl template files are expected to be placed under `src/main/twirl` or
+`src/test/twirl`, similar to `scala` or `java` sources. The additional source 
+locations for template files can be configured.
+
+Template files must be named `{name}.scala.{ext}` where `ext` can be `html`,
+`js`, `xml`, or `txt`.
+
+### Additional imports
+
+To add additional imports for the Scala code in template files, use the
+`templateImports` key. For example:
+
+```kotlin
+sourceSets {
+  main {
+    twirl {
+      templateImports.add("org.example._")
+    }
+  }
+}
+```
+
+### Source directories
+
+To configure the source directories where template files will be found, use the
+`srcDir` method for [SourceDirectorySet](https://docs.gradle.org/current/javadoc/org/gradle/api/file/SourceDirectorySet.html). For example:
+
+```kotlin
+sourceSets {
+  main {
+    twirl {
+      srcDir("app")
+    }
+  }
+}
+```
+
+### Scala version
+
+To configure the Scala version use the `scalaVersion` property of [TwirlExtension](gradle-twirl/src/main/java/play/twirl/gradle/TwirlExtension.java) (`2.13` by default).  For example:
+
+```kotlin
+twirl {
+  scalaVersion.set("3")
+}
+```
+
+### Other properties
+
+Also, you can use the next properties:
+
+```kotlin
+sourceSets {
+  main {
+    twirl {
+      // Annotations added to constructors in injectable templates
+      constructorAnnotations.add("@org.example.MyAnnotation()")
+      // Defined custom twirl template formats
+      templateFormats.put("csv", "play.twirl.api.TxtFormat")
+      // Source encoding for template files and generated scala files
+      sourceEncoding.set("<enc>")
+    }
+  }
+}
+```
+
+### Snapshots
+
+To use a snapshot version add the [Sonatype Snapshot repository](https://oss.sonatype.org/content/repositories/snapshots/com/typesafe/play/twirl/com.typesafe.play.twirl.gradle.plugin/) into `settings.gradle.kts`:
+
+```kotlin
+pluginManagement {
+  repositories {
+    maven {
+      url = uri("https://oss.sonatype.org/content/repositories/snapshots")
+    }
+  }
+}
+```
+
 ## Releasing a new version
 
 See https://github.com/playframework/.github/blob/main/RELEASING.md
