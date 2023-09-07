@@ -7,9 +7,9 @@ import java.util.Properties
 import kotlin.text.Charsets.UTF_8
 
 plugins {
-    id("com.gradle.plugin-publish") version "1.2.0"
-    id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
-    id("com.diffplug.spotless") version "6.19.0"
+    alias(libs.plugins.gradle.plugin.publish)
+    alias(libs.plugins.nexus.publish)
+    alias(libs.plugins.spotless)
     signing
 }
 
@@ -21,21 +21,20 @@ val compilerVersion: String =
         if (this.getProperty("twirl.compiler.version").isNullOrEmpty()) throw GradleException("`twirl.compiler.version` key didn't find in ${file.absolutePath}")
     }.getProperty("twirl.compiler.version")
 
-// group = "com.playframework" // group and plugin id must use same top level namespace
+// group = "org.playframework" // group and plugin id must use same top level namespace
 group = "com.typesafe.play" // TODO: uncomment line above and remove this
 version = compilerVersion
 
 repositories {
-    // Use Maven Central for resolving dependencies.
     mavenCentral()
     mavenLocal()
 }
 
 dependencies {
     compileOnly("com.typesafe.play:twirl-compiler_2.13:$compilerVersion")
-    testImplementation("org.assertj:assertj-core:3.24.2")
-    testImplementation("commons-io:commons-io:2.13.0")
-    testImplementation("org.freemarker:freemarker:2.3.32")
+    testImplementation(libs.assertj)
+    testImplementation(libs.commons.io)
+    testImplementation(libs.freemarker)
 }
 
 tasks.jar {
@@ -44,10 +43,11 @@ tasks.jar {
     }
 }
 
+@Suppress("UnstableApiUsage")
 testing {
     suites {
         val test by getting(JvmTestSuite::class) {
-            useJUnitJupiter("5.9.1")
+            useJUnitJupiter()
             targets {
                 all {
                     testTask.configure {
@@ -77,12 +77,12 @@ nexusPublishing {
     }
 }
 
+@Suppress("UnstableApiUsage")
 gradlePlugin {
     website.set("https://www.playframework.com/documentation/latest/ScalaTemplates")
     vcsUrl.set("https://github.com/playframework/twirl")
-    // Define the plugin
     val twirl by plugins.creating {
-        id = "com.typesafe.play.twirl" // TODO: rename to "com.playframework.twirl"
+        id = "com.typesafe.play.twirl" // TODO: rename to "org.playframework.twirl"
         displayName = "Twirl Plugin"
         description = "A Gradle plugin to compile Twirl templates"
         tags.set(listOf("playframework", "web", "template", "java", "scala"))
