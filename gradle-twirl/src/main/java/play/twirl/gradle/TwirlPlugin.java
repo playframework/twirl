@@ -23,7 +23,7 @@ import org.gradle.util.GradleVersion;
 import play.twirl.gradle.internal.DefaultTwirlSourceDirectorySet;
 import play.twirl.gradle.internal.Gradle7TwirlSourceDirectorySet;
 
-/** A simple 'hello world' plugin. */
+/** A Gradle plugin to compile Twirl templates. */
 public class TwirlPlugin implements Plugin<Project> {
 
   static final String DEFAULT_SCALA_VERSION = "2.13";
@@ -58,7 +58,7 @@ public class TwirlPlugin implements Plugin<Project> {
     configureSourceSetDefaults(project, twirlConfiguration);
   }
 
-  /** Get Twirl version from Gradle Plugin MANIFEST.MF */
+  /** Get Twirl compiler version from Gradle Plugin MANIFEST.MF */
   private String getDefaultTwirlVersion() {
     return System.getProperty("twirl.version", getClass().getPackage().getImplementationVersion());
   }
@@ -140,23 +140,22 @@ public class TwirlPlugin implements Plugin<Project> {
             });
   }
 
+  @SuppressWarnings("deprecation")
   private TwirlSourceDirectorySet getTwirlSourceDirectorySet(SourceSet sourceSet) {
     String displayName = ((DefaultSourceSet) sourceSet).getDisplayName();
-    TwirlSourceDirectorySet twirlSourceDirectorySet;
-    if (GradleVersion.current().compareTo(GradleVersion.version("8.0")) < 0) { // Gradle < 8.0
-      twirlSourceDirectorySet =
-          objectFactory.newInstance(
-              Gradle7TwirlSourceDirectorySet.class,
-              objectFactory.sourceDirectorySet("twirl", displayName + " Twirl source"));
-    } else { // Gradle 8+
-      twirlSourceDirectorySet =
-          objectFactory.newInstance(
-              DefaultTwirlSourceDirectorySet.class,
-              objectFactory.sourceDirectorySet("twirl", displayName + " Twirl source"));
-    }
+    TwirlSourceDirectorySet twirlSourceDirectorySet =
+        objectFactory.newInstance(
+            isGradleVersionLessThan("8.0")
+                ? Gradle7TwirlSourceDirectorySet.class
+                : DefaultTwirlSourceDirectorySet.class,
+            objectFactory.sourceDirectorySet("twirl", displayName + " Twirl source"));
     twirlSourceDirectorySet.getFilter().include("**/*.scala.*");
     twirlSourceDirectorySet.getTemplateFormats().convention(DEFAULT_TEMPLATE_FORMATS);
     return twirlSourceDirectorySet;
+  }
+
+  static boolean isGradleVersionLessThan(String gradleVersion) {
+    return GradleVersion.current().compareTo(GradleVersion.version(gradleVersion)) < 0;
   }
 
   static JavaPluginExtension javaPluginExtension(Project project) {
