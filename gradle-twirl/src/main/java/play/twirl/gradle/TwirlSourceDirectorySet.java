@@ -15,11 +15,63 @@ import org.gradle.api.provider.SetProperty;
  */
 public interface TwirlSourceDirectorySet extends SourceDirectorySet {
 
+  /**
+   * Custom template formats configured for this source directory set.
+   *
+   * <pre>{@code
+   * sourceSets {
+   *   main {
+   *     twirl {
+   *       templateFormats.put("csv", "play.twirl.api.TxtFormat")
+   *     }
+   *   }
+   * }
+   * }</pre>
+   */
   MapProperty<String, String> getTemplateFormats();
 
+  /**
+   * Imports that should be added to generated source files.
+   *
+   * <pre>{@code
+   * sourceSets {
+   *   main {
+   *     twirl {
+   *       templateImports.add("org.example._")
+   *     }
+   *   }
+   * }
+   * }</pre>
+   */
   SetProperty<String> getTemplateImports();
 
+  /**
+   * Annotations added to constructors in injectable templates.
+   *
+   * <pre>{@code
+   * sourceSets {
+   *   main {
+   *     twirl {
+   *       constructorAnnotations.add("@org.example.MyAnnotation()")
+   *     }
+   *   }
+   * }
+   * }</pre>
+   */
   ListProperty<String> getConstructorAnnotations();
 
+  /**
+   * Source encoding for template files and generated scala files.
+   *
+   * <pre>{@code
+   * sourceSets {
+   *   main {
+   *     twirl {
+   *       sourceEncoding.set("<enc>")
+   *     }
+   *   }
+   * }
+   * }</pre>
+   */
   Property<String> getSourceEncoding();
 }
