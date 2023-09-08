@@ -16,6 +16,7 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.provider.SetProperty;
 import play.twirl.gradle.TwirlSourceDirectorySet;
 
+/** Default implementation of {@link TwirlSourceDirectorySet}. */
 public class DefaultTwirlSourceDirectorySet extends DefaultSourceDirectorySet
     implements TwirlSourceDirectorySet {
 

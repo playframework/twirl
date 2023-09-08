@@ -10,6 +10,7 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.provider.SetProperty;
 import org.gradle.workers.WorkParameters;
 
+/** Parameters of compilation work action. */
 public interface TwirlCompileParams extends WorkParameters {
 
   RegularFileProperty getSourceFile();

@@ -26,6 +26,7 @@ import org.gradle.workers.WorkQueue;
 import org.gradle.workers.WorkerExecutor;
 import play.twirl.gradle.internal.TwirlCompileAction;
 
+/** Gradle task for compiling Twirl templates into Scala code. */
 public abstract class TwirlCompile extends SourceTask {
 
   @InputFiles
