@@ -12,6 +12,7 @@ import org.gradle.workers.WorkAction;
 import play.japi.twirl.compiler.TwirlCompiler;
 import scala.io.Codec;
 
+/** Gradle work action that compile one Twirl template. */
 public abstract class TwirlCompileAction implements WorkAction<TwirlCompileParams> {
 
   private static final Logger LOGGER = Logging.getLogger(TwirlCompileAction.class);
