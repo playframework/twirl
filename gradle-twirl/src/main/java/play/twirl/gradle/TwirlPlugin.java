@@ -121,7 +121,7 @@ public class TwirlPlugin implements Plugin<Project> {
             twirlCompile -> {
               twirlCompile.setDescription("Compiles the " + twirlSource + ".");
               twirlCompile.getTwirlClasspath().setFrom(twirlConfiguration);
-              twirlCompile.setSource(twirlSource);
+              twirlCompile.getSource().setFrom(twirlSource);
               twirlCompile.getTemplateFormats().convention(twirlSource.getTemplateFormats());
               twirlCompile.getTemplateImports().convention(twirlSource.getTemplateImports());
               twirlCompile.getSourceEncoding().convention(twirlSource.getSourceEncoding());
