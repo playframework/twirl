@@ -8,10 +8,13 @@ import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.SetProperty;
+import org.gradle.work.ChangeType;
 import org.gradle.workers.WorkParameters;
 
 /** Parameters of compilation work action. */
 public interface TwirlCompileParams extends WorkParameters {
+
+  Property<ChangeType> getChangeType();
 
   RegularFileProperty getSourceFile();
 
