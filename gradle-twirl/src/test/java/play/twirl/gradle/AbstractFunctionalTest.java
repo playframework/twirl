@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
+import org.gradle.api.JavaVersion;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,7 +62,12 @@ abstract class AbstractFunctionalTest {
   @BeforeEach
   void init() throws IOException {
     projectSourceDir = getProjectSourceDir();
-    runner = GradleRunner.create().withProjectDir(projectDir).withPluginClasspath().forwardOutput();
+    runner =
+        GradleRunner.create()
+            .withProjectDir(projectDir)
+            .withPluginClasspath()
+            .withDebug(true)
+            .forwardOutput();
 
     initFreemarker();
 
@@ -94,6 +100,10 @@ abstract class AbstractFunctionalTest {
   static Stream<String> gradleVersions() {
     // https://docs.gradle.org/current/userguide/scala_plugin.html#sec:configure_zinc_compiler
     if (getScalaVersion().equals("3")) { // Gradle 7.5+
+      return Stream.of("7.6.2", "8.0.2", "8.3");
+    }
+    // https://docs.gradle.org/current/userguide/compatibility.html
+    if (JavaVersion.current().compareTo(JavaVersion.VERSION_17) >= 0) { // Gradle 7.3+
       return Stream.of("7.6.2", "8.0.2", "8.3");
     }
     return Stream.of("7.1.1", "7.6.2", "8.0.2", "8.3");
