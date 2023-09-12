@@ -13,7 +13,6 @@ lazy val docs = project
     scalaVersion := "2.13.12",
     // use special snapshot play version for now
     resolvers ++= DefaultOptions.resolvers(snapshot = true),
-    resolvers += Resolver.typesafeRepo("releases"),
     libraryDependencies += component("play-test")   % "test",
     libraryDependencies += component("play-specs2") % "test",
     PlayDocsKeys.javaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "javaGuide" ** "code").get,

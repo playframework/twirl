@@ -1,12 +1,7 @@
 // Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com>
 
-import Dependencies._
+import Dependencies.*
 
-import com.typesafe.tools.mima.core.DirectMissingMethodProblem
-import com.typesafe.tools.mima.core.IncompatibleMethTypeProblem
-import com.typesafe.tools.mima.core.MissingClassProblem
-import com.typesafe.tools.mima.core.Problem
-import com.typesafe.tools.mima.core.ProblemFilters
 import sbtcrossproject.CrossPlugin.autoImport.crossProject
 import org.scalajs.jsenv.nodejs.NodeJSEnv
 
@@ -21,7 +16,8 @@ def parserCombinators(scalaVersion: String) = "org.scala-lang.modules" %% "scala
 
 val mimaSettings = Seq(
   mimaPreviousArtifacts := Set(
-    organization.value %% name.value % previousStableVersion.value
+    // TODO: change back to `organization.value` after first release with new groupId
+    "com.typesafe.play" %% name.value % previousStableVersion.value
       .getOrElse(throw new Error("Unable to determine previous version"))
   ),
   mimaBinaryIssueFilters ++= Seq(
@@ -128,7 +124,7 @@ lazy val plugin = project
   .dependsOn(compiler)
   .settings(
     name                                    := "sbt-twirl",
-    organization                            := "com.typesafe.play",
+    organization                            := "org.playframework.twirl",
     scalaVersion                            := Scala212,
     libraryDependencies += "org.scalatest" %%% "scalatest" % ScalaTestVersion % Test,
     Compile / resourceGenerators += generateVersionFile.taskValue,
