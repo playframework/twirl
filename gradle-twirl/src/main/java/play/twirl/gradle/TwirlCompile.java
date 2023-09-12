@@ -17,6 +17,7 @@ import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.SetProperty;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.IgnoreEmptyDirectories;
 import org.gradle.api.tasks.Input;
@@ -34,6 +35,7 @@ import org.gradle.workers.WorkerExecutor;
 import play.twirl.gradle.internal.TwirlCompileAction;
 
 /** Gradle task for compiling Twirl templates into Scala code. */
+@CacheableTask
 public abstract class TwirlCompile extends DefaultTask {
 
   @InputFiles

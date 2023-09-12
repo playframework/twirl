@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.groovy.util.Maps;
@@ -35,6 +36,11 @@ public class SimpleProjectTest extends AbstractFunctionalTest {
             "scalaVersion", getScalaVersion(),
             "twirlVersion", getTwirlVersion());
     return templateProcess("build.gradle.kts.ftlh", params);
+  }
+
+  @Override
+  protected String getSettingsFileContent() {
+    return templateProcess("settings.gradle.kts.ftlh", Collections.emptyMap());
   }
 
   @ParameterizedTest
@@ -124,5 +130,64 @@ public class SimpleProjectTest extends AbstractFunctionalTest {
     assertThat(compileScalaResult).isNotNull();
     assertThat(compileScalaResult.getOutcome()).isEqualTo(TaskOutcome.SUCCESS);
     assertThat(projectBuildPath("classes/scala/main/a/b/html/d.class")).doesNotExist();
+  }
+
+  @ParameterizedTest
+  @MethodSource("gradleVersions")
+  @DisplayName("Test build cache")
+  void testBuildCache(String gradleVersion) throws IOException {
+    File simpleSources = projectPath("src").toFile();
+    FileUtils.copyDirectory(projectSourcePath("src").toFile(), simpleSources);
+    Path newTemplate = projectPath("src/main/twirl/a/b/d.scala.html");
+    Files.copy(projectSourcePath("src/main/twirl/a/b/c.scala.html"), newTemplate);
+
+    BuildResult result = build(gradleVersion, "--build-cache", "compileTwirl");
+
+    BuildTask compileTwirlResult = result.task(":compileTwirl");
+    assertThat(compileTwirlResult).isNotNull();
+    assertThat(compileTwirlResult.getOutcome()).isEqualTo(TaskOutcome.SUCCESS);
+
+    assertThat(projectBuildPath("generated/sources/twirl/main/a/b/html/c.template.scala"))
+        .isNotEmptyFile();
+    assertThat(projectBuildPath("generated/sources/twirl/main/a/b/html/d.template.scala"))
+        .isNotEmptyFile();
+
+    build(gradleVersion, "clean");
+
+    assertThat(projectBuildPath("generated/sources/twirl/main/a/b/html/c.template.scala"))
+        .doesNotExist();
+    assertThat(projectBuildPath("generated/sources/twirl/main/a/b/html/d.template.scala"))
+        .doesNotExist();
+
+    result = build(gradleVersion, "--build-cache", "compileTwirl");
+
+    compileTwirlResult = result.task(":compileTwirl");
+    assertThat(compileTwirlResult).isNotNull();
+    assertThat(compileTwirlResult.getOutcome()).isEqualTo(TaskOutcome.FROM_CACHE);
+
+    assertThat(projectBuildPath("generated/sources/twirl/main/a/b/html/c.template.scala"))
+        .isNotEmptyFile();
+    assertThat(projectBuildPath("generated/sources/twirl/main/a/b/html/d.template.scala"))
+        .isNotEmptyFile();
+
+    build(gradleVersion, "clean");
+
+    assertThat(projectBuildPath("generated/sources/twirl/main/a/b/html/c.template.scala"))
+        .doesNotExist();
+    assertThat(projectBuildPath("generated/sources/twirl/main/a/b/html/d.template.scala"))
+        .doesNotExist();
+
+    Files.delete(newTemplate);
+
+    result = build(gradleVersion, "--build-cache", "compileTwirl");
+
+    compileTwirlResult = result.task(":compileTwirl");
+    assertThat(compileTwirlResult).isNotNull();
+    assertThat(compileTwirlResult.getOutcome()).isEqualTo(TaskOutcome.SUCCESS);
+
+    assertThat(projectBuildPath("generated/sources/twirl/main/a/b/html/c.template.scala"))
+        .isNotEmptyFile();
+    assertThat(projectBuildPath("generated/sources/twirl/main/a/b/html/d.template.scala"))
+        .doesNotExist();
   }
 }
