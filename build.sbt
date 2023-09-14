@@ -10,9 +10,6 @@ import com.typesafe.tools.mima.core.ProblemFilters
 import sbtcrossproject.CrossPlugin.autoImport.crossProject
 import org.scalajs.jsenv.nodejs.NodeJSEnv
 
-// Binary compatibility is this version
-val previousVersion: Option[String] = Some("1.5.1")
-
 val ScalaTestVersion = "3.2.17"
 
 def parserCombinators(scalaVersion: String) = "org.scala-lang.modules" %% "scala-parser-combinators" % {
@@ -23,19 +20,11 @@ def parserCombinators(scalaVersion: String) = "org.scala-lang.modules" %% "scala
 }
 
 val mimaSettings = Seq(
-  mimaPreviousArtifacts := {
-    CrossVersion.partialVersion(scalaVersion.value) match {
-      // No release for Scala 3 yet
-      case Some((3, _)) => Set.empty
-      case _            => previousVersion.map(organization.value %% name.value % _).toSet
-    }
-  },
+  mimaPreviousArtifacts := Set(
+    organization.value %% name.value % previousStableVersion.value
+      .getOrElse(throw new Error("Unable to determine previous version"))
+  ),
   mimaBinaryIssueFilters ++= Seq(
-    ProblemFilters.exclude[Problem]("play.twirl.parser.*"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.compiler.*"),
-    ProblemFilters.exclude[IncompatibleMethTypeProblem]("play.twirl.compiler.*"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.TemplateMagic*"),
-    ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.compiler.TwirlCompiler.DefaultImports"),
   )
 )
 
