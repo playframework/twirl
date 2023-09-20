@@ -2,7 +2,7 @@ name: Dependency Graph
 on:
   push:
     branches:
-      - main
+      - 1.6.x
 
 concurrency:
   # Only run once for latest commit per ref and cancel other (previous) runs.
