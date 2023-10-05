@@ -35,7 +35,7 @@ To add the sbt plugin to your project add the sbt plugin dependency in
 `project/plugins.sbt`:
 
 ```scala
-// twirl 1.7:
+// twirl 2.0 and newer:
 addSbtPlugin("org.playframework.twirl" % "sbt-twirl" % "LATEST_VERSION")
 // twirl 1.6:
 addSbtPlugin("com.typesafe.play" % "sbt-twirl" % "1.6.1")
