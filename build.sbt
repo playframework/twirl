@@ -16,8 +16,7 @@ def parserCombinators(scalaVersion: String) = "org.scala-lang.modules" %% "scala
 
 val mimaSettings = Seq(
   mimaPreviousArtifacts := Set(
-    // TODO: change back to `organization.value` after first release with new groupId
-    "com.typesafe.play" %% name.value % previousStableVersion.value
+    organization.value %% name.value % previousStableVersion.value
       .getOrElse(throw new Error("Unable to determine previous version"))
   ),
   mimaBinaryIssueFilters ++= Seq(
