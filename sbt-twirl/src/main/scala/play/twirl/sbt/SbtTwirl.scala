@@ -89,8 +89,7 @@ object SbtTwirl extends AutoPlugin {
         }
         // TODO: can we use %%% from sbt-crossproject now that we're on Scala.js 1.x?
         val groupId = {
-          // TODO: change to >=2.0.0 before first release
-          if (VersionNumber(twirlVersion.value).matchesSemVer(SemanticSelector(">=1.6.1"))) "org.playframework.twirl"
+          if (VersionNumber(twirlVersion.value).matchesSemVer(SemanticSelector(">=2.0.0-M1"))) "org.playframework.twirl"
           else "com.typesafe.play"
         }
         val baseModuleID = groupId %% "twirl-api" % twirlVersion.value
