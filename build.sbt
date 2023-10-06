@@ -38,8 +38,9 @@ lazy val twirl = project
   .in(file("."))
   .disablePlugins(MimaPlugin)
   .settings(
-    crossScalaVersions := Nil, // workaround so + uses project-defined variants
-    publish / skip     := true,
+    sonatypeProfileName := "org.playframework",
+    crossScalaVersions  := Nil, // workaround so + uses project-defined variants
+    publish / skip      := true,
     (Compile / headerSources) ++=
       ((baseDirectory.value ** ("*.properties" || "*.md" || "*.sbt" || "*.scala.html"))
         --- (baseDirectory.value ** "target" ** "*")
@@ -60,8 +61,9 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
   .enablePlugins(Common, Playdoc, Omnidoc)
   .configs(Docs)
   .settings(
-    scalaVersion       := Scala212,
-    crossScalaVersions := ScalaVersions,
+    sonatypeProfileName := "org.playframework",
+    scalaVersion        := Scala212,
+    crossScalaVersions  := ScalaVersions,
     mimaSettings,
     name  := "twirl-api",
     jsEnv := nodeJs,
@@ -84,8 +86,9 @@ lazy val parser = project
   .in(file("parser"))
   .enablePlugins(Common, Omnidoc)
   .settings(
-    scalaVersion       := Scala212,
-    crossScalaVersions := ScalaVersions,
+    sonatypeProfileName := "org.playframework",
+    scalaVersion        := Scala212,
+    crossScalaVersions  := ScalaVersions,
     mimaSettings,
     name := "twirl-parser",
     libraryDependencies += parserCombinators(scalaVersion.value),
@@ -97,8 +100,9 @@ lazy val compiler = project
   .in(file("compiler"))
   .enablePlugins(Common, Omnidoc, BuildInfoPlugin)
   .settings(
-    scalaVersion       := Scala212,
-    crossScalaVersions := ScalaVersions,
+    sonatypeProfileName := "org.playframework",
+    scalaVersion        := Scala212,
+    crossScalaVersions  := ScalaVersions,
     mimaSettings,
     name := "twirl-compiler",
     libraryDependencies ++= {
@@ -125,6 +129,7 @@ lazy val plugin = project
   .settings(
     name                                    := "sbt-twirl",
     organization                            := "org.playframework.twirl",
+    sonatypeProfileName                     := "org.playframework",
     scalaVersion                            := Scala212,
     libraryDependencies += "org.scalatest" %%% "scalatest" % ScalaTestVersion % Test,
     Compile / resourceGenerators += generateVersionFile.taskValue,
