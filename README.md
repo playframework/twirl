@@ -11,7 +11,7 @@
 [![OpenCollective](https://img.shields.io/opencollective/all/playframework?label=financial%20contributors&logo=open-collective)](https://opencollective.com/playframework)
 
 [![Build Status](https://github.com/playframework/twirl/actions/workflows/build-test.yml/badge.svg)](https://github.com/playframework/twirl/actions/workflows/build-test.yml)
-[![Maven](https://img.shields.io/maven-central/v/com.typesafe.play/twirl-api_2.13.svg?logo=apache-maven)](https://mvnrepository.com/artifact/com.typesafe.play/twirl-api_2.13)
+[![Maven](https://img.shields.io/maven-central/v/org.playframework.twirl/twirl-api_2.13.svg?logo=apache-maven)](https://mvnrepository.com/artifact/org.playframework.twirl/twirl-api_2.13)
 [![Repository size](https://img.shields.io/github/repo-size/playframework/twirl.svg?logo=git)](https://github.com/playframework/twirl)
 [![Scala Steward badge](https://img.shields.io/badge/Scala_Steward-helping-blue.svg?style=flat&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAMAAAARSr4IAAAAVFBMVEUAAACHjojlOy5NWlrKzcYRKjGFjIbp293YycuLa3pYY2LSqql4f3pCUFTgSjNodYRmcXUsPD/NTTbjRS+2jomhgnzNc223cGvZS0HaSD0XLjbaSjElhIr+AAAAAXRSTlMAQObYZgAAAHlJREFUCNdNyosOwyAIhWHAQS1Vt7a77/3fcxxdmv0xwmckutAR1nkm4ggbyEcg/wWmlGLDAA3oL50xi6fk5ffZ3E2E3QfZDCcCN2YtbEWZt+Drc6u6rlqv7Uk0LdKqqr5rk2UCRXOk0vmQKGfc94nOJyQjouF9H/wCc9gECEYfONoAAAAASUVORK5CYII=)](https://scala-steward.org)
 [![Mergify Status](https://img.shields.io/endpoint.svg?url=https://api.mergify.com/v1/badges/playframework/twirl&style=flat)](https://mergify.com)
@@ -35,9 +35,11 @@ To add the sbt plugin to your project add the sbt plugin dependency in
 `project/plugins.sbt`:
 
 ```scala
-// twirl 1.6 and newer:
-addSbtPlugin("com.typesafe.play" % "sbt-twirl" % "LATEST_VERSION")
-// twirl 1.5 and before:
+// twirl 2.0 and newer:
+addSbtPlugin("org.playframework.twirl" % "sbt-twirl" % "LATEST_VERSION")
+// twirl 1.6:
+addSbtPlugin("com.typesafe.play" % "sbt-twirl" % "1.6.1")
+// twirl 1.5.1 and before:
 addSbtPlugin("com.typesafe.sbt" % "sbt-twirl" % "1.5.1")
 ```
 
