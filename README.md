@@ -224,7 +224,7 @@ To use a snapshot version add the [Sonatype Snapshot repository](https://oss.son
 
 ## gradle-twirl
 
-⚠️ `com.typesafe.play.twirl` plugin requires Gradle 7.1 or higher.
+⚠️ `org.playframework.twirl` plugin requires Gradle 7.1 or higher.
 
 To use the Twirl plugin in your project add the gradle plugin and 
 Twirl API as a dependency into `build.gradle.kts`:
@@ -232,11 +232,11 @@ Twirl API as a dependency into `build.gradle.kts`:
 ```kotlin
 plugins {
   ...
-  id("com.typesafe.play.twirl") version "LATEST_VERSION"
+  id("org.playframework.twirl") version "LATEST_VERSION"
 }
 
 dependencies {
-  implementation("com.typesafe.play", "twirl-api_${scalaVersion}", "LATEST_VERSION")
+  implementation("org.playframework.twirl", "twirl-api_${scalaVersion}", "LATEST_VERSION")
 }
 ```
 
@@ -312,7 +312,7 @@ sourceSets {
 
 ### Snapshots
 
-To use a snapshot version add the [Sonatype Snapshot repository](https://oss.sonatype.org/content/repositories/snapshots/com/typesafe/play/twirl/com.typesafe.play.twirl.gradle.plugin/) into `settings.gradle.kts`:
+To use a snapshot version add the [Sonatype Snapshot repository](https://oss.sonatype.org/content/repositories/snapshots/org/playframework/twirl/org.playframework.twirl.gradle.plugin/) into `settings.gradle.kts`:
 
 ```kotlin
 pluginManagement {

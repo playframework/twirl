@@ -21,8 +21,7 @@ val compilerVersion: String =
         if (this.getProperty("twirl.compiler.version").isNullOrEmpty()) throw GradleException("`twirl.compiler.version` key didn't find in ${file.absolutePath}")
     }.getProperty("twirl.compiler.version")
 
-// group = "org.playframework" // group and plugin id must use same top level namespace
-group = "com.typesafe.play" // TODO: uncomment line above and remove this
+group = "org.playframework.twirl"
 version = compilerVersion
 
 repositories {
@@ -31,7 +30,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("com.typesafe.play:twirl-compiler_2.13:$compilerVersion")
+    compileOnly("org.playframework.twirl:twirl-compiler_2.13:$compilerVersion")
     testImplementation(libs.assertj)
     testImplementation(libs.commons.io)
     testImplementation(libs.freemarker)
@@ -82,7 +81,7 @@ gradlePlugin {
     website.set("https://www.playframework.com/documentation/latest/ScalaTemplates")
     vcsUrl.set("https://github.com/playframework/twirl")
     val twirl by plugins.creating {
-        id = "com.typesafe.play.twirl" // TODO: rename to "org.playframework.twirl"
+        id = "org.playframework.twirl"
         displayName = "Twirl Plugin"
         description = "A Gradle plugin to compile Twirl templates"
         tags.set(listOf("playframework", "web", "template", "java", "scala"))

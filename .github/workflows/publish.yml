@@ -4,7 +4,6 @@ on:
   push:
     branches: # Snapshots
       - main
-      - gradle # TODO: remove this line
     tags: ["**"] # Releases
   release:
     types: [published]

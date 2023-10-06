@@ -1,6 +1,6 @@
 plugins {
   application
-  id("com.typesafe.play.twirl")
+  id("org.playframework.twirl")
 }
 
 repositories {
@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-  implementation("com.typesafe.play:twirl-api_${scalaVersion}:${twirlVersion}")
+  implementation("org.playframework.twirl:twirl-api_${scalaVersion}:${twirlVersion}")
 }
 
 twirl {
