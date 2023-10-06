@@ -46,7 +46,7 @@ lazy val twirl = project
         --- (baseDirectory.value / "docs" ** "*")).get ++
         (baseDirectory.value / "project" ** "*.scala" --- (baseDirectory.value ** "target" ** "*")).get
   )
-  .aggregate(apiJvm, apiJs, parser, compiler, plugin)
+  .aggregate(apiJvm, apiJs, parser, compiler, plugin, mavenPlugin)
 
 lazy val nodeJs = {
   if (System.getProperty("NODE_PATH") != null)
@@ -148,6 +148,32 @@ lazy val plugin = project
       ()
     },
     mimaFailOnNoPrevious := false
+  )
+
+lazy val mavenPlugin = project
+  .in(file("maven-twirl"))
+  .enablePlugins(SbtMavenPlugin)
+  .dependsOn(compiler)
+  .settings(
+    name                  := "twirl-maven-plugin",
+    sonatypeProfileName   := "org.playframework",
+    scalaVersion          := Scala212,
+    crossScalaVersions    := ScalaVersions,
+    mavenPluginGoalPrefix := "twirl",
+    mavenLaunchOpts ++= Seq(
+      // Uncomment to debug plugin code while Maven scripted test is running
+//      "-agentlib:jdwp=transport=dt_socket,address=localhost:62555,suspend=y,server=y",
+      version.apply { v => s"-Dplugin.version=$v" }.value,
+      scalaVersion.apply { v => s"-Dscala.binaryVersion=${CrossVersion.binaryScalaVersion(v)}" }.value
+    ),
+    publishM2 := publishM2
+      .dependsOn(compiler / publishM2)
+      .dependsOn(parser / publishM2)
+      .dependsOn(apiJvm / publishM2)
+      .value,
+    libraryDependencies += "org.codehaus.plexus" % "plexus-utils" % "4.0.0",
+    Compile / headerSources ++= (baseDirectory.value / "src" / "maven-test" ** ("*.java" || "*.scala" || "*.scala.html") --- (baseDirectory.value ** "target" ** "*")).get,
+    mimaFailOnNoPrevious := false,
   )
 
 // Version file

@@ -90,6 +90,138 @@ sources alongside Scala or Java source files:
 Compile / TwirlKeys.compileTemplates / sourceDirectories := (Compile / unmanagedSourceDirectories).value
 ```
 
+## maven-twirl
+
+To use the Twirl plugin in your project add the Maven plugin and
+Twirl API as a dependency into `pom.xml`:
+
+```pom
+<dependencies>
+    <dependency>
+        <groupId>org.playframework.twirl</groupId>
+        <artifactId>twirl-api_${SCALA_VERSION}</artifactId>
+        <version>${TWIRL_VERSION}</version>
+    </dependency>
+</dependencies>
+
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.playframework.twirl</groupId>
+            <artifactId>twirl-maven-plugin_${SCALA_VERSION}</artifactId>
+            <version>${TWIRL_VERSION}</version>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>compile</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+```
+
+Replacing the `TWIRL_VERSION` with the latest version published, which should be [![Latest version](https://index.scala-lang.org/playframework/twirl/twirl-api/latest.svg?color=orange)](https://index.scala-lang.org/playframework/twirl/twirl-api).
+
+### Template files
+
+Twirl template files are expected to be placed under `src/main/twirl` or
+`src/test/twirl`, similar to `scala` or `java` sources. The additional source
+locations for template files can be configured.
+
+Template files must be named `{name}.scala.{ext}` where `ext` can be `html`,
+`js`, `xml`, or `txt`.
+
+### Additional imports
+
+To add additional imports for the Scala code in template files, use the
+`templateImports` parameter. For example:
+
+```pom
+<plugin>
+    <groupId>org.playframework.twirl</groupId>
+    <artifactId>twirl-maven-plugin_${SCALA_VERSION}</artifactId>
+    <version>${TWIRL_VERSION}</version>
+    <configuration>
+        <templateImports>
+            <import>org.example._</import>
+        </templateImports>
+    </configuration>
+</plugin>
+```
+
+### Source directories
+
+To configure the source directories where template files will be found, use the
+`sourceDir` parameter. For example:
+
+```pom
+<plugin>
+    <groupId>org.playframework.twirl</groupId>
+    <artifactId>twirl-maven-plugin_${SCALA_VERSION}</artifactId>
+    <version>${TWIRL_VERSION}</version>
+    <configuration>
+        <sourceDir>${project.basedir}/src/main/templates</sourceDir>
+    </configuration>
+    <executions>
+        <execution>
+            <id>additional-source-directory</id>
+            <goals>
+                <goal>compile</goal>
+            </goals>
+            <configuration>
+                <sourceDir>${project.basedir}/src/main/other-templates</sourceDir>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+### Scala version
+
+To configure the Scala version just use the suffix in `artifactId`.
+
+### Other properties
+
+Also, you can use the next parameters:
+
+```pom
+<plugin>
+    <groupId>org.playframework.twirl</groupId>
+    <artifactId>twirl-maven-plugin_${SCALA_VERSION}</artifactId>
+    <version>${TWIRL_VERSION}</version>
+    <configuration>
+        <constructorAnnotations>
+            <annotation>@org.example.MyAnnotation()</annotation>
+        </constructorAnnotations>
+        <templateFormats>
+            <csv>play.twirl.api.TxtFormat</csv>
+        </templateFormats>
+        <sourceEncoding>UTF-8</sourceEncoding>
+    </configuration>
+</plugin>
+```
+
+### Snapshots
+
+To use a snapshot version add the [Sonatype Snapshot repository](https://oss.sonatype.org/content/repositories/snapshots/org/playframework/twirl/) into `pom.xml`:
+
+```pom
+<pluginRepositories>
+    <pluginRepository>
+        <id>sonatype-snapshots</id>
+        <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        <releases>
+            <enabled>false</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </pluginRepository>
+</pluginRepositories>
+```
+
 ## Releasing a new version
 
 See https://github.com/playframework/.github/blob/main/RELEASING.md
