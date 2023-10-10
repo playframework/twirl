@@ -18,8 +18,14 @@ val compilerVersion: String =
         val file = file("$projectDir/../compiler/version.properties")
         if (!file.exists()) throw GradleException("Install Twirl Compiler to local Maven repository by `sbt +compiler/publishM2` command")
         file.inputStream().use { load(it) }
-        if (this.getProperty("twirl.compiler.version").isNullOrEmpty()) throw GradleException("`twirl.compiler.version` key didn't find in ${file.absolutePath}")
+        if (this.getProperty("twirl.compiler.version")
+                .isNullOrEmpty()
+        ) {
+            throw GradleException("`twirl.compiler.version` key didn't find in ${file.absolutePath}")
+        }
     }.getProperty("twirl.compiler.version")
+
+val isRelease = !compilerVersion.endsWith("SNAPSHOT")
 
 group = "org.playframework.twirl"
 version = compilerVersion
@@ -63,9 +69,13 @@ testing {
 }
 
 signing {
-    val signingKey = Base64.getDecoder().decode(System.getenv("PGP_SECRET").orEmpty()).toString(UTF_8)
-    val signingPassword = System.getenv("PGP_PASSPHRASE").orEmpty()
-    useInMemoryPgpKeys(signingKey, signingPassword)
+    isRequired = isRelease
+    if (isRelease) {
+        val signingKey =
+            Base64.getDecoder().decode(System.getenv("PGP_SECRET").orEmpty()).toString(UTF_8)
+        val signingPassword = System.getenv("PGP_PASSPHRASE").orEmpty()
+        useInMemoryPgpKeys(signingKey, signingPassword)
+    }
 }
 
 nexusPublishing {
@@ -89,7 +99,8 @@ gradlePlugin {
     }
 }
 
-val headerLicense = "Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com>"
+val headerLicense =
+    "Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com>"
 val headerLicenseHash = "# $headerLicense"
 val headerLicenseJava = "/*\n * $headerLicense\n */"
 
