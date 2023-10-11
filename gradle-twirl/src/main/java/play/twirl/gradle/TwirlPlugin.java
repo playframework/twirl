@@ -69,6 +69,7 @@ public class TwirlPlugin implements Plugin<Project> {
     conf.setDescription("The Twirl compiler library.");
     conf.setVisible(false);
     conf.setTransitive(true);
+    conf.setCanBeConsumed(false);
     conf.defaultDependencies(
         dependencies -> {
           Dependency twirlCompiler =
