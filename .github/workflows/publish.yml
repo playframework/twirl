@@ -9,7 +9,32 @@ on:
     types: [published]
 
 jobs:
-  publish-artifacts:
+  publish-snapshot-artifacts:
     name: Publish / Artifacts
+    if: github.ref_type == 'branch' # Snapshots
     uses: playframework/.github/.github/workflows/publish.yml@v3
+    with:
+      gradle-build-root: gradle-twirl
+      cmd: |
+        sbt +compiler/publishM2 ci-release
+        cd gradle-twirl
+        ./gradlew --no-daemon publishToSonatype -x test -PsonatypeUsername="$SONATYPE_USERNAME" -PsonatypePassword="$SONATYPE_PASSWORD"
+    secrets: inherit
+
+  publish-release:
+    name: Publish / Artifacts
+    if: github.ref_type == 'tag' # Releases
+    uses: playframework/.github/.github/workflows/publish.yml@v3
+    secrets: inherit
+
+  publish-release-gradle:
+    name: Publish / Artifacts (Gradle Plugin)
+    if: github.ref_type == 'tag' # Releases
+    uses: playframework/.github/.github/workflows/publish.yml@v3
+    with:
+      gradle-build-root: gradle-twirl
+      cmd: |
+        sbt +compiler/publishM2
+        cd gradle-twirl
+        ./gradlew --no-daemon publishPlugins -x test -Pgradle.publish.key="$GRADLE_PUBLISH_KEY" -Pgradle.publish.secret="$GRADLE_PUBLISH_SECRET"
     secrets: inherit

@@ -15,3 +15,5 @@ project/plugins/project/
 .idea
 
 .bloop/
+
+compiler/version.properties

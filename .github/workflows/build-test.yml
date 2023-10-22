@@ -13,11 +13,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Run Gradle Wrapper Validation to verify the wrapper's checksum
+  gradle-validation:
+    name: Gradle Wrapper
+    uses: playframework/.github/.github/workflows/gradle-wrapper-validation.yml@v3
+
   check-code-style:
     name: Code Style
+    needs:
+      - "gradle-validation"
     uses: playframework/.github/.github/workflows/cmd.yml@v3
     with:
-      cmd: sbt validateCode
+      gradle-build-root: gradle-twirl
+      cmd: |
+        sbt validateCode
+        sbt +compiler/publishM2
+        cd gradle-twirl && ./gradlew clean spotlessCheck --no-daemon
 
   check-binary-compatibility:
     name: Binary Compatibility
@@ -42,6 +53,7 @@ jobs:
       java: 17, 11
       scala: 2.12.x, 2.13.x, 3.x
       cmd: scripts/test-code.sh
+      gradle-build-root: gradle-twirl
 
   finish:
     name: Finish
