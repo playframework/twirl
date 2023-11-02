@@ -19,11 +19,10 @@ def parserCombinators(scalaVersion: String) = "org.scala-lang.modules" %% "scala
   }
 }
 
+val previousVersion: Option[String] = Some("1.6.0")
+
 val mimaSettings = Seq(
-  mimaPreviousArtifacts := Set(
-    organization.value %% name.value % previousStableVersion.value
-      .getOrElse(throw new Error("Unable to determine previous version"))
-  ),
+  mimaPreviousArtifacts := previousVersion.map(organization.value %% moduleName.value % _).toSet,
   mimaBinaryIssueFilters ++= Seq(
   )
 )
