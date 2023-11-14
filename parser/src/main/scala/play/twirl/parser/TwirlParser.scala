@@ -874,7 +874,6 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       whitespaceNoBreak()
       val blk = expressionPart(blockArgsAllowed = true)
       if (blk != null) {
-        whitespaceNoBreak()
         Seq(Simple("else"), blk)
       } else {
         null
