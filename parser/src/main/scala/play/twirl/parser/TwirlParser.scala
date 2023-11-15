@@ -73,7 +73,7 @@ import scala.util.parsing.input.OffsetPosition
  *   safeExpression : '@' parentheses
  *   ifExpression : '@' "if" parentheses expressionPart (elseIfCall)* elseCall?
  *   elseCall : whitespaceNoBreak? "else" whitespaceNoBreak? expressionPart
- *   elseIfCall : whitespaceNoBreak? "else if" parentheses expressionPart whitespaceNoBreak?
+ *   elseIfCall : whitespaceNoBreak? "else if" parentheses whitespaceNoBreak? expressionPart
  *   chainedMethods : ('.' methodCall)+
  *   expressionPart : chainedMethods | block | (whitespaceNoBreak scalaBlockChained) | parentheses
  *   expression : '@' methodCall expressionPart*
@@ -853,7 +853,6 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       if (args != null) {
         val blk = expressionPart(blockArgsAllowed = true)
         if (blk != null) {
-          whitespaceNoBreak()
           Seq(Simple("else if" + args), blk)
         } else {
           null
