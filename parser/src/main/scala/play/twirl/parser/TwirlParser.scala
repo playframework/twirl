@@ -72,7 +72,7 @@ import scala.util.parsing.input.OffsetPosition
  *   complexExpr : parentheses
  *   safeExpression : '@' parentheses
  *   ifExpression : '@' "if" parentheses expressionPart (elseIfCall)* elseCall?
- *   elseCall : whitespaceNoBreak? "else" expressionPart whitespaceNoBreak?
+ *   elseCall : whitespaceNoBreak? "else" whitespaceNoBreak? expressionPart
  *   elseIfCall : whitespaceNoBreak? "else if" parentheses expressionPart whitespaceNoBreak?
  *   chainedMethods : ('.' methodCall)+
  *   expressionPart : chainedMethods | block | (whitespaceNoBreak scalaBlockChained) | parentheses
