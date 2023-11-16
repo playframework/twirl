@@ -178,6 +178,42 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         val secondCaseBlockBody = secondCaseBlock(1).asInstanceOf[Block]
         secondCaseBlockBody.content(1).asInstanceOf[Plain].text mustBe "Not a nice string "
       }
+
+      "whitespaces after 'else {...}' as plain" in {
+        val template = parseTemplateString(
+          """@if(condition) {ifblock body} else {elseblock body}  Some plain text with whitespaces"""
+        )
+        val ifExpressions = template.content(0).asInstanceOf[Display].exp.parts
+        ifExpressions.head must be(Simple("if(condition)"))
+        val ifBlockBody = ifExpressions(1).asInstanceOf[Block].content(0)
+        ifBlockBody mustBe Plain("ifblock body")
+        val elsePart = ifExpressions(2)
+        elsePart mustBe Simple("else")
+        val elseBlockBody = ifExpressions(3).asInstanceOf[Block].content(0)
+        elseBlockBody mustBe Plain("elseblock body")
+        val afterIfExpressionOfWhitespaces = template.content(1)
+        afterIfExpressionOfWhitespaces mustBe Plain("  ")
+        val afterWhitespaces = template.content(2)
+        afterWhitespaces mustBe Plain("Some plain text with whitespaces")
+      }
+
+      "whitespaces after 'else if(condition) {...}' as plain" in {
+        val template = parseTemplateString(
+          """@if(condition) {ifblock body} else if(condition2) {elseifblock body}  Some plain text with whitespaces"""
+        )
+        val ifExpressions = template.content(0).asInstanceOf[Display].exp.parts
+        ifExpressions.head must be(Simple("if(condition)"))
+        val ifBlockBody = ifExpressions(1).asInstanceOf[Block].content(0)
+        ifBlockBody mustBe Plain("ifblock body")
+        val elseIfPart = ifExpressions(2)
+        elseIfPart mustBe Simple("else if(condition2)")
+        val elseBlockBody = ifExpressions(3).asInstanceOf[Block].content(0)
+        elseBlockBody mustBe Plain("elseifblock body")
+        val afterIfExpressionOfWhitespaces = template.content(1)
+        afterIfExpressionOfWhitespaces mustBe Plain("  ")
+        val afterWhitespaces = template.content(2)
+        afterWhitespaces mustBe Plain("Some plain text with whitespaces")
+      }
     }
 
     "handle local definitions" when {
