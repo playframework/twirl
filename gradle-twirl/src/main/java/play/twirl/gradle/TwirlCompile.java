@@ -5,6 +5,7 @@ package play.twirl.gradle;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Map.Entry;
 import javax.inject.Inject;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
@@ -83,9 +84,9 @@ public abstract class TwirlCompile extends DefaultTask {
             parameters.getSourceFile().set(sourceFile.getFile());
             parameters.getSourceDirectory().set(sourceFile.getBaseDir());
             parameters.getDestinationDirectory().set(getDestinationDirectory());
-            parameters
-                .getFormatterType()
-                .set(getFormatterType(templateFormats, sourceFile.getFile()));
+            Entry<String, String> format = getFormat(templateFormats, sourceFile.getFile());
+            parameters.getFormatExtension().set(format.getKey());
+            parameters.getFormatterType().set(format.getValue());
             parameters.getTemplateImports().set(getTemplateImports());
             parameters.getConstructorAnnotations().set(getConstructorAnnotations());
             parameters.getSourceEncoding().set(getSourceEncoding());
@@ -93,11 +94,10 @@ public abstract class TwirlCompile extends DefaultTask {
     }
   }
 
-  private String getFormatterType(Map<String, String> formats, File file) {
-    return formats.keySet().stream()
-        .filter(ext -> FileUtils.hasExtensionIgnoresCase(file.getName(), ext))
+  private Entry<String, String> getFormat(Map<String, String> formats, File file) {
+    return formats.entrySet().stream()
+        .filter(f -> FileUtils.hasExtensionIgnoresCase(file.getName(), f.getKey()))
         .findFirst()
-        .map(formats::get)
         .orElseThrow(
             () ->
                 new GradleException(

@@ -171,7 +171,8 @@ public abstract class AbstractTwirlCompileMojo extends AbstractMojo {
     }
 
     for (File file : templates) {
-      final var format = templateFormats.get(getExtension(file.getName()));
+      final var extension = getExtension(file.getName());
+      final var format = templateFormats.get(extension);
       if (format == null) {
         throw new MojoFailureException(
             String.format(
@@ -186,7 +187,7 @@ public abstract class AbstractTwirlCompileMojo extends AbstractMojo {
           getSourceDirectory(),
           getOutputDirectory(),
           format,
-          templateImports,
+          TwirlCompiler.formatImports(templateImports, extension),
           new ArrayList<>(constructorAnnotations),
           Codec.string2codec(sourceEncoding),
           false);

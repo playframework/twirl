@@ -43,6 +43,7 @@
         <configuration>
           <templateImports>
             <import>java.lang._</import>
+            <import>a.b.%format%._</import>
           </templateImports>
           <constructorAnnotations>
             <annotation>@java.lang.Deprecated()</annotation>

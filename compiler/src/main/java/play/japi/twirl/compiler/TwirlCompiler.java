@@ -8,8 +8,6 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -24,14 +22,10 @@ public class TwirlCompiler {
   public static final Set<String> DEFAULT_IMPORTS;
 
   static {
-    Set<String> imports = new HashSet<>();
     String scalaVersion = play.twirl.compiler.BuildInfo$.MODULE$.scalaVersion();
-    imports.addAll(
-        JavaConverters$.MODULE$
-            .seqAsJavaListConverter(
-                play.twirl.compiler.TwirlCompiler$.MODULE$.defaultImports(scalaVersion))
-            .asJava());
-    DEFAULT_IMPORTS = Collections.unmodifiableSet(imports);
+    DEFAULT_IMPORTS =
+        Set.copyOf(
+            toJavaList(play.twirl.compiler.TwirlCompiler$.MODULE$.defaultImports(scalaVersion)));
   }
 
   public static Optional<File> compile(
@@ -62,12 +56,8 @@ public class TwirlCompiler {
       List<String> constructorAnnotations,
       Codec codec,
       boolean inclusiveDot) {
-    Seq<String> scalaAdditionalImports =
-        JavaConverters$.MODULE$
-            .asScalaBufferConverter(new ArrayList<String>(additionalImports))
-            .asScala();
-    Seq<String> scalaConstructorAnnotations =
-        JavaConverters$.MODULE$.asScalaBufferConverter(constructorAnnotations).asScala();
+    Seq<String> scalaAdditionalImports = toScalaSeq(additionalImports);
+    Seq<String> scalaConstructorAnnotations = toScalaSeq(constructorAnnotations);
 
     Option<File> option =
         play.twirl.compiler.TwirlCompiler.compile(
@@ -80,5 +70,20 @@ public class TwirlCompiler {
             codec,
             inclusiveDot);
     return Optional.ofNullable(option.nonEmpty() ? option.get() : null);
+  }
+
+  public static Collection<String> formatImports(
+      Collection<String> templateImports, String extension) {
+    return toJavaList(
+        play.twirl.compiler.TwirlCompiler.formatImports(
+            toScalaSeq(templateImports).toSeq(), extension));
+  }
+
+  private static <T> Seq<T> toScalaSeq(Collection<T> collection) {
+    return JavaConverters$.MODULE$.asScalaBufferConverter(new ArrayList<>(collection)).asScala();
+  }
+
+  private static <T> List<T> toJavaList(Seq<T> seq) {
+    return JavaConverters$.MODULE$.seqAsJavaListConverter(seq).asJava();
   }
 }

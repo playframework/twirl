@@ -66,6 +66,7 @@ public abstract class TwirlCompileAction implements WorkAction<TwirlCompileParam
       File sourceDirectory = getParameters().getSourceDirectory().getAsFile().get();
       File destinationDirectory = getParameters().getDestinationDirectory().getAsFile().get();
       String formatterType = getParameters().getFormatterType().get();
+      String extension = getParameters().getFormatExtension().get();
       getParameters().getTemplateImports().addAll(TwirlCompiler.DEFAULT_IMPORTS);
       Collection<String> imports = getParameters().getTemplateImports().get();
       List<String> constructorAnnotations = getParameters().getConstructorAnnotations().get();
@@ -84,7 +85,7 @@ public abstract class TwirlCompileAction implements WorkAction<TwirlCompileParam
           sourceDirectory,
           destinationDirectory,
           formatterType,
-          imports,
+          TwirlCompiler.formatImports(imports, extension),
           constructorAnnotations,
           Codec.string2codec(sourceEncoding),
           false);

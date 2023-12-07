@@ -59,7 +59,7 @@ public class SimpleProjectTest extends AbstractFunctionalTest {
         .isNotEmptyFile()
         .binaryContent()
         .asString()
-        .contains("import java.lang._", "class c @java.lang.Deprecated()");
+        .contains("import java.lang._", "class c @java.lang.Deprecated()", "import a.b.html._");
 
     BuildTask compileScalaResult = result.task(":compileScala");
     assertThat(compileScalaResult).isNotNull();

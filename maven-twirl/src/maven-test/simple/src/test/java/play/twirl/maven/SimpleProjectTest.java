@@ -31,7 +31,8 @@ public class SimpleProjectTest {
                     .isNotEmptyFile()
                     .binaryContent()
                     .asString()
-                    .contains("import java.lang._", "@java.lang.Deprecated()"));
+                    .contains(
+                        "import java.lang._", "@java.lang.Deprecated()", "import a.b.html._"));
 
     var compiledScalaSources =
         list(
