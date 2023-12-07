@@ -24,6 +24,8 @@ public interface TwirlCompileParams extends WorkParameters {
 
   Property<String> getFormatterType();
 
+  Property<String> getFormatExtension();
+
   SetProperty<String> getTemplateImports();
 
   ListProperty<String> getConstructorAnnotations();

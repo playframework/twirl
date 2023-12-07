@@ -20,6 +20,7 @@ sourceSets {
   main {
     twirl {
       templateImports.add("java.lang._")
+      templateImports.add("a.b.%format%._")
       constructorAnnotations.add("@java.lang.Deprecated()")
     }
   }
