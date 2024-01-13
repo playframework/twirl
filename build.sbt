@@ -116,7 +116,7 @@ lazy val compiler = project
       }
     },
     libraryDependencies += parserCombinators(scalaVersion.value),
-    libraryDependencies += ("org.scalameta" %% "parsers" % "4.8.14").cross(CrossVersion.for3Use2_13),
+    libraryDependencies += ("org.scalameta" %% "parsers" % "4.8.15").cross(CrossVersion.for3Use2_13),
     run / fork                              := true,
     buildInfoKeys                           := Seq[BuildInfoKey](scalaVersion),
     buildInfoPackage                        := "play.twirl.compiler",
