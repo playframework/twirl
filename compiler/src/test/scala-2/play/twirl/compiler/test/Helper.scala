@@ -99,6 +99,7 @@ object Helper {
         sourceDir,
         generatedDir,
         "play.twirl.api.HtmlFormat",
+        scalaVersion,
         additionalImports = TwirlCompiler.defaultImports(scalaVersion) ++ additionalImports
       )
 

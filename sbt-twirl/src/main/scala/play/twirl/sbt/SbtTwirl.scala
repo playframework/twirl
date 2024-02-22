@@ -117,7 +117,8 @@ object SbtTwirl extends AutoPlugin {
         (compileTemplates / includeFilter).value,
         (compileTemplates / excludeFilter).value,
         Codec(sourceEncoding.value),
-        streams.value.log
+        streams.value.log,
+        scalaVersion.value
       )
     }
 

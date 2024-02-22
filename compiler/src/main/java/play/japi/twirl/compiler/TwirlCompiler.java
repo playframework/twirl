@@ -62,6 +62,7 @@ public class TwirlCompiler {
       List<String> constructorAnnotations,
       Codec codec,
       boolean inclusiveDot) {
+    String scalaVersion = play.twirl.compiler.BuildInfo$.MODULE$.scalaVersion();
     Seq<String> scalaAdditionalImports =
         JavaConverters$.MODULE$
             .asScalaBufferConverter(new ArrayList<String>(additionalImports))
@@ -75,6 +76,7 @@ public class TwirlCompiler {
             sourceDirectory,
             generatedDirectory,
             formatterType,
+            scalaVersion,
             scalaAdditionalImports,
             scalaConstructorAnnotations,
             codec,

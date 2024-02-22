@@ -15,3 +15,14 @@ project/plugins/project/
 .idea
 
 .bloop/
+
+.vscode/
+
+# Metals
+.metals/
+.bloop/
+project/metals.sbt
+metals.sbt
+
+# BSP
+.bsp/*

@@ -20,7 +20,8 @@ object TemplateCompiler {
       includeFilter: FileFilter,
       excludeFilter: FileFilter,
       codec: Codec,
-      log: Logger
+      log: Logger,
+      scalaVersion: String
   ): Seq[File] = {
     try {
       syncGenerated(targetDirectory, codec)
@@ -32,6 +33,7 @@ object TemplateCompiler {
           sourceDirectory,
           targetDirectory,
           format,
+          scalaVersion,
           imports,
           constructorAnnotations,
           codec,
