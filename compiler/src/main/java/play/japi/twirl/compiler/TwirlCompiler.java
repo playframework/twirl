@@ -56,6 +56,7 @@ public class TwirlCompiler {
       List<String> constructorAnnotations,
       Codec codec,
       boolean inclusiveDot) {
+    String scalaVersion = play.twirl.compiler.BuildInfo$.MODULE$.scalaVersion();
     Seq<String> scalaAdditionalImports = toScalaSeq(additionalImports);
     Seq<String> scalaConstructorAnnotations = toScalaSeq(constructorAnnotations);
 
@@ -65,6 +66,7 @@ public class TwirlCompiler {
             sourceDirectory,
             generatedDirectory,
             formatterType,
+            scalaVersion,
             scalaAdditionalImports,
             scalaConstructorAnnotations,
             codec,

@@ -162,6 +162,17 @@ case class GeneratedSourceVirtual(path: String) extends AbstractGeneratedSource 
 
 object TwirlCompiler {
 
+  // For constants that depends on the Scala 2 or 3 mode.
+  private[compiler] class ScalaCompat(emitScala3Sources: Boolean) {
+    val varargSplicesSyntax: String =
+      if (emitScala3Sources) "*" else ": _*"
+  }
+
+  private[compiler] object ScalaCompat {
+    def apply(scalaVersion: String): ScalaCompat =
+      new ScalaCompat(scalaVersion.startsWith("3."))
+  }
+
   def defaultImports(scalaVersion: String) = {
     val implicits = if (scalaVersion.startsWith("3.")) {
       Seq(
@@ -195,6 +206,7 @@ object TwirlCompiler {
       sourceDirectory: File,
       generatedDirectory: File,
       formatterType: String,
+      scalaVersion: String,
       additionalImports: collection.Seq[String] = Nil,
       constructorAnnotations: collection.Seq[String] = Nil,
       codec: Codec = TwirlIO.defaultCodec,
@@ -211,6 +223,7 @@ object TwirlCompiler {
         relativePath(source),
         resultType,
         formatterType,
+        scalaVersion,
         additionalImports,
         constructorAnnotations,
         inclusiveDot
@@ -228,11 +241,13 @@ object TwirlCompiler {
       sourceDirectory: File,
       resultType: String,
       formatterType: String,
+      scalaVersion: String,
       additionalImports: collection.Seq[String] = Nil,
       constructorAnnotations: collection.Seq[String] = Nil,
       codec: Codec = TwirlIO.defaultCodec,
       inclusiveDot: Boolean = false
   ) = {
+
     val (templateName, generatedSource) = generatedFileVirtual(source, sourceDirectory, inclusiveDot)
     val generated = parseAndGenerateCode(
       templateName,
@@ -241,6 +256,7 @@ object TwirlCompiler {
       relativePath(source),
       resultType,
       formatterType,
+      scalaVersion,
       additionalImports,
       constructorAnnotations,
       inclusiveDot
@@ -252,13 +268,14 @@ object TwirlCompiler {
   private def relativePath(file: File): String =
     new File(".").toURI.relativize(file.toURI).getPath
 
-  def parseAndGenerateCode(
+  private def parseAndGenerateCode(
       templateName: Array[String],
       content: Array[Byte],
       codec: Codec,
       relativePath: String,
       resultType: String,
       formatterType: String,
+      scalaVersion: String,
       additionalImports: collection.Seq[String],
       constructorAnnotations: collection.Seq[String],
       inclusiveDot: Boolean
@@ -274,6 +291,7 @@ object TwirlCompiler {
           parsed,
           resultType,
           formatterType,
+          ScalaCompat(scalaVersion),
           additionalImports,
           constructorAnnotations
         )
@@ -446,10 +464,12 @@ object TwirlCompiler {
       root: Template,
       resultType: String,
       formatterType: String,
+      scalaCompat: ScalaCompat,
       additionalImports: collection.Seq[String],
       constructorAnnotations: collection.Seq[String]
   ): collection.Seq[Any] = {
-    val (renderCall, f, templateType) = TemplateAsFunctionCompiler.getFunctionMapping(root.params.str, resultType)
+    val (renderCall, f, templateType) =
+      TemplateAsFunctionCompiler.getFunctionMapping(root.params.str, resultType, scalaCompat)
 
     // Get the imports that we need to include, filtering out empty imports
     val imports: Seq[Any] = Seq(additionalImports.map(i => Seq("import ", i, "\n")), formatImports(root.topImports))
@@ -499,7 +519,7 @@ package """ :+ packageName :+ """
     templateImports.map(_.replace("%format%", extension))
   }
 
-  def generateFinalTemplate(
+  private[compiler] def generateFinalTemplate(
       relativePath: String,
       contents: Array[Byte],
       packageName: String,
@@ -507,11 +527,21 @@ package """ :+ packageName :+ """
       root: Template,
       resultType: String,
       formatterType: String,
+      scalaCompat: ScalaCompat,
       additionalImports: collection.Seq[String],
       constructorAnnotations: collection.Seq[String]
   ): String = {
     val generated =
-      generateCode(packageName, name, root, resultType, formatterType, additionalImports, constructorAnnotations)
+      generateCode(
+        packageName,
+        name,
+        root,
+        resultType,
+        formatterType,
+        scalaCompat,
+        additionalImports,
+        constructorAnnotations
+      )
 
     Source.finalSource(relativePath, contents, generated, Hash(contents, additionalImports))
   }
@@ -531,7 +561,11 @@ package """ :+ packageName :+ """
         }
     }
 
-    def getFunctionMapping(signature: String, returnType: String): (String, String, String) = {
+    private[compiler] def getFunctionMapping(
+        signature: String,
+        returnType: String,
+        sc: ScalaCompat
+    ): (String, String, String) = {
 
       val params: List[List[Term.Param]] =
         try {
@@ -573,7 +607,7 @@ package """ :+ packageName :+ """
               .map { p =>
                 p.name.toString + Option(p.decltpe.get.toString)
                   .filter(_.endsWith("*"))
-                  .map(_ => ".toIndexedSeq:_*")
+                  .map(_ => s".toIndexedSeq${sc.varargSplicesSyntax}")
                   .getOrElse("")
               }
               .mkString(",") + ")"
@@ -601,7 +635,7 @@ package """ :+ packageName :+ """
               .map { p =>
                 p.name.toString + Option(p.decltpe.get.toString)
                   .filter(_.endsWith("*"))
-                  .map(_ => ".toIndexedSeq:_*")
+                  .map(_ => s".toIndexedSeq${sc.varargSplicesSyntax}")
                   .getOrElse("")
               }
               .mkString(",") + ")"

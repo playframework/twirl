@@ -17,3 +17,14 @@ project/plugins/project/
 .bloop/
 
 compiler/version.properties
+
+.vscode/
+
+# Metals
+.metals/
+.bloop/
+project/metals.sbt
+metals.sbt
+
+# BSP
+.bsp/*

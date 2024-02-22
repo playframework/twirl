@@ -60,13 +60,18 @@ object Helper {
     ): CompiledTemplate[T] = {
       val scalaVersion = play.twirl.compiler.BuildInfo.scalaVersion
       val templateFile = new File(sourceDir, templateName)
-      val Some(generated) = twirlCompiler.compile(
+      val generatedOpt: Option[File] = twirlCompiler.compile(
         templateFile,
         sourceDir,
         generatedDir,
         "play.twirl.api.HtmlFormat",
+        scalaVersion,
         additionalImports = TwirlCompiler.defaultImports(scalaVersion) ++ additionalImports
       )
+
+      val generated = generatedOpt.getOrElse {
+        throw new FileNotFoundException(s"Could not find generated file for $templateName")
+      }
 
       val mapper = GeneratedSource(generated)
 
@@ -94,7 +99,10 @@ object Helper {
 
     class TestDriver(outDir: Path, compilerArgs: Array[String], path: Path) extends Driver {
       def compile(): Reporter = {
-        val Some((toCompile, rootCtx)) = setup(compilerArgs :+ path.toAbsolutePath.toString, initCtx.fresh)
+        val setupOpt = setup(compilerArgs :+ path.toAbsolutePath.toString, initCtx.fresh)
+        val (toCompile, rootCtx) = setupOpt.getOrElse {
+          throw new Exception("Failed to initialize compiler")
+        }
 
         val silentReporter = new ConsoleReporter.AbstractConsoleReporter {
           def printMessage(msg: String): Unit = {
