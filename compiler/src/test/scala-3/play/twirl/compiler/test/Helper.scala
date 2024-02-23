@@ -20,6 +20,7 @@ import dotty.tools.io.PlainDirectory
 import dotty.tools.io.Directory
 import dotty.tools.io.ClassPath
 import scala.jdk.CollectionConverters._
+import play.twirl.parser.TwirlIO
 
 object Helper {
   case class CompilationError(message: String, line: Int, column: Int) extends RuntimeException(message)
@@ -65,8 +66,11 @@ object Helper {
         sourceDir,
         generatedDir,
         "play.twirl.api.HtmlFormat",
-        scalaVersion,
-        additionalImports = TwirlCompiler.defaultImports(scalaVersion) ++ additionalImports
+        Option(scalaVersion),
+        additionalImports = TwirlCompiler.defaultImports(scalaVersion) ++ additionalImports,
+        constructorAnnotations = Nil,
+        codec = TwirlIO.defaultCodec,
+        inclusiveDot = false
       )
 
       val generated = generatedOpt.getOrElse {

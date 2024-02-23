@@ -66,7 +66,7 @@ public class TwirlCompiler {
             sourceDirectory,
             generatedDirectory,
             formatterType,
-            scalaVersion,
+            scala.Option.apply(scalaVersion),
             scalaAdditionalImports,
             scalaConstructorAnnotations,
             codec,

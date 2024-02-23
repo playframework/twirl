@@ -33,7 +33,7 @@ object TemplateCompiler {
           sourceDirectory,
           targetDirectory,
           format,
-          scalaVersion,
+          Some(scalaVersion),
           imports,
           constructorAnnotations,
           codec,
