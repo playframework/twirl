@@ -10,6 +10,8 @@ import play.twirl.api.Html
 import play.twirl.parser.TwirlIO
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import TwirlCompiler.ScalaCompat
+import scala.io.Source
 
 class CompilerSpec extends AnyWordSpec with Matchers {
 
@@ -159,6 +161,12 @@ class CompilerSpec extends AnyWordSpec with Matchers {
         .static(Array(List(1, 2, 3), List(4, 5, 6)))
         .toString
         .trim
+
+      val compat        = ScalaCompat(Option(BuildInfo.scalaVersion))
+      val generatedFile = helper.generatedDir.toPath.resolve("html/varArgsExistential.template.scala").toFile
+      val generatedText = Source.fromFile(generatedFile).getLines().mkString("\n")
+
+      generatedText must include(s"list.toIndexedSeq${compat.varargSplicesSyntax}")
       text must be("123456")
     }
 
@@ -329,4 +337,24 @@ class CompilerSpec extends AnyWordSpec with Matchers {
     )
     hello.static(args).toString.trim must be("the-key => the-value")
   }
+
+  "ScalaCompat" should {
+
+    val cases = List(
+      None            -> ": _*",
+      Some("2.12.18") -> ": _*",
+      Some("2.13.12") -> ": _*",
+      Some("3.3.1")   -> "*"
+    )
+
+    "produce correct varargs splice syntax" in {
+
+      cases.foreach { case (version, expected) =>
+        ScalaCompat(version).varargSplicesSyntax must be(expected)
+      }
+
+    }
+
+  }
+
 }
