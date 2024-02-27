@@ -14,8 +14,6 @@ project/plugins/project/
 .scala_dependencies
 .idea
 
-.bloop/
-
 .vscode/
 
 # Metals
@@ -23,6 +21,3 @@ project/plugins/project/
 .bloop/
 project/metals.sbt
 metals.sbt
-
-# BSP
-.bsp/*
