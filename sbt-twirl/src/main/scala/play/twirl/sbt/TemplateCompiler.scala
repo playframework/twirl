@@ -20,6 +20,29 @@ object TemplateCompiler {
       includeFilter: FileFilter,
       excludeFilter: FileFilter,
       codec: Codec,
+      log: Logger
+  ): Seq[File] = compile(
+    sourceDirectories,
+    targetDirectory,
+    templateFormats,
+    templateImports,
+    constructorAnnotations,
+    includeFilter,
+    excludeFilter,
+    codec,
+    log,
+    "2.13.x" // using a dummy scala version (not starting with "3." to generate Scala 2 code by default)
+  )
+
+  def compile(
+      sourceDirectories: Seq[File],
+      targetDirectory: File,
+      templateFormats: Map[String, String],
+      templateImports: Seq[String],
+      constructorAnnotations: Seq[String],
+      includeFilter: FileFilter,
+      excludeFilter: FileFilter,
+      codec: Codec,
       log: Logger,
       scalaVersion: String
   ): Seq[File] = {
