@@ -20,11 +20,12 @@ import dotty.tools.io.PlainDirectory
 import dotty.tools.io.Directory
 import dotty.tools.io.ClassPath
 import scala.jdk.CollectionConverters._
+import play.twirl.parser.TwirlIO
 
 object Helper {
   case class CompilationError(message: String, line: Int, column: Int) extends RuntimeException(message)
 
-  class CompilerHelper(sourceDir: File, generatedDir: File, generatedClasses: File) {
+  class CompilerHelper(sourceDir: File, val generatedDir: File, generatedClasses: File) {
     import java.net._
     import scala.collection.mutable
 
@@ -60,13 +61,21 @@ object Helper {
     ): CompiledTemplate[T] = {
       val scalaVersion = play.twirl.compiler.BuildInfo.scalaVersion
       val templateFile = new File(sourceDir, templateName)
-      val Some(generated) = twirlCompiler.compile(
+      val generatedOpt: Option[File] = twirlCompiler.compile(
         templateFile,
         sourceDir,
         generatedDir,
         "play.twirl.api.HtmlFormat",
-        additionalImports = TwirlCompiler.defaultImports(scalaVersion) ++ additionalImports
+        Option(scalaVersion),
+        additionalImports = TwirlCompiler.defaultImports(scalaVersion) ++ additionalImports,
+        constructorAnnotations = Nil,
+        codec = TwirlIO.defaultCodec,
+        inclusiveDot = false
       )
+
+      val generated = generatedOpt.getOrElse {
+        throw new FileNotFoundException(s"Could not find generated file for $templateName")
+      }
 
       val mapper = GeneratedSource(generated)
 
@@ -94,7 +103,10 @@ object Helper {
 
     class TestDriver(outDir: Path, compilerArgs: Array[String], path: Path) extends Driver {
       def compile(): Reporter = {
-        val Some((toCompile, rootCtx)) = setup(compilerArgs :+ path.toAbsolutePath.toString, initCtx.fresh)
+        val setupOpt = setup(compilerArgs :+ path.toAbsolutePath.toString, initCtx.fresh)
+        val (toCompile, rootCtx) = setupOpt.getOrElse {
+          throw new Exception("Failed to initialize compiler")
+        }
 
         val silentReporter = new ConsoleReporter.AbstractConsoleReporter {
           def printMessage(msg: String): Unit = {

@@ -14,6 +14,12 @@ project/plugins/project/
 .scala_dependencies
 .idea
 
-.bloop/
-
 compiler/version.properties
+
+.vscode/
+
+# Metals
+.metals/
+.bloop/
+project/metals.sbt
+metals.sbt
