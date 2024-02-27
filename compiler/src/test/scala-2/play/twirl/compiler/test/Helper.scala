@@ -6,11 +6,12 @@ package play.twirl.compiler
 package test
 
 import java.io._
+import play.twirl.parser.TwirlIO
 
 object Helper {
   case class CompilationError(message: String, line: Int, column: Int) extends RuntimeException(message)
 
-  class CompilerHelper(sourceDir: File, generatedDir: File, generatedClasses: File) {
+  class CompilerHelper(sourceDir: File, val generatedDir: File, generatedClasses: File) {
     import java.net._
     import scala.collection.mutable
     import scala.reflect.internal.util.Position
@@ -99,7 +100,11 @@ object Helper {
         sourceDir,
         generatedDir,
         "play.twirl.api.HtmlFormat",
-        additionalImports = TwirlCompiler.defaultImports(scalaVersion) ++ additionalImports
+        Option(scalaVersion),
+        additionalImports = TwirlCompiler.defaultImports(scalaVersion) ++ additionalImports,
+        constructorAnnotations = Nil,
+        codec = TwirlIO.defaultCodec,
+        inclusiveDot = false
       )
 
       val mapper = GeneratedSource(generated)

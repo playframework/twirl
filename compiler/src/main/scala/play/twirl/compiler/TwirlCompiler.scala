@@ -162,6 +162,17 @@ case class GeneratedSourceVirtual(path: String) extends AbstractGeneratedSource 
 
 object TwirlCompiler {
 
+  // For constants that depend on Scala 2 or 3 mode.
+  private[compiler] class ScalaCompat(emitScala3Sources: Boolean) {
+    val varargSplicesSyntax: String =
+      if (emitScala3Sources) "*" else ": _*"
+  }
+
+  private[compiler] object ScalaCompat {
+    def apply(scalaVersion: Option[String]): ScalaCompat =
+      new ScalaCompat(scalaVersion.exists(_.startsWith("3.")))
+  }
+
   def defaultImports(scalaVersion: String) = {
     val implicits = if (scalaVersion.startsWith("3.")) {
       Seq(
@@ -199,7 +210,30 @@ object TwirlCompiler {
       constructorAnnotations: collection.Seq[String] = Nil,
       codec: Codec = TwirlIO.defaultCodec,
       inclusiveDot: Boolean = false
-  ) = {
+  ): Option[File] =
+    compile(
+      source,
+      sourceDirectory,
+      generatedDirectory,
+      formatterType,
+      None,
+      additionalImports,
+      constructorAnnotations,
+      codec,
+      inclusiveDot
+    )
+
+  def compile(
+      source: File,
+      sourceDirectory: File,
+      generatedDirectory: File,
+      formatterType: String,
+      scalaVersion: Option[String],
+      additionalImports: collection.Seq[String],
+      constructorAnnotations: collection.Seq[String],
+      codec: Codec,
+      inclusiveDot: Boolean
+  ): Option[File] = {
     val resultType = formatterType + ".Appendable"
     val (templateName, generatedSource) =
       generatedFile(source, codec, sourceDirectory, generatedDirectory, inclusiveDot)
@@ -211,6 +245,7 @@ object TwirlCompiler {
         relativePath(source),
         resultType,
         formatterType,
+        scalaVersion,
         additionalImports,
         constructorAnnotations,
         inclusiveDot
@@ -232,7 +267,33 @@ object TwirlCompiler {
       constructorAnnotations: collection.Seq[String] = Nil,
       codec: Codec = TwirlIO.defaultCodec,
       inclusiveDot: Boolean = false
-  ) = {
+  ): GeneratedSourceVirtual =
+    compileVirtual(
+      content,
+      source,
+      sourceDirectory,
+      resultType,
+      formatterType,
+      None,
+      additionalImports,
+      constructorAnnotations,
+      codec,
+      inclusiveDot
+    )
+
+  def compileVirtual(
+      content: String,
+      source: File,
+      sourceDirectory: File,
+      resultType: String,
+      formatterType: String,
+      scalaVersion: Option[String],
+      additionalImports: collection.Seq[String],
+      constructorAnnotations: collection.Seq[String],
+      codec: Codec,
+      inclusiveDot: Boolean
+  ): GeneratedSourceVirtual = {
+
     val (templateName, generatedSource) = generatedFileVirtual(source, sourceDirectory, inclusiveDot)
     val generated = parseAndGenerateCode(
       templateName,
@@ -241,6 +302,7 @@ object TwirlCompiler {
       relativePath(source),
       resultType,
       formatterType,
+      scalaVersion,
       additionalImports,
       constructorAnnotations,
       inclusiveDot
@@ -262,7 +324,31 @@ object TwirlCompiler {
       additionalImports: collection.Seq[String],
       constructorAnnotations: collection.Seq[String],
       inclusiveDot: Boolean
-  ) = {
+  ): String = parseAndGenerateCode(
+    templateName,
+    content,
+    codec,
+    relativePath,
+    resultType,
+    formatterType,
+    None,
+    additionalImports,
+    constructorAnnotations,
+    inclusiveDot
+  )
+
+  private def parseAndGenerateCode(
+      templateName: Array[String],
+      content: Array[Byte],
+      codec: Codec,
+      relativePath: String,
+      resultType: String,
+      formatterType: String,
+      scalaVersion: Option[String],
+      additionalImports: collection.Seq[String],
+      constructorAnnotations: collection.Seq[String],
+      inclusiveDot: Boolean
+  ): String = {
     val templateParser = new TwirlParser(inclusiveDot)
     templateParser.parse(new String(content, codec.charSet)) match {
       case templateParser.Success(parsed: Template, rest) if rest.atEnd() => {
@@ -274,6 +360,7 @@ object TwirlCompiler {
           parsed,
           resultType,
           formatterType,
+          ScalaCompat(scalaVersion),
           additionalImports,
           constructorAnnotations
         )
@@ -448,8 +535,29 @@ object TwirlCompiler {
       formatterType: String,
       additionalImports: collection.Seq[String],
       constructorAnnotations: collection.Seq[String]
+  ): collection.Seq[Any] = generateCode(
+    packageName,
+    name,
+    root,
+    resultType,
+    formatterType,
+    ScalaCompat(None),
+    additionalImports,
+    constructorAnnotations
+  )
+
+  private def generateCode(
+      packageName: String,
+      name: String,
+      root: Template,
+      resultType: String,
+      formatterType: String,
+      scalaCompat: ScalaCompat,
+      additionalImports: collection.Seq[String],
+      constructorAnnotations: collection.Seq[String]
   ): collection.Seq[Any] = {
-    val (renderCall, f, templateType) = TemplateAsFunctionCompiler.getFunctionMapping(root.params.str, resultType)
+    val (renderCall, f, templateType) =
+      TemplateAsFunctionCompiler.getFunctionMapping(root.params.str, resultType, scalaCompat)
 
     // Get the imports that we need to include, filtering out empty imports
     val imports: Seq[Any] = Seq(additionalImports.map(i => Seq("import ", i, "\n")), formatImports(root.topImports))
@@ -509,9 +617,42 @@ package """ :+ packageName :+ """
       formatterType: String,
       additionalImports: collection.Seq[String],
       constructorAnnotations: collection.Seq[String]
+  ): String = generateFinalTemplate(
+    relativePath,
+    contents,
+    packageName,
+    name,
+    root,
+    resultType,
+    formatterType,
+    ScalaCompat(None),
+    additionalImports,
+    constructorAnnotations
+  )
+
+  private def generateFinalTemplate(
+      relativePath: String,
+      contents: Array[Byte],
+      packageName: String,
+      name: String,
+      root: Template,
+      resultType: String,
+      formatterType: String,
+      scalaCompat: ScalaCompat,
+      additionalImports: collection.Seq[String],
+      constructorAnnotations: collection.Seq[String]
   ): String = {
     val generated =
-      generateCode(packageName, name, root, resultType, formatterType, additionalImports, constructorAnnotations)
+      generateCode(
+        packageName,
+        name,
+        root,
+        resultType,
+        formatterType,
+        scalaCompat,
+        additionalImports,
+        constructorAnnotations
+      )
 
     Source.finalSource(relativePath, contents, generated, Hash(contents, additionalImports))
   }
@@ -531,7 +672,17 @@ package """ :+ packageName :+ """
         }
     }
 
-    def getFunctionMapping(signature: String, returnType: String): (String, String, String) = {
+    def getFunctionMapping(
+        signature: String,
+        returnType: String,
+    ): (String, String, String) =
+      getFunctionMapping(signature, returnType, ScalaCompat(None))
+
+    private[compiler] def getFunctionMapping(
+        signature: String,
+        returnType: String,
+        sc: ScalaCompat
+    ): (String, String, String) = {
 
       val params: List[List[Term.Param]] =
         try {
@@ -573,7 +724,7 @@ package """ :+ packageName :+ """
               .map { p =>
                 p.name.toString + Option(p.decltpe.get.toString)
                   .filter(_.endsWith("*"))
-                  .map(_ => ".toIndexedSeq:_*")
+                  .map(_ => s".toIndexedSeq${sc.varargSplicesSyntax}")
                   .getOrElse("")
               }
               .mkString(",") + ")"
@@ -601,7 +752,7 @@ package """ :+ packageName :+ """
               .map { p =>
                 p.name.toString + Option(p.decltpe.get.toString)
                   .filter(_.endsWith("*"))
-                  .map(_ => ".toIndexedSeq:_*")
+                  .map(_ => s".toIndexedSeq${sc.varargSplicesSyntax}")
                   .getOrElse("")
               }
               .mkString(",") + ")"
