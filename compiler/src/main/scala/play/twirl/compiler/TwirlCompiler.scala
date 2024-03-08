@@ -556,7 +556,7 @@ object TwirlCompiler {
       additionalImports: collection.Seq[String],
       constructorAnnotations: collection.Seq[String]
   ): collection.Seq[Any] = {
-    val (renderCall, f, templateType) =
+    val (renderCall, f) =
       TemplateAsFunctionCompiler.getFunctionMapping(root.params.str, resultType, scalaCompat)
 
     // Get the imports that we need to include, filtering out empty imports
@@ -574,7 +574,7 @@ class """ :+ name :+ " " :+ constructorAnnotations :+ " " :+ Source(constructor.
 package """ :+ packageName :+ """
 
 """ :+ imports :+ """
-""" :+ classDeclaration :+ """ extends _root_.play.twirl.api.BaseScalaTemplate[""" :+ resultType :+ """,_root_.play.twirl.api.Format[""" :+ resultType :+ """]](""" :+ formatterType :+ """) with """ :+ templateType :+ """ {
+""" :+ classDeclaration :+ """ extends _root_.play.twirl.api.BaseScalaTemplate[""" :+ resultType :+ """,_root_.play.twirl.api.Format[""" :+ resultType :+ """]](""" :+ formatterType :+ """) {
 
   /*""" :+ root.comment.map(_.msg).getOrElse("") :+ """*/
   def apply""" :+ Source(root.params.str, root.params.pos) :+ """:""" :+ resultType :+ """ = {
@@ -675,14 +675,14 @@ package """ :+ packageName :+ """
     def getFunctionMapping(
         signature: String,
         returnType: String,
-    ): (String, String, String) =
+    ): (String, String) =
       getFunctionMapping(signature, returnType, ScalaCompat(None))
 
     private[compiler] def getFunctionMapping(
         signature: String,
         returnType: String,
         sc: ScalaCompat
-    ): (String, String, String) = {
+    ): (String, String) = {
 
       val params: List[List[Term.Param]] =
         try {
@@ -732,17 +732,6 @@ package """ :+ packageName :+ """
           .mkString
       )
 
-      val templateType = "_root_.play.twirl.api.Template%s[%s%s]".format(
-        params.flatten.size,
-        params.flatten
-          .map {
-            case ByNameParam(_, paramType) => paramType
-            case p                         => filterType(p)
-          }
-          .mkString(","),
-        (if (params.flatten.isEmpty) "" else ",") + returnType
-      )
-
       val f = "def f:%s = %s => apply%s".format(
         functionType,
         params.map(group => "(" + group.map(_.name.toString).mkString(",") + ")").mkString(" => "),
@@ -760,7 +749,7 @@ package """ :+ packageName :+ """
           .mkString
       )
 
-      (renderCall, f, templateType)
+      (renderCall, f)
     }
 
   }
