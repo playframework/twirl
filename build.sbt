@@ -2,6 +2,7 @@
 
 import Dependencies._
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 import com.typesafe.tools.mima.core.DirectMissingMethodProblem
 import com.typesafe.tools.mima.core.IncompatibleMethTypeProblem
@@ -11,6 +12,10 @@ import com.typesafe.tools.mima.core.Problem
 import com.typesafe.tools.mima.core.IncompatibleResultTypeProblem
 import com.typesafe.tools.mima.core.MissingClassProblem
 >>>>>>> 1908648 (MiMa filters)
+=======
+
+import com.typesafe.tools.mima.core.IncompatibleResultTypeProblem
+>>>>>>> e9e3dd4 (Re-add Template traits so existing error pages in Play don't break)
 import com.typesafe.tools.mima.core.ProblemFilters
 import sbtcrossproject.CrossPlugin.autoImport.crossProject
 import org.scalajs.jsenv.nodejs.NodeJSEnv
@@ -32,29 +37,6 @@ val mimaSettings = Seq(
     ProblemFilters.exclude[IncompatibleResultTypeProblem](
       "play.twirl.compiler.TwirlCompiler#TemplateAsFunctionCompiler.getFunctionMapping"
     ),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template0"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template1"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template10"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template11"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template12"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template13"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template14"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template15"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template16"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template17"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template18"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template19"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template2"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template20"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template21"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template22"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template3"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template4"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template5"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template6"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template7"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template8"),
-    ProblemFilters.exclude[MissingClassProblem]("play.twirl.api.Template9"),
   )
 )
 
