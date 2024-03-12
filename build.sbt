@@ -14,9 +14,12 @@ import com.typesafe.tools.mima.core.MissingClassProblem
 >>>>>>> 1908648 (MiMa filters)
 =======
 
+<<<<<<< HEAD
 import com.typesafe.tools.mima.core.IncompatibleResultTypeProblem
 >>>>>>> e9e3dd4 (Re-add Template traits so existing error pages in Play don't break)
 import com.typesafe.tools.mima.core.ProblemFilters
+=======
+>>>>>>> 75eec7c (Do not add Template traits when generating Scala 3 code)
 import sbtcrossproject.CrossPlugin.autoImport.crossProject
 import org.scalajs.jsenv.nodejs.NodeJSEnv
 
@@ -34,9 +37,6 @@ val previousVersion: Option[String] = Some("1.6.0")
 val mimaSettings = Seq(
   mimaPreviousArtifacts := previousVersion.map(organization.value %% moduleName.value % _).toSet,
   mimaBinaryIssueFilters ++= Seq(
-    ProblemFilters.exclude[IncompatibleResultTypeProblem](
-      "play.twirl.compiler.TwirlCompiler#TemplateAsFunctionCompiler.getFunctionMapping"
-    ),
   )
 )
 
