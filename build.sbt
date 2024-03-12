@@ -2,8 +2,6 @@
 
 import Dependencies._
 
-import com.typesafe.tools.mima.core.IncompatibleResultTypeProblem
-import com.typesafe.tools.mima.core.ProblemFilters
 import sbtcrossproject.CrossPlugin.autoImport.crossProject
 import org.scalajs.jsenv.nodejs.NodeJSEnv
 import java.util.Properties
@@ -23,9 +21,6 @@ val previousVersion: Option[String] = Some("2.0.1")
 val mimaSettings = Seq(
   mimaPreviousArtifacts := previousVersion.map(organization.value %% moduleName.value % _).toSet,
   mimaBinaryIssueFilters ++= Seq(
-    ProblemFilters.exclude[IncompatibleResultTypeProblem](
-      "play.twirl.compiler.TwirlCompiler#TemplateAsFunctionCompiler.getFunctionMapping"
-    ),
   )
 )
 
