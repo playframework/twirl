@@ -72,7 +72,7 @@ public abstract class TwirlCompile extends DefaultTask {
       if (change.getFileType() == FileType.DIRECTORY) continue;
       WorkQueue workQueue =
           getWorkerExecutor()
-              .classLoaderIsolation(spec -> spec.getClasspath().from(getTwirlClasspath()));
+              .processIsolation(spec -> spec.getClasspath().from(getTwirlClasspath()));
 
       Map<String, String> templateFormats = getTemplateFormats().get();
       RelativeFile sourceFile =
