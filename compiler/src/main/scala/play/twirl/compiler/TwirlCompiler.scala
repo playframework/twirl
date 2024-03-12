@@ -166,6 +166,8 @@ object TwirlCompiler {
   private[compiler] class ScalaCompat(emitScala3Sources: Boolean) {
     val varargSplicesSyntax: String =
       if (emitScala3Sources) "*" else ": _*"
+    def valueOrEmptyIfScala3(value: => String): String =
+      if (emitScala3Sources) "" else value
   }
 
   private[compiler] object ScalaCompat {
@@ -574,7 +576,8 @@ class """ :+ name :+ " " :+ constructorAnnotations :+ " " :+ Source(constructor.
 package """ :+ packageName :+ """
 
 """ :+ imports :+ """
-""" :+ classDeclaration :+ """ extends _root_.play.twirl.api.BaseScalaTemplate[""" :+ resultType :+ """,_root_.play.twirl.api.Format[""" :+ resultType :+ """]](""" :+ formatterType :+ """) with """ :+ templateType :+ """ {
+""" :+ classDeclaration :+ """ extends _root_.play.twirl.api.BaseScalaTemplate[""" :+ resultType :+ """,_root_.play.twirl.api.Format[""" :+ resultType :+ """]](""" :+ formatterType :+ """)""" :+ scalaCompat
+        .valueOrEmptyIfScala3(s" with $templateType") :+ """ {
 
   /*""" :+ root.comment.map(_.msg).getOrElse("") :+ """*/
   def apply""" :+ Source(root.params.str, root.params.pos) :+ """:""" :+ resultType :+ """ = {
@@ -732,15 +735,17 @@ package """ :+ packageName :+ """
           .mkString
       )
 
-      val templateType = "_root_.play.twirl.api.Template%s[%s%s]".format(
-        params.flatten.size,
-        params.flatten
-          .map {
-            case ByNameParam(_, paramType) => paramType
-            case p                         => filterType(p)
-          }
-          .mkString(","),
-        (if (params.flatten.isEmpty) "" else ",") + returnType
+      val templateType = sc.valueOrEmptyIfScala3(
+        "_root_.play.twirl.api.Template%s[%s%s]".format(
+          params.flatten.size,
+          params.flatten
+            .map {
+              case ByNameParam(_, paramType) => paramType
+              case p                         => filterType(p)
+            }
+            .mkString(","),
+          (if (params.flatten.isEmpty) "" else ",") + returnType
+        )
       )
 
       val f = "def f:%s = %s => apply%s".format(
