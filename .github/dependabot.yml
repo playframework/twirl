@@ -1,5 +1,13 @@
 version: 2
 updates:
+  - package-ecosystem: "gradle"
+    directory: "gradle-twirl"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "maven"
+    directory: "maven-twirl"
+    schedule:
+      interval: "weekly"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
