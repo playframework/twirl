@@ -246,7 +246,11 @@ Replacing the `LATEST_VERSION` with the latest version published, which should b
 
 Twirl template files are expected to be placed under `src/main/twirl` or
 `src/test/twirl`, similar to `scala` or `java` sources. The additional source 
-locations for template files can be configured.
+locations for template files can be configured. 
+
+⚠️Please note that the output of the template compilation is Scala source code. 
+If you use these templates in your Java source files, you must place them in a _joint compilation_ folder (see the [Gradle Scala Plugin](https://docs.gradle.org/current/userguide/scala_plugin.html#sec:scala_project_layout) documentation for details). 
+The default location for this folder is `src/main/scala`, but it [can be customized](https://stackoverflow.com/questions/23261075/compiling-scala-before-alongside-java-with-gradle).
 
 Template files must be named `{name}.scala.{ext}` where `ext` can be `html`,
 `js`, `xml`, or `txt`.
