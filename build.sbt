@@ -116,7 +116,7 @@ lazy val compiler = project
       }
     },
     libraryDependencies += parserCombinators(scalaVersion.value),
-    libraryDependencies += ("org.scalameta" %% "parsers" % "4.9.2").cross(CrossVersion.for3Use2_13),
+    libraryDependencies += ("org.scalameta" %% "parsers" % "4.9.3").cross(CrossVersion.for3Use2_13),
     run / fork                              := true,
     buildInfoKeys                           := Seq[BuildInfoKey](scalaVersion),
     buildInfoPackage                        := "play.twirl.compiler",
@@ -177,7 +177,7 @@ lazy val mavenPlugin = project
       .dependsOn(parser / publishM2)
       .dependsOn(apiJvm / publishM2)
       .value,
-    libraryDependencies += "org.codehaus.plexus" % "plexus-utils" % "4.0.0",
+    libraryDependencies += "org.codehaus.plexus" % "plexus-utils" % "4.0.1",
     Compile / headerSources ++= (baseDirectory.value / "src" / "maven-test" ** ("*.java" || "*.scala" || "*.scala.html") --- (baseDirectory.value ** "target" ** "*")).get,
     mimaFailOnNoPrevious := false,
   )
