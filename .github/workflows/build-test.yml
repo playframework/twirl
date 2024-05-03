@@ -50,7 +50,7 @@ jobs:
       - "check-docs"
     uses: playframework/.github/.github/workflows/cmd.yml@v3
     with:
-      java: 17, 11
+      java: 21, 17, 11
       scala: 2.12.x, 2.13.x, 3.x
       cmd: scripts/test-code.sh
       gradle-build-root: gradle-twirl
