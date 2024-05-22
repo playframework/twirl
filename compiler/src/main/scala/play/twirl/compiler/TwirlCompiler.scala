@@ -166,8 +166,8 @@ object TwirlCompiler {
   private[compiler] class ScalaCompat(emitScala3Sources: Boolean) {
     val varargSplicesSyntax: String =
       if (emitScala3Sources) "*" else ": _*"
-    def valueOrEmptyIfScala3(value: => String): String =
-      if (emitScala3Sources) "" else value
+    def valueOrEmptyIfScala3Exceeding22Params(params: Int, value: => String): String =
+      if (emitScala3Sources && params > 22) "" else value
   }
 
   private[compiler] object ScalaCompat {
@@ -576,8 +576,8 @@ class """ :+ name :+ " " :+ constructorAnnotations :+ " " :+ Source(constructor.
 package """ :+ packageName :+ """
 
 """ :+ imports :+ """
-""" :+ classDeclaration :+ """ extends _root_.play.twirl.api.BaseScalaTemplate[""" :+ resultType :+ """,_root_.play.twirl.api.Format[""" :+ resultType :+ """]](""" :+ formatterType :+ """)""" :+ scalaCompat
-        .valueOrEmptyIfScala3(s" with $templateType") :+ """ {
+""" :+ classDeclaration :+ """ extends _root_.play.twirl.api.BaseScalaTemplate[""" :+ resultType :+ """,_root_.play.twirl.api.Format[""" :+ resultType :+ """]](""" :+ formatterType :+ """)""" :+
+        (if (templateType.nonEmpty) s" with $templateType" else "") :+ """ {
 
   /*""" :+ root.comment.map(_.msg).getOrElse("") :+ """*/
   def apply""" :+ Source(root.params.str, root.params.pos) :+ """:""" :+ resultType :+ """ = {
@@ -735,7 +735,8 @@ package """ :+ packageName :+ """
           .mkString
       )
 
-      val templateType = sc.valueOrEmptyIfScala3(
+      val templateType = sc.valueOrEmptyIfScala3Exceeding22Params(
+        params.flatten.size,
         "_root_.play.twirl.api.Template%s[%s%s]".format(
           params.flatten.size,
           params.flatten
