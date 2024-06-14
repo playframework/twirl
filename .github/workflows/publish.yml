@@ -8,7 +8,7 @@ on:
 
 jobs:
   publish-snapshot-artifacts:
-    name: Publish / Artifacts
+    name: Publish / Artifacts (Snapshot)
     if: github.ref_type == 'branch' # Snapshots
     uses: playframework/.github/.github/workflows/publish.yml@v3
     with:
@@ -20,13 +20,13 @@ jobs:
     secrets: inherit
 
   publish-release:
-    name: Publish / Artifacts
+    name: Publish / Artifacts (Stable Release)
     if: github.ref_type == 'tag' # Releases
     uses: playframework/.github/.github/workflows/publish.yml@v3
     secrets: inherit
 
   publish-release-gradle:
-    name: Publish / Artifacts (Gradle Plugin)
+    name: Publish / Artifacts (Stable Gradle Plugin)
     if: github.ref_type == 'tag' # Releases
     uses: playframework/.github/.github/workflows/publish.yml@v3
     with:
