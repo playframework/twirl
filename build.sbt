@@ -10,7 +10,7 @@ import com.typesafe.tools.mima.core.ProblemFilters
 import sbtcrossproject.CrossPlugin.autoImport.crossProject
 import org.scalajs.jsenv.nodejs.NodeJSEnv
 
-val ScalaTestVersion = "3.2.18"
+val ScalaTestVersion = "3.2.19"
 
 def parserCombinators(scalaVersion: String) = "org.scala-lang.modules" %% "scala-parser-combinators" % {
   CrossVersion.partialVersion(scalaVersion) match {
