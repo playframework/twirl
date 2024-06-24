@@ -7,7 +7,7 @@ import org.scalajs.jsenv.nodejs.NodeJSEnv
 import java.util.Properties
 import java.io.StringWriter
 
-val ScalaTestVersion = "3.2.18"
+val ScalaTestVersion = "3.2.19"
 
 def parserCombinators(scalaVersion: String) = "org.scala-lang.modules" %% "scala-parser-combinators" % {
   CrossVersion.partialVersion(scalaVersion) match {
