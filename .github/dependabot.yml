@@ -4,14 +4,31 @@ updates:
     directory: "gradle-twirl"
     schedule:
       interval: "weekly"
+  - package-ecosystem: "gradle"
+    directory: "gradle-twirl"
+    schedule:
+      interval: "weekly"
+    target-branch: "2.0.x"
   - package-ecosystem: "maven"
     directory: "maven-twirl"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "maven"
+    directory: "maven-twirl"
+    schedule:
+      interval: "weekly"
+    target-branch: "2.0.x"
+  - package-ecosystem: "github-actions"
+    directory: "/"
     schedule:
       interval: "weekly"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    target-branch: "2.0.x"
+    commit-message:
+      prefix: "[2.0.x] "
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
