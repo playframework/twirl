@@ -77,7 +77,7 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
         "org.scalatest.tools.ScalaTestFramework"
       )
     ),
-    libraryDependencies += "org.scala-lang.modules" %%% "scala-xml" % "2.2.0",
+    libraryDependencies += "org.scala-lang.modules" %%% "scala-xml" % "2.3.0",
     libraryDependencies += "org.scalatest"          %%% "scalatest" % ScalaTestVersion % Test,
   )
 
