@@ -77,11 +77,11 @@ object TemplateCompiler {
   }
 
   def generatedFiles(targetDirectory: File): Seq[File] = {
-    (targetDirectory ** "*.template.scala").get
+    (targetDirectory ** "*.template.scala").get()
   }
 
   def syncGenerated(targetDirectory: File, codec: Codec): Unit = {
-    generatedFiles(targetDirectory).map(GeneratedSource(_, codec)).foreach(_.sync)
+    generatedFiles(targetDirectory).map(GeneratedSource(_, codec)).foreach(_.sync())
   }
 
   def collectTemplates(
@@ -91,7 +91,7 @@ object TemplateCompiler {
       excludeFilter: FileFilter
   ): Seq[(File, File, String, String)] = {
     sourceDirectories.flatMap { sourceDirectory =>
-      (sourceDirectory ** includeFilter).get.flatMap { file =>
+      (sourceDirectory ** includeFilter).get().flatMap { file =>
         val ext = file.name.split('.').last
         if (!excludeFilter.accept(file) && templateFormats.contains(ext))
           Some((file, sourceDirectory, ext, templateFormats(ext)))
