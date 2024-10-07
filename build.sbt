@@ -116,7 +116,7 @@ lazy val compiler = project
       }
     },
     libraryDependencies += parserCombinators(scalaVersion.value),
-    libraryDependencies += ("org.scalameta" %% "parsers" % "4.9.7").cross(CrossVersion.for3Use2_13),
+    libraryDependencies += ("org.scalameta" %% "parsers" % "4.10.1").cross(CrossVersion.for3Use2_13),
     run / fork                              := true,
     buildInfoKeys                           := Seq[BuildInfoKey](scalaVersion),
     buildInfoPackage                        := "play.twirl.compiler",
@@ -137,6 +137,15 @@ lazy val plugin = project
     sonatypeProfileName                     := "org.playframework",
     scalaVersion                            := Scala212,
     libraryDependencies += "org.scalatest" %%% "scalatest" % ScalaTestVersion % Test,
+    crossScalaVersions += Scala3,
+    pluginCrossBuild / sbtVersion := {
+      scalaBinaryVersion.value match {
+        case "2.12" =>
+          sbtVersion.value
+        case _ =>
+          "2.0.0-M2"
+      }
+    },
     Compile / resourceGenerators += generateVersionFile.taskValue,
     scriptedLaunchOpts += version.apply { v => s"-Dproject.version=$v" }.value,
     // both `locally`s are to work around sbt/sbt#6161

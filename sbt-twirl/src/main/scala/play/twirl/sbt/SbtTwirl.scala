@@ -6,7 +6,9 @@ package play.twirl.sbt
 
 import play.twirl.compiler.TwirlCompiler
 import sbt.Keys._
-import sbt._
+// format: off
+import sbt.{given, _}
+// format: on
 import scala.io.Codec
 
 object Import {
