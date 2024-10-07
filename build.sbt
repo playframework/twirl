@@ -186,7 +186,7 @@ lazy val mavenPlugin = project
       .dependsOn(parser / publishM2)
       .dependsOn(apiJvm / publishM2)
       .value,
-    libraryDependencies += "org.codehaus.plexus" % "plexus-utils" % "4.0.1",
+    libraryDependencies += "org.codehaus.plexus" % "plexus-utils" % "4.0.2",
     Compile / headerSources ++= (baseDirectory.value / "src" / "maven-test" ** ("*.java" || "*.scala" || "*.scala.html") --- (baseDirectory.value ** "target" ** "*")).get,
     mimaFailOnNoPrevious := false,
   )
