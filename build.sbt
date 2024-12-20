@@ -116,13 +116,13 @@ lazy val compiler = project
       }
     },
     libraryDependencies += parserCombinators(scalaVersion.value),
-    libraryDependencies += ("org.scalameta" %% "parsers" % "4.11.0").cross(CrossVersion.for3Use2_13),
-    run / fork                              := true,
-    buildInfoKeys                           := Seq[BuildInfoKey](scalaVersion),
-    buildInfoPackage                        := "play.twirl.compiler",
-    publishM2                               := publishM2.dependsOn(saveCompilerVersion).value,
-    publish                                 := publish.dependsOn(saveCompilerVersion).value,
-    publishLocal                            := publishLocal.dependsOn(saveCompilerVersion).value
+    libraryDependencies += "org.scalameta" %% "parsers" % "4.12.2",
+    run / fork                             := true,
+    buildInfoKeys                          := Seq[BuildInfoKey](scalaVersion),
+    buildInfoPackage                       := "play.twirl.compiler",
+    publishM2                              := publishM2.dependsOn(saveCompilerVersion).value,
+    publish                                := publish.dependsOn(saveCompilerVersion).value,
+    publishLocal                           := publishLocal.dependsOn(saveCompilerVersion).value
   )
   .aggregate(parser)
   .dependsOn(apiJvm % Test, parser % "compile->compile;test->test")
