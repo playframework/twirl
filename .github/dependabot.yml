@@ -9,6 +9,8 @@ updates:
     schedule:
       interval: "weekly"
     target-branch: "2.0.x"
+    commit-message:
+      prefix: "[2.0.x] "
   - package-ecosystem: "maven"
     directory: "maven-twirl"
     schedule:
@@ -18,6 +20,8 @@ updates:
     schedule:
       interval: "weekly"
     target-branch: "2.0.x"
+    commit-message:
+      prefix: "[2.0.x] "
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
