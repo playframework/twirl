@@ -141,7 +141,7 @@ class CompilerSpec extends AnyWordSpec with Matchers {
     "compile successfully (existential)" in {
       val helper = newCompilerHelper
       val text = helper
-        .compile[(List[_] => Html)]("existential.scala.html", "html.existential")
+        .compile[(List[?] => Html)]("existential.scala.html", "html.existential")
         .static(List(1, 2, 3))
         .toString
         .trim
@@ -157,7 +157,7 @@ class CompilerSpec extends AnyWordSpec with Matchers {
     "compile successfully (var args existential)" in {
       val helper = newCompilerHelper
       val text = helper
-        .compile[(Array[List[_]] => Html)]("varArgsExistential.scala.html", "html.varArgsExistential")
+        .compile[(Array[List[?]] => Html)]("varArgsExistential.scala.html", "html.varArgsExistential")
         .static(Array(List(1, 2, 3), List(4, 5, 6)))
         .toString
         .trim

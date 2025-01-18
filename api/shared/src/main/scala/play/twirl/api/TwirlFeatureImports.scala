@@ -34,10 +34,10 @@ object TwirlFeatureImports {
   def using[T](t: T): T = t
 
   /** Adds "truthiness" to iterables, making them false if they are empty. */
-  implicit def twirlIterableToBoolean(x: Iterable[_]): Boolean = x != null && !x.isEmpty
+  implicit def twirlIterableToBoolean(x: Iterable[?]): Boolean = x != null && !x.isEmpty
 
   /** Adds "truthiness" to options, making them false if they are empty. */
-  implicit def twirlOptionToBoolean(x: Option[_]): Boolean = x != null && x.isDefined
+  implicit def twirlOptionToBoolean(x: Option[?]): Boolean = x != null && x.isDefined
 
   /** Adds "truthiness" to strings, making them false if they are empty. */
   implicit def twirlStringToBoolean(x: String): Boolean = x != null && !x.isEmpty

@@ -36,14 +36,14 @@ object SbtTwirl extends AutoPlugin {
 
   override def trigger = noTrigger
 
-  override def projectSettings: Seq[Setting[_]] =
+  override def projectSettings: Seq[Setting[?]] =
     inConfig(Compile)(twirlSettings) ++
       inConfig(Test)(twirlSettings) ++
       defaultSettings ++
       positionSettings ++
       dependencySettings
 
-  def twirlSettings: Seq[Setting[_]] =
+  def twirlSettings: Seq[Setting[?]] =
     Seq(
       compileTemplates / includeFilter       := "*.scala.*",
       compileTemplates / excludeFilter       := HiddenFileFilter,
@@ -67,7 +67,7 @@ object SbtTwirl extends AutoPlugin {
       managedSourceDirectories += (compileTemplates / target).value
     )
 
-  def defaultSettings: Seq[Setting[_]] =
+  def defaultSettings: Seq[Setting[?]] =
     Seq(
       templateFormats        := defaultFormats,
       templateImports        := TwirlCompiler.defaultImports(scalaVersion.value),
@@ -75,7 +75,7 @@ object SbtTwirl extends AutoPlugin {
       sourceEncoding         := scalacEncoding(scalacOptions.value)
     )
 
-  def positionSettings: Seq[Setting[_]] =
+  def positionSettings: Seq[Setting[?]] =
     Seq(
       sourcePositionMappers += TemplateProblem.positionMapper(Codec(sourceEncoding.value))
     )
