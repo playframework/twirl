@@ -24,17 +24,17 @@ case class BaseScalaTemplate[T <: Appendable[T], F <: Format[T]](format: F) {
       case ()                                                               => format.empty
       case None                                                             => format.empty
       case Some(v)                                                          => _display_(v)
-      case key: Optional[_] =>
+      case key: Optional[?] =>
         (if (key.isPresent) Some(key.get) else None) match {
           case None    => format.empty
           case Some(v) => _display_(v)
           case _       => format.empty
         }
       case xml: scala.xml.NodeSeq       => format.raw(xml.toString())
-      case escapeds: immutable.Seq[_]   => format.fill(escapeds.map(_display_))
-      case escapeds: TraversableOnce[_] => format.fill(escapeds.map(_display_).toList)
-      case escapeds: Array[_]           => format.fill(escapeds.view.map(_display_).toList)
-      case escapeds: java.util.List[_] =>
+      case escapeds: immutable.Seq[?]   => format.fill(escapeds.map(_display_))
+      case escapeds: TraversableOnce[?] => format.fill(escapeds.map(_display_).toList)
+      case escapeds: Array[?]           => format.fill(escapeds.view.map(_display_).toList)
+      case escapeds: java.util.List[?] =>
         format.fill(JavaConverters.collectionAsScalaIterableConverter(escapeds).asScala.map(_display_).toList)
       case string: String => format.escape(string)
       case v if v != null => format.escape(v.toString)

@@ -63,7 +63,7 @@ abstract class BufferedContent[A <: BufferedContent[A]](
 
   override def equals(obj: Any): Boolean =
     obj match {
-      case other: BufferedContent[_] if this.getClass == other.getClass => body == other.body
+      case other: BufferedContent[?] if this.getClass == other.getClass => body == other.body
       case _                                                            => false
     }
 
