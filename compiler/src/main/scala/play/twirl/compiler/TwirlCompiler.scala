@@ -693,7 +693,7 @@ package """ :+ packageName :+ """
           val input   = Input.String(s"object FT { def signature$signature }")
           val obj     = implicitly[Parse[Stat]].apply(input, dialect).get.asInstanceOf[Defn.Object]
           val templ   = obj.templ
-          val defdef  = templ.stats.head.asInstanceOf[Decl.Def]
+          val defdef  = templ.body.stats.head.asInstanceOf[Decl.Def]
           defdef.paramClauseGroups.headOption.map(_.paramClauses.map(_.values)).getOrElse(Nil)
         } catch {
           case e: ParseException => Nil
