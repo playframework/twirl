@@ -117,7 +117,7 @@ object Helper {
           }
         }
 
-        given Context = rootCtx.fresh
+        given.Context = rootCtx.fresh
           .setSetting(rootCtx.settings.outputDir, new PlainDirectory(Directory(outDir)))
           .setReporter(silentReporter)
 
