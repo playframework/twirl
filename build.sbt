@@ -11,8 +11,8 @@ val ScalaTestVersion = "3.2.19"
 
 def parserCombinators(scalaVersion: String) = "org.scala-lang.modules" %% "scala-parser-combinators" % {
   CrossVersion.partialVersion(scalaVersion) match {
-    case Some((2, _)) => "1.1.2"
-    case _            => "2.4.0"
+    case Some((2, 12)) => "1.1.2"
+    case _             => "2.4.0"
   }
 }
 
