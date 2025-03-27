@@ -7,6 +7,8 @@
   "labels": [
     "type:updates"
   ],
+  "baseBranches": ["$default", "2.0.x"],
+  "commitMessagePrefix": "[{{baseBranch}}]",
   "commitMessageTopic": "`{{depName}}`",
   "commitMessageExtra": "to `{{#if isPinDigest}}{{{newDigestShort}}}{{else}}{{#if isMajor}}v{{{newMajor}}}{{else}}{{#if isSingleVersion}}v{{{newVersion}}}{{else}}{{#if newValue}}{{{newValue}}}{{else}}{{{newDigestShort}}}{{/if}}{{/if}}{{/if}}{{/if}}` (was `{{currentVersion}}`)"
 }
