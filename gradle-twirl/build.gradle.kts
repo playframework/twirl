@@ -13,17 +13,15 @@ plugins {
     signing
 }
 
-val compilerVersion: String =
-    Properties().apply {
-        val file = file("$projectDir/../compiler/version.properties")
-        if (!file.exists()) throw GradleException("Install Twirl Compiler to local Maven repository by `sbt +compiler/publishM2` command")
-        file.inputStream().use { load(it) }
-        if (this.getProperty("twirl.compiler.version")
-                .isNullOrEmpty()
-        ) {
-            throw GradleException("`twirl.compiler.version` key didn't find in ${file.absolutePath}")
-        }
-    }.getProperty("twirl.compiler.version")
+val compilerVersionKey = "twirl.compiler.version"
+val compilerVersion: String = System.getProperty(compilerVersionKey) ?: Properties().apply {
+    val file = file("$projectDir/../compiler/version.properties")
+    if (!file.exists()) throw GradleException("Install Twirl Compiler to local Maven repository by `sbt +compiler/publishM2` command")
+    file.inputStream().use { load(it) }
+    if (this.getProperty(compilerVersionKey).isNullOrEmpty()) {
+        throw GradleException("`$compilerVersionKey` key didn't find in ${file.absolutePath}")
+    }
+}.getProperty(compilerVersionKey)
 
 val isRelease = !compilerVersion.endsWith("SNAPSHOT")
 
