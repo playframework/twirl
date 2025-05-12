@@ -162,8 +162,13 @@ case class GeneratedSourceVirtual(path: String) extends AbstractGeneratedSource 
 
 object TwirlCompiler {
 
+  var isScala3 = false
+
   // For constants that depend on Scala 2 or 3 mode.
   private[compiler] class ScalaCompat(emitScala3Sources: Boolean) {
+
+    if (emitScala3Sources) isScala3 = true
+
     val varargSplicesSyntax: String =
       if (emitScala3Sources) "*" else ": _*"
     def valueOrEmptyIfScala3Exceeding22Params(params: Int, value: => String): String =
@@ -730,8 +735,10 @@ package """ :+ packageName :+ """
           )
           .zipWithIndex
           .map { case (groupStr, idx) =>
-            // Finds last element and prepends "using" if the definition site has implicit/using parameter eg - apply(x)(y) becomes apply(x)(using y)
-            if (hasContextParameters && idx == params.size - 1) groupStr.replace("(", "(using ") else groupStr
+            // Finds last element and prepends "using" if the definition site has implicit parameter eg - apply(x)(y) becomes apply(x)(using y)
+            if (TwirlCompiler.isScala3 && hasContextParameters && idx == params.size - 1)
+              groupStr.replace("(", "(using ")
+            else groupStr
           }
           .mkString
 
