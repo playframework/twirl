@@ -162,8 +162,13 @@ case class GeneratedSourceVirtual(path: String) extends AbstractGeneratedSource 
 
 object TwirlCompiler {
 
+  var isScala3 = false
+
   // For constants that depend on Scala 2 or 3 mode.
   private[compiler] class ScalaCompat(emitScala3Sources: Boolean) {
+
+    if (emitScala3Sources) isScala3 = true
+
     val varargSplicesSyntax: String =
       if (emitScala3Sources) "*" else ": _*"
     def valueOrEmptyIfScala3Exceeding22Params(params: Int, value: => String): String =
@@ -713,14 +718,10 @@ package """ :+ packageName :+ """
         )
         .mkString(" => ") + " => " + returnType + ")"
 
-      val renderCall = "def render%s: %s = apply%s".format(
-        "(" + params.flatten
-          .map {
-            case p @ ByNameParam(_, paramType) => p.name.toString + ":" + paramType
-            case p                             => p.name.toString + ":" + filterType(p)
-          }
-          .mkString(",") + ")",
-        returnType,
+      val hasContextParameters =
+        params.flatten.exists(_.mods.exists(_.toString.contains("implicit")))
+
+      val applyArgs =
         params
           .map(group =>
             "(" + group
@@ -732,7 +733,30 @@ package """ :+ packageName :+ """
               }
               .mkString(",") + ")"
           )
+          .zipWithIndex
+          .map { case (groupStr, idx) =>
+            // Finds last element and prepends "using" if the definition site has implicit parameter eg - apply(x)(y) becomes apply(x)(using y)
+            if (TwirlCompiler.isScala3 && hasContextParameters && idx == params.size - 1)
+              groupStr.replace("(", "(using ")
+            else groupStr
+          }
           .mkString
+
+      val renderCall = "def render%s: %s = apply%s".format(
+        "(" + params.flatten
+          .map {
+            case p @ ByNameParam(_, paramType) => p.name.toString + ":" + paramType
+            case p                             => p.name.toString + ":" + filterType(p)
+          }
+          .mkString(",") + ")",
+        returnType,
+        applyArgs
+      )
+
+      val f = "def f:%s = %s => apply%s".format(
+        functionType,
+        params.map(group => "(" + group.map(_.name.toString).mkString(",") + ")").mkString(" => "),
+        applyArgs
       )
 
       val templateType = sc.valueOrEmptyIfScala3Exceeding22Params(
@@ -747,23 +771,6 @@ package """ :+ packageName :+ """
             .mkString(","),
           (if (params.flatten.isEmpty) "" else ",") + returnType
         )
-      )
-
-      val f = "def f:%s = %s => apply%s".format(
-        functionType,
-        params.map(group => "(" + group.map(_.name.toString).mkString(",") + ")").mkString(" => "),
-        params
-          .map(group =>
-            "(" + group
-              .map { p =>
-                p.name.toString + Option(p.decltpe.get.toString)
-                  .filter(_.endsWith("*"))
-                  .map(_ => s".toIndexedSeq${sc.varargSplicesSyntax}")
-                  .getOrElse("")
-              }
-              .mkString(",") + ")"
-          )
-          .mkString
       )
 
       (renderCall, f, templateType)
