@@ -82,7 +82,7 @@ object SbtTwirl extends AutoPlugin {
     Def.settings(
       twirlVersion := readResourceProperty("twirl.version.properties", "twirl.api.version"),
       libraryDependencies += {
-        val crossVer = crossVersion.value
+        val crossVer  = crossVersion.value
         val isScalaJS = CrossVersion(crossVer, scalaVersion.value, scalaBinaryVersion.value) match {
           case Some(f) => f("").contains("_sjs1") // detect ScalaJS CrossVersion
           case None    => false
