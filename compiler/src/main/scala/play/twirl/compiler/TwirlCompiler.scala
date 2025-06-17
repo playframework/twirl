@@ -7,6 +7,7 @@ package play.twirl.compiler
 import java.io.File
 import scala.annotation.tailrec
 import scala.io.Codec
+import scala.meta.classifiers._
 import play.twirl.parser.TwirlIO
 import play.twirl.parser.TwirlParser
 import scala.util.parsing.input.Position
@@ -162,13 +163,8 @@ case class GeneratedSourceVirtual(path: String) extends AbstractGeneratedSource 
 
 object TwirlCompiler {
 
-  var isScala3 = false
-
   // For constants that depend on Scala 2 or 3 mode.
-  private[compiler] class ScalaCompat(emitScala3Sources: Boolean) {
-
-    if (emitScala3Sources) isScala3 = true
-
+  private[compiler] class ScalaCompat(val emitScala3Sources: Boolean) {
     val varargSplicesSyntax: String =
       if (emitScala3Sources) "*" else ": _*"
     def valueOrEmptyIfScala3Exceeding22Params(params: Int, value: => String): String =
@@ -719,28 +715,25 @@ package """ :+ packageName :+ """
         .mkString(" => ") + " => " + returnType + ")"
 
       val hasContextParameters =
-        params.flatten.exists(_.mods.exists(_.toString.contains("implicit")))
+        params.flatten.exists(_.mods.exists(_.is[Mod.Implicit]))
 
-      val applyArgs =
-        params
-          .map(group =>
-            "(" + group
-              .map { p =>
-                p.name.toString + Option(p.decltpe.get.toString)
-                  .filter(_.endsWith("*"))
-                  .map(_ => s".toIndexedSeq${sc.varargSplicesSyntax}")
-                  .getOrElse("")
-              }
-              .mkString(",") + ")"
-          )
-          .zipWithIndex
-          .map { case (groupStr, idx) =>
-            // Finds last element and prepends "using" if the definition site has implicit parameter eg - apply(x)(y) becomes apply(x)(using y)
-            if (TwirlCompiler.isScala3 && hasContextParameters && idx == params.size - 1)
-              groupStr.replace("(", "(using ")
-            else groupStr
-          }
-          .mkString
+      val applyArgs = {
+        params.zipWithIndex.map { case (group, idx) =>
+          val groupStr = "(" + group
+            .map { p =>
+              p.name.toString + Option(p.decltpe.get.toString)
+                .filter(_.endsWith("*"))
+                .map(_ => s".toIndexedSeq${sc.varargSplicesSyntax}")
+                .getOrElse("")
+            }
+            .mkString(",") + ")"
+
+          // prepend "using" for Scala 3 context parameters on the last param
+          if (sc.emitScala3Sources && hasContextParameters && idx == params.size - 1)
+            groupStr.replace("(", "(using ")
+          else groupStr
+        }.mkString
+      }
 
       val renderCall = "def render%s: %s = apply%s".format(
         "(" + params.flatten

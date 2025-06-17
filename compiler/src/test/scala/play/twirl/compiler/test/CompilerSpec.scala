@@ -75,6 +75,19 @@ class CompilerSpec extends AnyWordSpec with Matchers {
       hello must be("<h1>Hello World!</h1><h1>xml</h1>")
     }
 
+    "compile successfully (using)" in {
+      val helper = newCompilerHelper
+      helper
+        .compile[((String) => Html)]("using.scala.html", "html.using")
+        .static
+        .toString
+        .trim
+
+      val generatedFile = helper.generatedDir.toPath.resolve("html/using.template.scala").toFile
+      val generatedText = Source.fromFile(generatedFile).getLines().mkString("\n")
+      generatedText must include("apply(x)(using y)")
+    }
+
     "compile successfully (helloNull)" in {
       val helper = newCompilerHelper
       val hello =
