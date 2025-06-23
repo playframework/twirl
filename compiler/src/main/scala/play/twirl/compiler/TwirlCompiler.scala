@@ -690,7 +690,7 @@ package """ :+ packageName :+ """
 
       val params: List[List[Term.Param]] =
         try {
-          val dialect = Dialect.current
+          val dialect = Dialect.current.withAllowGivenUsing(true)
           val input   = Input.String(s"object FT { def signature$signature }")
           val obj     = implicitly[Parse[Stat]].apply(input, dialect).get.asInstanceOf[Defn.Object]
           val templ   = obj.templ
@@ -715,7 +715,7 @@ package """ :+ packageName :+ """
         .mkString(" => ") + " => " + returnType + ")"
 
       val hasContextParameters =
-        params.flatten.exists(_.mods.exists(_.is[Mod.Implicit]))
+        params.flatten.exists(_.mods.exists(modifier => modifier.is[Mod.Implicit] || modifier.is[Mod.Using]))
 
       val applyArgs = {
         params.zipWithIndex.map { case (group, idx) =>
