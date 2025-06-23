@@ -85,6 +85,7 @@ class CompilerSpec extends AnyWordSpec with Matchers {
 
       val generatedFile = helper.generatedDir.toPath.resolve("html/using.template.scala").toFile
       val generatedText = Source.fromFile(generatedFile).getLines().mkString("\n")
+      // Scala3 test Only
       generatedText must include("apply(x)(using y)")
     }
 
