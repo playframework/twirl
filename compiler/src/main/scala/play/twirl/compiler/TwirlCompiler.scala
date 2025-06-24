@@ -718,7 +718,7 @@ package """ :+ packageName :+ """
         params.flatten.exists(_.mods.exists(modifier => modifier.is[Mod.Implicit] || modifier.is[Mod.Using]))
 
       val applyArgs = {
-        params.zipWithIndex.map { case (group, idx) =>
+        params.map { group =>
           val groupStr = "(" + group
             .map { p =>
               p.name.toString + Option(p.decltpe.get.toString)
@@ -729,7 +729,7 @@ package """ :+ packageName :+ """
             .mkString(",") + ")"
 
           // prepend "using" for Scala 3 context parameters on the last param
-          if (sc.emitScala3Sources && hasContextParameters && idx == params.size - 1)
+          if (sc.emitScala3Sources && hasContextParameters && group == params.last)
             groupStr.replace("(", "(using ")
           else groupStr
         }.mkString
