@@ -415,7 +415,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
         if (next == ":") {
           anyUntil(c => c != ' ' && c != '\t', inclusive = false)
           val resultTypePos = input.offset()
-          val rt = identifier() match {
+          val rt            = identifier() match {
             case null => null
             case id   => id
           }
@@ -532,7 +532,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   def blockArgs(): PosString = {
-    def noCurlyBraces(result: String): Boolean = !result.contains("{") && !result.contains("}")
+    def noCurlyBraces(result: String): Boolean        = !result.contains("{") && !result.contains("}")
     def noOpeningParenthesis(result: String): Boolean = {
       val noContainsOpenParenthesis = !result.contains("(")
 
@@ -907,7 +907,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   def templateDeclaration(): (PosString, PosString) = {
     if (check("@")) {
       val namepos = input.offset()
-      val name = identifier() match {
+      val name    = identifier() match {
         case null => null
         case id   => position(PosString(id), namepos)
       }
@@ -1029,7 +1029,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     input.reset(source)
     errorStack.clear()
 
-    val topImports = extraImports()
+    val topImports                 = extraImports()
     val (constructor, argsComment) = {
       val constructorComment = Option(lastComment())
       whitespace()
