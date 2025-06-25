@@ -75,20 +75,6 @@ class CompilerSpec extends AnyWordSpec with Matchers {
       hello must be("<h1>Hello World!</h1><h1>xml</h1>")
     }
 
-    "compile successfully (using)" in {
-      val helper = newCompilerHelper
-      helper
-        .compile[((String) => Html)]("using.scala.html", "html.using")
-        .static
-        .toString
-        .trim
-
-      val generatedFile = helper.generatedDir.toPath.resolve("html/using.template.scala").toFile
-      val generatedText = Source.fromFile(generatedFile).getLines().mkString("\n")
-      // Scala3 test Only
-      generatedText must include("apply(x)(using y)")
-    }
-
     "compile successfully (helloNull)" in {
       val helper = newCompilerHelper
       val hello  =
@@ -182,6 +168,23 @@ class CompilerSpec extends AnyWordSpec with Matchers {
 
       generatedText must include(s"list.toIndexedSeq${compat.varargSplicesSyntax}")
       text must be("123456")
+    }
+
+    "compile successfully (using)" in {
+      val helper = newCompilerHelper
+
+      val text = helper
+        .compile[(String => String => Html)]("using.scala.html", "html.using")
+        .static("the using modifier")("should compile 😤")
+        .toString
+        .trim
+
+      val compat        = ScalaCompat(Option(BuildInfo.scalaVersion))
+      val generatedFile = helper.generatedDir.toPath.resolve("html/using.template.scala").toFile
+      val generatedText = Source.fromFile(generatedFile).getLines().mkString("\n")
+
+      generatedText must include(s"apply(x)(${compat.usingSyntax}y)")
+      text must be("the using modifier should compile 😤")
     }
 
     "compile successfully (call by name)" in {
