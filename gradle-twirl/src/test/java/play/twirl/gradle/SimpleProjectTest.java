@@ -142,6 +142,9 @@ public class SimpleProjectTest extends AbstractFunctionalTest {
     Files.copy(projectSourcePath("src/main/twirl/a/b/c.scala.html"), newTemplate);
 
     BuildResult result = build(gradleVersion, "--build-cache", "compileTwirl");
+    if (isConfigurationCacheSupported(gradleVersion)) {
+      assertThat(result.getOutput()).contains("Configuration cache entry stored");
+    }
 
     BuildTask compileTwirlResult = result.task(":compileTwirl");
     assertThat(compileTwirlResult).isNotNull();
@@ -160,6 +163,9 @@ public class SimpleProjectTest extends AbstractFunctionalTest {
         .doesNotExist();
 
     result = build(gradleVersion, "--build-cache", "compileTwirl");
+    if (isConfigurationCacheSupported(gradleVersion)) {
+      assertThat(result.getOutput()).contains("Reusing configuration cache");
+    }
 
     compileTwirlResult = result.task(":compileTwirl");
     assertThat(compileTwirlResult).isNotNull();

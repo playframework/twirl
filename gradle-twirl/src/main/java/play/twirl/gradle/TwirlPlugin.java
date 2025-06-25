@@ -10,6 +10,7 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.FileTree;
 import org.gradle.api.internal.lambdas.SerializableLambdas;
 import org.gradle.api.internal.tasks.DefaultSourceSet;
 import org.gradle.api.model.ObjectFactory;
@@ -93,12 +94,14 @@ public class TwirlPlugin implements Plugin<Project> {
               TwirlSourceDirectorySet twirlSource = getTwirlSourceDirectorySet(sourceSet);
               sourceSet.getExtensions().add(TwirlSourceDirectorySet.class, "twirl", twirlSource);
               twirlSource.srcDir(project.file("src/" + sourceSet.getName() + "/twirl"));
+              // See details https://github.com/playframework/twirl/issues/948
+              final FileTree twirlSourceFileTree = twirlSource;
               sourceSet
                   .getResources()
                   .getFilter()
                   .exclude(
                       SerializableLambdas.spec(
-                          (element) -> twirlSource.contains(element.getFile())));
+                          (element) -> twirlSourceFileTree.contains(element.getFile())));
               sourceSet.getAllJava().source(twirlSource);
               sourceSet.getAllSource().source(twirlSource);
 
