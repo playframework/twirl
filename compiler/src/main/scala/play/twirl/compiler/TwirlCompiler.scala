@@ -169,6 +169,8 @@ object TwirlCompiler {
       if (emitScala3Sources) "*" else ": _*"
     def valueOrEmptyIfScala3Exceeding22Params(params: Int, value: => String): String =
       if (emitScala3Sources && params > 22) "" else value
+    val usingSyntax: String =
+      if (emitScala3Sources) "using " else ""
   }
 
   private[compiler] object ScalaCompat {
@@ -730,7 +732,7 @@ package """ :+ packageName :+ """
 
           // prepend "using" for Scala 3 context parameters on the last param
           if (sc.emitScala3Sources && hasContextParameters && group == params.last)
-            groupStr.replace("(", "(using ")
+            groupStr.replace("(", s"(${sc.usingSyntax}")
           else groupStr
         }.mkString
       }
