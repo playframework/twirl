@@ -37,6 +37,7 @@ dependencies {
     compileOnly("org.playframework.twirl:twirl-compiler_2.13:$compilerVersion")
     testImplementation(libs.assertj)
     testImplementation(libs.commons.io)
+    testImplementation(libs.commons.lang)
     testImplementation(libs.freemarker)
 }
 
@@ -59,6 +60,18 @@ testing {
                             val ver = (scalaVersion as String).trimEnd { !it.isDigit() }
                             systemProperty("scala.version", ver)
                         }
+                        // Required to test configuration cache in tests when using withDebug()
+                        // https://github.com/gradle/gradle/issues/22765#issuecomment-1339427241
+                        jvmArgs(
+                            "--add-opens",
+                            "java.base/java.util=ALL-UNNAMED",
+                            "--add-opens",
+                            "java.base/java.util.concurrent.atomic=ALL-UNNAMED",
+                            "--add-opens",
+                            "java.base/java.lang.invoke=ALL-UNNAMED",
+                            "--add-opens",
+                            "java.base/java.net=ALL-UNNAMED",
+                        )
                     }
                 }
             }
