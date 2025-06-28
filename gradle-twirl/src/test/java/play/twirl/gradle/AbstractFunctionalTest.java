@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.gradle.api.JavaVersion;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
@@ -95,7 +96,11 @@ abstract class AbstractFunctionalTest {
   }
 
   protected BuildResult build(String gradleVersion, String... args) {
-    return runner.withGradleVersion(gradleVersion).withArguments(args).build();
+    return runner
+        .withGradleVersion(gradleVersion)
+        // Enable configuration cache for any build
+        .withArguments(ArrayUtils.add(args, "--configuration-cache"))
+        .build();
   }
 
   static Stream<String> gradleVersions() {
