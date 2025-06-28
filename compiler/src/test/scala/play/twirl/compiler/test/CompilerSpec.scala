@@ -171,6 +171,8 @@ class CompilerSpec extends AnyWordSpec with Matchers {
     }
 
     "compile successfully (using)" in {
+
+      assume(BuildInfo.scalaVersion.startsWith("3."), "This test is only supposed to run with scala3")
       val helper = newCompilerHelper
 
       val text = helper
