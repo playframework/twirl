@@ -170,6 +170,25 @@ class CompilerSpec extends AnyWordSpec with Matchers {
       text must be("123456")
     }
 
+    "compile successfully (using)" in {
+
+      assume(BuildInfo.scalaVersion.startsWith("3."), "This test is only supposed to run with scala3")
+      val helper = newCompilerHelper
+
+      val text = helper
+        .compile[(String => String => Html)]("using.scala.html", "html.using")
+        .static("the using modifier")("should compile 😤")
+        .toString
+        .trim
+
+      val compat        = ScalaCompat(Option(BuildInfo.scalaVersion))
+      val generatedFile = helper.generatedDir.toPath.resolve("html/using.template.scala").toFile
+      val generatedText = Source.fromFile(generatedFile).getLines().mkString("\n")
+
+      generatedText must include(s"apply(x)(${compat.usingSyntax}y)")
+      text must be("the using modifier should compile 😤")
+    }
+
     "compile successfully (call by name)" in {
       val helper = newCompilerHelper
       val text   = helper
