@@ -82,7 +82,7 @@ object Helper {
       def inject(constructorArgs: Any*): T = {
         classloader.loadClass(className).getConstructors match {
           case Array(single) => getF(single.newInstance(constructorArgs.asInstanceOf[Seq[AnyRef]]: _*))
-          case other =>
+          case other         =>
             throw new IllegalStateException(className + " does not declare exactly one constructor: " + other)
         }
       }
@@ -93,8 +93,8 @@ object Helper {
         className: String,
         additionalImports: Seq[String] = Nil
     ): CompiledTemplate[T] = {
-      val scalaVersion = play.twirl.compiler.BuildInfo.scalaVersion
-      val templateFile = new File(sourceDir, templateName)
+      val scalaVersion    = play.twirl.compiler.BuildInfo.scalaVersion
+      val templateFile    = new File(sourceDir, templateName)
       val Some(generated) = twirlCompiler.compile(
         templateFile,
         sourceDir,

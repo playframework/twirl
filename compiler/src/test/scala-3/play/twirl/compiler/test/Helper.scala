@@ -4,7 +4,7 @@
 package play.twirl.compiler
 package test
 
-import java.io._
+import java.io.*
 import java.net.URLClassLoader
 import java.nio.file.Files
 import java.nio.file.Path
@@ -19,14 +19,14 @@ import dotty.tools.dotc.reporting.Reporter
 import dotty.tools.io.PlainDirectory
 import dotty.tools.io.Directory
 import dotty.tools.io.ClassPath
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import play.twirl.parser.TwirlIO
 
 object Helper {
   case class CompilationError(message: String, line: Int, column: Int) extends RuntimeException(message)
 
   class CompilerHelper(sourceDir: File, val generatedDir: File, generatedClasses: File) {
-    import java.net._
+    import java.net.*
     import scala.collection.mutable
 
     val twirlCompiler = TwirlCompiler
@@ -47,8 +47,8 @@ object Helper {
 
       def inject(constructorArgs: Any*): T = {
         classloader.loadClass(className).getConstructors match {
-          case Array(single) => getF(single.newInstance(constructorArgs.asInstanceOf[Seq[AnyRef]]: _*))
-          case other =>
+          case Array(single) => getF(single.newInstance(constructorArgs.asInstanceOf[Seq[AnyRef]]*))
+          case other         =>
             throw new IllegalStateException(className + " does not declare exactly one constructor: " + other)
         }
       }
@@ -59,8 +59,8 @@ object Helper {
         className: String,
         additionalImports: Seq[String] = Nil
     ): CompiledTemplate[T] = {
-      val scalaVersion = play.twirl.compiler.BuildInfo.scalaVersion
-      val templateFile = new File(sourceDir, templateName)
+      val scalaVersion               = play.twirl.compiler.BuildInfo.scalaVersion
+      val templateFile               = new File(sourceDir, templateName)
       val generatedOpt: Option[File] = twirlCompiler.compile(
         templateFile,
         sourceDir,
@@ -91,7 +91,7 @@ object Helper {
 
       val reporter = driver.compile()
 
-      if (reporter.hasErrors) {
+      if reporter.hasErrors then {
         val error   = reporter.allErrors.sortBy(_.pos.point).head
         val message = error.msg
         val pos     = error.pos
@@ -103,7 +103,7 @@ object Helper {
 
     class TestDriver(outDir: Path, compilerArgs: Array[String], path: Path) extends Driver {
       def compile(): Reporter = {
-        val setupOpt = setup(compilerArgs :+ path.toAbsolutePath.toString, initCtx.fresh)
+        val setupOpt             = setup(compilerArgs :+ path.toAbsolutePath.toString, initCtx.fresh)
         val (toCompile, rootCtx) = setupOpt.getOrElse {
           throw new Exception("Failed to initialize compiler")
         }

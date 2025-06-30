@@ -37,7 +37,7 @@ package object api {
       val expressions = args.iterator
       array(0) = format.raw(strings.next())
       var i = 1
-      while (strings.hasNext) {
+      while strings.hasNext do {
         array(i) = expressions.next()
         array(i + 1) = format.raw(strings.next())
         i += 2
