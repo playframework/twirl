@@ -13,7 +13,7 @@ object TwirlHelperImports {
 
   /** Allows Java collections to be used as if they were Scala collections. */
   implicit def twirlJavaCollectionToScala[T](x: java.lang.Iterable[T]): Iterable[T] = {
-    import scala.jdk.CollectionConverters._
+    import scala.jdk.CollectionConverters.*
     x.asScala
   }
 

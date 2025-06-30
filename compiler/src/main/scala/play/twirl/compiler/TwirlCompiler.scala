@@ -91,7 +91,7 @@ sealed trait AbstractGeneratedSource {
 
   def mapPosition(generatedPosition: Int): Int = {
     matrix.indexWhere(p => p._1 > generatedPosition) match {
-      case 0 => 0
+      case 0          => 0
       case i if i > 0 => {
         val pos = matrix(i - 1)
         pos._2 + (generatedPosition - pos._1)
@@ -105,7 +105,7 @@ sealed trait AbstractGeneratedSource {
 
   def mapLine(generatedLine: Int): Int = {
     lines.indexWhere(p => p._1 > generatedLine) match {
-      case 0 => 0
+      case 0          => 0
       case i if i > 0 => {
         val line = lines(i - 1)
         line._2 + (generatedLine - line._1)
@@ -154,7 +154,7 @@ case class GeneratedSource(file: File, codec: Codec = TwirlIO.defaultCodec) exte
 }
 
 case class GeneratedSourceVirtual(path: String) extends AbstractGeneratedSource {
-  var _content = ""
+  var _content                             = ""
   def setContent(newContent: String): Unit = {
     this._content = newContent
   }
@@ -239,7 +239,7 @@ object TwirlCompiler {
       codec: Codec,
       inclusiveDot: Boolean
   ): Option[File] = {
-    val resultType = formatterType + ".Appendable"
+    val resultType                      = formatterType + ".Appendable"
     val (templateName, generatedSource) =
       generatedFile(source, codec, sourceDirectory, generatedDirectory, inclusiveDot)
     if (generatedSource.needRecompilation(additionalImports)) {
@@ -300,7 +300,7 @@ object TwirlCompiler {
   ): GeneratedSourceVirtual = {
 
     val (templateName, generatedSource) = generatedFileVirtual(source, sourceDirectory, inclusiveDot)
-    val generated = parseAndGenerateCode(
+    val generated                       = parseAndGenerateCode(
       templateName,
       content.getBytes(codec.charSet),
       codec,
@@ -465,7 +465,7 @@ object TwirlCompiler {
   // We need to double escape slashes, since it's a regex replacement
   private val escapedTripleQuote       = "\\\"" * 3
   private val doubleEscapedTripleQuote = "\\\\\"" * 3
-  private val tripleQuoteReplacement =
+  private val tripleQuoteReplacement   =
     escapedTripleQuote + " + \\\"" + doubleEscapedTripleQuote + "\\\" + " + escapedTripleQuote
   private def quoteAndEscape(text: String): collection.Seq[String] = {
     Seq(tripleQuote, text.replaceAll(tripleQuote, tripleQuoteReplacement), tripleQuote)
@@ -507,7 +507,7 @@ object TwirlCompiler {
   def templateCode(template: Template, resultType: String): collection.Seq[Any] = {
     val defs = (template.sub ++ template.defs).map {
       case t: Template if t.name.toString == "" => templateCode(t, resultType)
-      case t: Template => {
+      case t: Template                          => {
         Nil :+ (if (t.name.str.startsWith("implicit")) "implicit def " else "def ") :+ Source(
           t.name.str,
           t.name.pos
@@ -810,7 +810,7 @@ object Source {
       lines: ListBuffer[(Int, Int)]
   ): Unit = {
     parts.foreach {
-      case s: String => source.append(s)
+      case s: String                                     => source.append(s)
       case Source(code, pos @ OffsetPosition(_, offset)) => {
         source.append("/*" + pos + "*/")
         positions += (source.length                -> offset)

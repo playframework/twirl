@@ -39,7 +39,7 @@ lazy val docs = project
 // and doesn't use the default imports provided by Twirl but defines its own by scratch, and since the defaults
 // have changed, this breaks.  So, first we need to set all source generators in test to Nil, then we can redefine the
 // twirl settings.
-def overrideTwirlSettings: Seq[Setting[_]] =
+def overrideTwirlSettings: Seq[Setting[?]] =
   Seq(
     Test / sourceGenerators := Nil
   ) ++ inConfig(Test)(SbtTwirl.twirlSettings) ++ SbtTwirl.defaultSettings ++ SbtTwirl.positionSettings ++ Seq(
