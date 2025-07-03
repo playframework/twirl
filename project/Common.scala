@@ -27,6 +27,7 @@ object Common extends AutoPlugin {
   )
 
   val scalacParameters = Seq(
+    "-release:11",
     "-deprecation",
     "-feature",
     "-unchecked",
@@ -34,25 +35,11 @@ object Common extends AutoPlugin {
     "utf8"
   )
 
-  def crossScalacOptions(version: String) = {
-    CrossVersion.partialVersion(version) match {
-      case Some((2, n)) if n < 12 =>
-        scalacParameters ++ Seq(
-          "-release:11",
-          "-Ywarn-unused:imports",
-          "-Xlint:nullary-unit",
-          "-Xlint",
-          "-Ywarn-dead-code"
-        )
-      case _ => scalacParameters
-    }
-  }
-
   override def projectSettings =
     Seq(
       scalaVersion       := Scala212,
       crossScalaVersions := ScalaVersions,
-      scalacOptions ++= crossScalacOptions(scalaVersion.value),
+      scalacOptions ++= scalacParameters,
       javacOptions ++= javacParameters
     )
 
