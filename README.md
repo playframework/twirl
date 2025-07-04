@@ -205,13 +205,13 @@ Also, you can use the next parameters:
 
 ### Snapshots
 
-To use a snapshot version add the [Sonatype Snapshot repository](https://oss.sonatype.org/content/repositories/snapshots/org/playframework/twirl/) into `pom.xml`:
+To use a snapshot version add the [Maven Central Snapshot repository](https://central.sonatype.com/service/rest/repository/browse/maven-snapshots/org/playframework/twirl/) into `pom.xml`:
 
 ```pom
 <pluginRepositories>
     <pluginRepository>
-        <id>sonatype-snapshots</id>
-        <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        <id>maven-central-snapshots</id>
+        <url>https://central.sonatype.com/repository/maven-snapshots/</url>
         <releases>
             <enabled>false</enabled>
         </releases>
@@ -316,13 +316,13 @@ sourceSets {
 
 ### Snapshots
 
-To use a snapshot version add the [Sonatype Snapshot repository](https://oss.sonatype.org/content/repositories/snapshots/org/playframework/twirl/org.playframework.twirl.gradle.plugin/) into `settings.gradle.kts`:
+To use a snapshot version add the [Maven Central Snapshot repository](https://central.sonatype.com/service/rest/repository/browse/maven-snapshots/org/playframework/twirl/org.playframework.twirl.gradle.plugin/) into `settings.gradle.kts`:
 
 ```kotlin
 pluginManagement {
   repositories {
     maven {
-      url = uri("https://oss.sonatype.org/content/repositories/snapshots")
+      url = uri("https://central.sonatype.com/repository/maven-snapshots")
     }
   }
 }
