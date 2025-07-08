@@ -77,14 +77,15 @@ lazy val api = crossProject(JVMPlatform, JSPlatform, NativePlatform)
     ),
     libraryDependencies += "org.scala-lang.modules" %%% "scala-xml" % "2.4.0",
     libraryDependencies += "org.scalatest"          %%% "scalatest" % ScalaTestVersion % Test,
-  ).nativeSettings(
+  )
+  .nativeSettings(
     // Scala Native cannot run forked tests
     Test / fork := false
   )
 
-lazy val apiJvm = api.jvm
-lazy val apiJs  = api.js
-lazy val apiNative  = api.native
+lazy val apiJvm    = api.jvm
+lazy val apiJs     = api.js
+lazy val apiNative = api.native
 
 lazy val parser = project
   .in(file("parser"))
