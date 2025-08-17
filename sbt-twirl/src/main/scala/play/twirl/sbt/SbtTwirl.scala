@@ -5,6 +5,7 @@
 package play.twirl.sbt
 
 import play.twirl.compiler.TwirlCompiler
+import play.twirl.sbt.SbtTwirlCompat._
 import sbt.Keys._
 // format: off
 import sbt.{given, _}
@@ -48,12 +49,13 @@ object SbtTwirl extends AutoPlugin {
       compileTemplates / includeFilter       := "*.scala.*",
       compileTemplates / excludeFilter       := HiddenFileFilter,
       (compileTemplates / sourceDirectories) := Seq(sourceDirectory.value / "twirl"),
-      (Defaults.ConfigGlobal / watchSources) +=
+      (Defaults.ConfigZero / watchSources) += Def.uncached(
         WatchSource(
           (compileTemplates / sourceDirectory).value,
           (compileTemplates / includeFilter).value,
           (compileTemplates / excludeFilter).value
-        ),
+        )
+      ),
       (compileTemplates / sources) := Defaults
         .collectFiles(
           compileTemplates / sourceDirectories,
@@ -77,7 +79,7 @@ object SbtTwirl extends AutoPlugin {
 
   def positionSettings: Seq[Setting[?]] =
     Seq(
-      sourcePositionMappers += TemplateProblem.positionMapper(Codec(sourceEncoding.value))
+      sourcePositionMappers += Def.uncached(TemplateProblem.positionMapper(Codec(sourceEncoding.value)))
     )
 
   def dependencySettings =
