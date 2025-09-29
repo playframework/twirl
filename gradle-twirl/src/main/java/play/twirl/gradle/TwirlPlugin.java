@@ -22,7 +22,6 @@ import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.util.GradleVersion;
 import play.twirl.gradle.internal.DefaultTwirlSourceDirectorySet;
-import play.twirl.gradle.internal.Gradle7TwirlSourceDirectorySet;
 
 /** A Gradle plugin to compile Twirl templates. */
 public class TwirlPlugin implements Plugin<Project> {
@@ -149,9 +148,7 @@ public class TwirlPlugin implements Plugin<Project> {
     String displayName = ((DefaultSourceSet) sourceSet).getDisplayName();
     TwirlSourceDirectorySet twirlSourceDirectorySet =
         objectFactory.newInstance(
-            isGradleVersionLessThan("8.0")
-                ? Gradle7TwirlSourceDirectorySet.class
-                : DefaultTwirlSourceDirectorySet.class,
+            DefaultTwirlSourceDirectorySet.class,
             objectFactory.sourceDirectorySet("twirl", displayName + " Twirl source"));
     twirlSourceDirectorySet.getFilter().include("**/*.scala.*");
     twirlSourceDirectorySet.getTemplateFormats().convention(DEFAULT_TEMPLATE_FORMATS);
