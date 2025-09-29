@@ -224,7 +224,7 @@ To use a snapshot version add the [Maven Central Snapshot repository](https://ce
 
 ## gradle-twirl
 
-⚠️ `org.playframework.twirl` plugin requires Gradle 7.1 or higher.
+⚠️ `org.playframework.twirl` plugin requires Gradle 8.0 or higher.
 
 To use the Twirl plugin in your project add the gradle plugin and 
 Twirl API as a dependency into `build.gradle.kts`:
