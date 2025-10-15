@@ -110,12 +110,12 @@ abstract class AbstractFunctionalTest {
       return Stream.of(latest);
     }
     if (JavaVersion.current().compareTo(JavaVersion.VERSION_17) >= 0) { // Gradle 7.3+
-      return Stream.of("7.6.2", "8.0.2", latest);
+      return Stream.of("7.6.6", "8.14.3", latest);
     }
     // https://docs.gradle.org/current/userguide/scala_plugin.html#sec:configure_zinc_compiler
     if (getScalaVersion().equals("3")) { // Gradle 7.5+
-      return Stream.of("7.6.2", "8.0.2", latest);
+      return Stream.of("7.6.6", "8.14.3", latest);
     }
-    return Stream.of("7.1.1", "7.6.2", "8.0.2", latest);
+    return Stream.of("7.1.1", "7.6.6", "8.14.3", latest);
   }
 }

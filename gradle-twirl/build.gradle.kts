@@ -29,12 +29,22 @@ group = "org.playframework.twirl"
 version = compilerVersion
 
 repositories {
+    maven {
+        url = uri("https://repo.gradle.org/artifactory/libs-releases/")
+    }
     mavenCentral()
     mavenLocal()
 }
 
 dependencies {
     compileOnly("org.playframework.twirl:twirl-compiler_2.13:$compilerVersion")
+    // Version of Gradle API should be set explicitly
+    // https://github.com/gradle/gradle/issues/29483#issuecomment-2791668178
+    compileOnly("org.gradle.experimental:gradle-public-api:8.14.3") {
+        capabilities {
+            requireCapability("org.gradle.experimental:gradle-public-api-internal")
+        }
+    }
     testImplementation(libs.assertj)
     testImplementation(libs.commons.io)
     testImplementation(libs.commons.lang)
