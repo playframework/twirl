@@ -40,7 +40,7 @@ dependencies {
     compileOnly("org.playframework.twirl:twirl-compiler_2.13:$compilerVersion")
     // Version of Gradle API should be set explicitly
     // https://github.com/gradle/gradle/issues/29483#issuecomment-2791668178
-    compileOnly("org.gradle.experimental:gradle-public-api:8.14.3") {
+    compileOnly("org.gradle.experimental:gradle-public-api:9.1.0") {
         capabilities {
             requireCapability("org.gradle.experimental:gradle-public-api-internal")
         }
