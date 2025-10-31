@@ -8,4 +8,4 @@ resolvers ++= DefaultOptions.resolvers(snapshot = true)
 
 addSbtPlugin("org.playframework" % "play-docs-sbt-plugin" % sys.props.getOrElse("play.version", "3.0.9"))
 addSbtPlugin("com.github.sbt"    % "sbt-header"           % "5.11.0")
-addSbtPlugin("org.scalameta"     % "sbt-scalafmt"         % "2.5.5")
+addSbtPlugin("org.scalameta"     % "sbt-scalafmt"         % "2.5.6")
