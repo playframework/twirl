@@ -16,7 +16,7 @@ jobs:
   # Run Gradle Wrapper Validation to verify the wrapper's checksum
   gradle-validation:
     name: Gradle Wrapper
-    uses: playframework/.github/.github/workflows/gradle-wrapper-validation.yml@v3
+    uses: playframework/.github/.github/workflows/gradle-wrapper-validation.yml@v4
 
   check-code-style:
     name: Code Style
