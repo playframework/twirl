@@ -22,7 +22,7 @@ jobs:
     name: Code Style
     needs:
       - "gradle-validation"
-    uses: playframework/.github/.github/workflows/cmd.yml@v3
+    uses: playframework/.github/.github/workflows/cmd.yml@v4
     with:
       gradle-build-root: gradle-twirl
       cmd: |
@@ -36,7 +36,7 @@ jobs:
 
   check-docs:
     name: Docs
-    uses: playframework/.github/.github/workflows/cmd.yml@v3
+    uses: playframework/.github/.github/workflows/cmd.yml@v4
     with:
       cmd: |
         cd docs
@@ -48,7 +48,7 @@ jobs:
       - "check-code-style"
       - "check-binary-compatibility"
       - "check-docs"
-    uses: playframework/.github/.github/workflows/cmd.yml@v3
+    uses: playframework/.github/.github/workflows/cmd.yml@v4
     with:
       java: 21, 17, 11
       scala: 2.12.x, 2.13.x, 3.x
