@@ -437,7 +437,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
           anyUntil(c => c != ' ' && c != '\t', inclusive = false)
           val code = scalaBlock()
           if (code != null) {
-            result = Def(templDecl._1, templDecl._2, resultType, code)
+            result = position(Def(templDecl._1, templDecl._2, resultType, code), resetPosition)
           }
         }
       }
@@ -894,7 +894,10 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
         if (check("{")) {
           val (imports, localDefs, templates, mixeds) = templateContent()
           if (check("}"))
-            result = Template(templDecl._1, None, None, templDecl._2, Nil, imports, localDefs, templates, mixeds)
+            result = position(
+              Template(templDecl._1, None, None, templDecl._2, Nil, imports, localDefs, templates, mixeds),
+              resetPosition
+            )
         }
       }
     }
