@@ -203,8 +203,7 @@ class CompilerSpec extends AnyWordSpec with Matchers {
       val helper = newCompilerHelper
       the[CompilationError] thrownBy helper.compile[(() => Html)]("error.scala.html", "html.error") must have(
         Symbol("line")(5),
-//        Symbol("column")(12) TODO: need fix https://github.com/playframework/twirl/issues/571 to back
-        Symbol("column")(463)
+        Symbol("point")(463)
       )
     }
 
@@ -213,8 +212,7 @@ class CompilerSpec extends AnyWordSpec with Matchers {
       the[CompilationError] thrownBy helper
         .compile[(() => Html)]("errorInTemplateArgs.scala.html", "html.errorInTemplateArgs") must have(
         Symbol("line")(5),
-//        Symbol("column")(6) TODO: need fix https://github.com/playframework/twirl/issues/571 to back
-        Symbol("column")(458)
+        Symbol("point")(458)
       )
     }
 
