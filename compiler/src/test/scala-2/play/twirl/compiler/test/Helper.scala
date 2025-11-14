@@ -32,13 +32,9 @@ object Helper {
     val compiler = {
       def additionalClassPathEntry: Option[String] =
         Some(
-          Class
-            .forName("play.twirl.compiler.TwirlCompiler")
-            .getClassLoader
-            .asInstanceOf[URLClassLoader]
-            .getURLs
-            .map(url => new File(url.toURI))
-            .mkString(":")
+          List(play.twirl.compiler.TwirlCompiler.getClass, play.twirl.api.Html.getClass, scala.xml.NodeSeq.getClass)
+            .map(_.getProtectionDomain.getCodeSource.getLocation)
+            .mkString(File.pathSeparator)
         )
 
       val settings          = new Settings
