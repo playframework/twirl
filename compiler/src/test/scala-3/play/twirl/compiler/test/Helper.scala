@@ -23,7 +23,7 @@ import scala.jdk.CollectionConverters.*
 import play.twirl.parser.TwirlIO
 
 object Helper {
-  case class CompilationError(message: String, line: Int, column: Int) extends RuntimeException(message)
+  case class CompilationError(message: String, line: Int, point: Int) extends RuntimeException(message)
 
   class CompilerHelper(sourceDir: File, val generatedDir: File, generatedClasses: File) {
     import java.net.*
