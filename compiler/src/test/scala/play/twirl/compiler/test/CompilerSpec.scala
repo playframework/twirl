@@ -355,6 +355,17 @@ class CompilerSpec extends AnyWordSpec with Matchers {
     hello.static(args).toString.trim must be("the-key => the-value")
   }
 
+  "compile successfully (nested templates)" in {
+    val helper = newCompilerHelper
+    val hello  = helper.compile[(() => Html)]("nestedTemplates.scala.html", "html.nestedTemplates")
+    hello.static().toString.trim.replaceAll(" ", "").replaceAll("\n", "") must be(
+      """_first__defstr__tmpl-defstr__defstr_goodtext_in_between_inner_inner_tmpl_
+        |__tmplinner_defstr___samename1__samedefname1__samename2__samedefname2_
+        |_second__defstr__tmpl-defstr__defstr_goodtext_in_between_inner_inner_tmpl_
+        |__tmplinner_defstr___samename1__samedefname1__samename2__samedefname2_""".stripMargin.replaceAll("\n", "")
+    )
+  }
+
   "ScalaCompat" should {
 
     val cases = List(
