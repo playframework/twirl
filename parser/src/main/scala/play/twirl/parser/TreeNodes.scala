@@ -10,6 +10,12 @@ object TreeNodes {
   abstract class TemplateTree
   abstract class ScalaExpPart
 
+  trait LocalMember extends Positional {
+    val name: PosString
+    val resultType: Option[PosString]
+    val code: Simple
+  }
+
   case class Params(code: String) extends Positional
   case class Constructor(comment: Option[Comment], params: PosString)
   case class Template(
@@ -19,14 +25,15 @@ object TreeNodes {
       params: PosString,
       topImports: collection.Seq[Simple],
       imports: collection.Seq[Simple],
-      defs: collection.Seq[Def],
+      members: collection.Seq[LocalMember],
       sub: collection.Seq[Template],
       content: collection.Seq[TemplateTree]
   ) extends Positional
   case class PosString(str: String) extends Positional {
     override def toString: String = str
   }
-  case class Def(name: PosString, params: PosString, resultType: Option[PosString], code: Simple) extends Positional
+  case class Def(name: PosString, params: PosString, resultType: Option[PosString], code: Simple) extends LocalMember
+  case class Val(name: PosString, isLazy: Boolean, resultType: Option[PosString], code: Simple)   extends LocalMember
   case class Plain(text: String)                           extends TemplateTree with Positional
   case class Display(exp: ScalaExp)                        extends TemplateTree with Positional
   case class Comment(msg: String)                          extends TemplateTree with Positional
