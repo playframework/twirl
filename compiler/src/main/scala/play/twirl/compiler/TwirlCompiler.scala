@@ -505,7 +505,7 @@ object TwirlCompiler {
   }
 
   def templateCode(template: Template, resultType: String): collection.Seq[Any] = {
-    val defs = (template.sub ++ template.defs).map {
+    val defs = (template.sub ++ template.defs).sortWith((l, r) => l.pos.<(r.pos)).map {
       case t: Template if t.name.toString == "" => templateCode(t, resultType)
       case t: Template                          => {
         Nil :+ (if (t.name.str.startsWith("implicit")) "implicit def " else "def ") :+ Source(
