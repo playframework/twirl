@@ -348,6 +348,20 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
 
         localDef.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
       }
+      "empty type params are given" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@field[]() = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: identifier expected but ']' found")
+        )
+      }
+      "empty type params that contain spaces are given" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@field[ ]() = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: identifier expected but ']' found")
+        )
+      }
     }
 
     "handle string literals within parentheses" when {

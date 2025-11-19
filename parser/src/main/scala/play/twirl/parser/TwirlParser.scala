@@ -905,6 +905,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   def templateDeclaration(): (PosString, PosString) = {
+    val resetPosition = input.offset()
     if (check("@")) {
       val namepos = input.offset()
       val name    = identifier() match {
@@ -915,8 +916,13 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       if (name != null) {
         val paramspos = input.offset()
         val types     = Option(squareBrackets()).getOrElse("")
-        val args      = several[String, ArrayBuffer[String]] { () => parentheses() }
-        val params    = position(PosString(types + args.mkString), paramspos)
+        if (types.replaceAll("\\s", "") == "[]") {
+          input.regressTo(resetPosition) // don't consume @
+          error(s"identifier expected but ']' found", paramspos)
+          return null
+        }
+        val args   = several[String, ArrayBuffer[String]] { () => parentheses() }
+        val params = position(PosString(types + args.mkString), paramspos)
         if (params != null)
           return (name, params)
       } else input.regress(1) // don't consume @
