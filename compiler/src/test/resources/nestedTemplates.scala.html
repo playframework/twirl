@@ -1,0 +1,45 @@
+@****************************************************************************************************************************************************
+ * Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com> *
+ ****************************************************************************************************************************************************@
+
+@()
+@* a template can contain imports, localDefs, templates, mixeds *@
+@import java.lang.String
+@localdef = @{"_defstr_"}
+
+@* let's define a sub template which itself also contains templates which then also contain templates. *@
+@tmpl(title: String) = {
+    @* a sub template is parsed like the top (page) template and can also contain imports, localDefs, templates, mixeds *@
+    @import java.lang.Boolean
+    @tmpl_localdef = @{"_tmpl-defstr_"}
+    @tmpl_inner1(good: Boolean) = {
+        @import java.lang.Integer
+        @tmpl_localdef
+        @* just some comment in between *@
+        @localdef
+        @if(good) {
+            good
+        } else {
+            bad
+        }
+        text_in_between
+        @tmpl_inner1_inner = {
+            @import java.lang.Long
+            _inner_inner_tmpl_
+        }
+        @tmpl_inner1_localdef = @{
+            val somevar = "__tmplinner_defstr__"
+            somevar
+        }
+        @tmpl_inner2_inner = {
+            @tmpl_inner1_localdef
+        }
+        @tmpl_inner1_inner
+        @tmpl_inner2_inner
+    }
+    @tmpl_inner2 = { @inner_def_samename=@{"_samedefname1_"} @inner_tmpl_samename={_samename1_@inner_def_samename} @inner_tmpl_samename }
+    @tmpl_inner3 = { @inner_def_samename=@{"_samedefname2_"} @inner_tmpl_samename={_samename2_@inner_def_samename} @inner_tmpl_samename }
+    @title@localdef@tmpl_inner1(true)@tmpl_inner2@tmpl_inner3
+}
+@tmpl("_first_")
+@tmpl("_second_")

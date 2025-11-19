@@ -514,7 +514,7 @@ object TwirlCompiler {
         ) :+ Source(
           t.params.str,
           t.params.pos
-        ) :+ ":" :+ resultType :+ " = {_display_(" :+ templateCode(t, resultType) :+ ")};"
+        ) :+ ":" :+ resultType :+ " = {_display_{" :+ templateCode(t, resultType) :+ "}};"
       }
       case Def(name, params, resultType, block) => {
         Nil :+ (if (name.str.startsWith("implicit")) "implicit def " else "def ") :+ Source(
