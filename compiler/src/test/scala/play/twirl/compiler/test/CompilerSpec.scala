@@ -369,10 +369,7 @@ class CompilerSpec extends AnyWordSpec with Matchers {
   "keep order of member and template blocks, as defined in the source template" in {
     val helper = newCompilerHelper
     val hello  = helper.compile[(() => Html)]("codeBlockOrder.scala.html", "html.codeBlockOrder")
-    hello.static().toString.trim.replaceAll(" ", "").replaceAll("\n", "") must be(
-      """HellofromTemplate2calling@localdef1!Hellofromalocaldef1callingtmpl!HellofromTemplate1!""".stripMargin
-        .replaceAll("\n", "")
-    )
+    hello.static().toString.trim.replaceAll(" ", "").replaceAll("\n", "") must be("123456789101112")
   }
 
   "ScalaCompat" should {
