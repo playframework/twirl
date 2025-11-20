@@ -131,6 +131,14 @@ You can define scoped values using the `defining` helper:
 
 @[defining](code/scalaguide/templates/snippets.scala.html)
 
+Alternatively you can also define immutable variables with pure code blocks, just as you would in Scala with the `val` keyword:
+
+@[vals](code/scalaguide/templates/snippets.scala.html)
+
+You can use `val` and `lazy` to define variables with template code blocks as well:
+
+@[tmpl-vals](code/scalaguide/templates/snippets.scala.html)
+
 ## Import statements
 
 You can import whatever you want at the beginning of your template (or sub-template):

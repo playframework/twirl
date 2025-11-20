@@ -60,6 +60,26 @@ My email is bob@@example.com
 }
 @* #defining *@
 
+<span class="vals">
+@* #vals *@
+@val fullName = @{ user.firstName + " " + user.lastName }
+@* lazy is also supported: *@
+@lazy val nextId = @{ java.util.UUID.randomUUID() }
+@* #vals *@
+@fullName
+</span>
+
+<span class="tmpl-vals">
+@* #tmpl-vals *@
+@lazy val productSnippet = {
+  @for(p <- products) {
+    <li>@p.name ($@p.price)</li>
+  }
+}
+@* #tmpl-vals *@
+@productSnippet
+</span>
+
 @* #comment *@
 @*********************
 * This is a comment *
