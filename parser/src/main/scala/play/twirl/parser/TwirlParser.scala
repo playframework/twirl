@@ -21,10 +21,10 @@ import scala.util.parsing.input.OffsetPosition
  * as follows:
  * {{{
  *   parser : comment? whitespace? ('@' parentheses+)? templateContent
- *   templateContent : (importExpression | localDef | template | mixed)*
- *   templateDeclaration : '@' identifier squareBrackets? parentheses*
- *   localDef : templateDeclaration (' ' | '\t')* '=' (' ' | '\t') scalaBlock
- *   template : templateDeclaration (' ' | '\t')* '=' (' ' | '\t') '{' templateContent '}'
+ *   templateContent : (importExpression | localMember | template | mixed)*
+ *   templateOrLocalMemberDeclaration : '@' (('lazy' whitespaceNoBreak+)? 'val' whitespaceNoBreak+)? identifier squareBrackets? parentheses*
+ *   localMember : templateOrLocalMemberDeclaration (' ' | '\t')* '=' (' ' | '\t') scalaBlock
+ *   template : templateOrLocalMemberDeclaration (' ' | '\t')* '=' (' ' | '\t') '{' templateContent '}'
  *   mixed : (comment | scalaBlockDisplayed | caseExpression | matchExpression | forExpression | safeExpression | plain | expression) | ('{' mixed* '}')
  *   scalaBlockDisplayed : scalaBlock
  *   scalaBlockChained : scalaBlock
@@ -56,10 +56,10 @@ import scala.util.parsing.input.OffsetPosition
  * 'mixed' non-terminal. It is defined as follows:
  * {{{
  *   parser : comment? whitespace? ('@' parentheses+)? templateContent
- *   templateContent : (importExpression | localDef | template | mixed)*
- *   templateDeclaration : '@' identifier squareBrackets? parentheses*
- *   localDef : templateDeclaration (' ' | '\t')* '=' (' ' | '\t') scalaBlock
- *   template : templateDeclaration (' ' | '\t')* '=' (' ' | '\t') '{' templateContent '}'
+ *   templateContent : (importExpression | localMember | template | mixed)*
+ *   templateOrLocalMemberDeclaration : '@' (('lazy' whitespaceNoBreak+)? 'val' whitespaceNoBreak+)? identifier squareBrackets? parentheses*
+ *   localMember : templateOrLocalMemberDeclaration (' ' | '\t')* '=' (' ' | '\t') scalaBlock
+ *   template : templateOrLocalMemberDeclaration (' ' | '\t')* '=' (' ' | '\t') '{' templateContent '}'
  *   mixed : (comment | scalaBlockDisplayed | forExpression | ifExpression | matchExpOrSafeExpOrExpr | caseExpression | plain) | ('{' mixed* '}')
  *   matchExpOrSafeExpOrExpr : (expression | safeExpression) (whitespaceNoBreak 'match' block)?
  *   scalaBlockDisplayed : scalaBlock
@@ -398,10 +398,10 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     else null
   }
 
-  def localDef(): Def = {
-    var result: Def   = null
-    val resetPosition = input.offset()
-    val templDecl     = templateDeclaration()
+  def localMember(): LocalMember = {
+    var result: LocalMember = null
+    val resetPosition       = input.offset()
+    val templDecl           = templateOrLocalMemberDeclaration()
     if (templDecl != null) {
       anyUntil(c => c != ' ' && c != '\t', inclusive = false)
       var next = ""
@@ -437,7 +437,11 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
           anyUntil(c => c != ' ' && c != '\t', inclusive = false)
           val code = scalaBlock()
           if (code != null) {
-            result = position(Def(templDecl._1, templDecl._2, resultType, code), resetPosition)
+            if (templDecl._3) {
+              result = position(Val(templDecl._1, templDecl._4, resultType, code), resetPosition)
+            } else {
+              result = position(Def(templDecl._1, templDecl._2, resultType, code), resetPosition)
+            }
           }
         }
       }
@@ -883,19 +887,28 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     }
   }
 
-  def template(): Template = {
-    var result: Template = null
-    val resetPosition    = input.offset()
-    val templDecl        = templateDeclaration()
+  def template(): SubTemplate = {
+    var result: SubTemplate = null
+    val resetPosition       = input.offset()
+    val templDecl           = templateOrLocalMemberDeclaration()
     if (templDecl != null) {
       anyUntil(c => c != ' ' && c != '\t', inclusive = false)
       if (check("=")) {
         anyUntil(c => c != ' ' && c != '\t', inclusive = false)
         if (check("{")) {
-          val (imports, localDefs, templates, mixeds) = templateContent()
+          val (imports, localMembers, templates, mixeds) = templateContent()
           if (check("}"))
             result = position(
-              Template(templDecl._1, None, None, templDecl._2, Nil, imports, localDefs, templates, mixeds),
+              SubTemplate(
+                templDecl._3, // isVal
+                templDecl._4, // isLazy
+                templDecl._1,
+                templDecl._2,
+                imports,
+                localMembers,
+                templates,
+                mixeds
+              ),
               resetPosition
             )
         }
@@ -907,9 +920,26 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     result
   }
 
-  def templateDeclaration(): (PosString, PosString) = {
+  def templateOrLocalMemberDeclaration(): (PosString, PosString, Boolean, Boolean) = {
     val resetPosition = input.offset()
     if (check("@")) {
+      val lazypos = input.offset()
+      val isLazy  = check("lazy") && !whitespaceNoBreak().isEmpty
+      if (!isLazy) {
+        // The word 'lazy' could be parsed, but no whitespace afterwards -> isLazy is false, but the pointer moved forward...
+        input.regressTo(lazypos)
+      }
+      val valpos = input.offset()
+      val isVal  = check("val") && !whitespaceNoBreak().isEmpty
+      if (!isVal) {
+        // The word 'val' could be parsed, but no whitespace afterwards -> isVal is false, but the pointer moved forward...
+        input.regressTo(valpos)
+      }
+      if (isLazy && !isVal) {
+        input.regressTo(resetPosition) // don't consume @
+        error("Expected 'val' after 'lazy'", lazypos)
+        return null
+      }
       val namepos = input.offset()
       val name    = identifier() match {
         case null => null
@@ -924,30 +954,50 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
           error(s"identifier expected but ']' found", paramspos)
           return null
         }
-        val args   = several[String, ArrayBuffer[String]] { () => parentheses() }
+        if (isVal && !types.isEmpty) {
+          input.regressTo(resetPosition) // don't consume @
+          error(
+            s"Wrong variable definiton: '${name.str}' can not have type parameters",
+            namepos
+          )
+          return null
+        }
+        val args = several[String, ArrayBuffer[String]] { () => parentheses() }
+        if (isVal && !args.isEmpty) {
+          input.regressTo(resetPosition) // don't consume @
+          error(
+            s"Wrong variable definiton: '${name.str}' can not have argument lists",
+            namepos
+          )
+          return null
+        }
         val params = position(PosString(types + args.mkString), paramspos)
         if (params != null)
-          return (name, params)
-      } else input.regress(1) // don't consume @
+          return (name, params, isVal, isLazy)
+      } else input.regressTo(resetPosition) // don't consume @
     }
 
     null
   }
 
-  def templateContent()
-      : (collection.Seq[Simple], collection.Seq[Def], collection.Seq[Template], collection.Seq[TemplateTree]) = {
-    val imports   = new ArrayBuffer[Simple]
-    val localDefs = new ArrayBuffer[Def]
-    val templates = new ArrayBuffer[Template]
-    val mixeds    = new ArrayBuffer[TemplateTree]
+  def templateContent(): (
+      collection.Seq[Simple],
+      collection.Seq[LocalMember],
+      collection.Seq[SubTemplate],
+      collection.Seq[TemplateTree]
+  ) = {
+    val imports      = new ArrayBuffer[Simple]
+    val localMembers = new ArrayBuffer[LocalMember]
+    val templates    = new ArrayBuffer[SubTemplate]
+    val mixeds       = new ArrayBuffer[TemplateTree]
 
     var done = false
     while (!done) {
       val impExp = importExpression()
       if (impExp != null) imports += impExp
       else {
-        val ldef = localDef()
-        if (ldef != null) localDefs += ldef
+        val lmember = localMember()
+        if (lmember != null) localMembers += lmember
         else {
           val templ = template()
           if (templ != null) templates += templ
@@ -965,7 +1015,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       }
     }
 
-    (imports, localDefs, templates, mixeds)
+    (imports, localMembers, templates, mixeds)
   }
 
   def extraImports(): collection.Seq[Simple] = {
@@ -1053,17 +1103,16 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
         (None, constructorComment)
       }
     }
-    val args                                    = maybeTemplateArgs()
-    val (imports, localDefs, templates, mixeds) = templateContent()
+    val args                                       = maybeTemplateArgs()
+    val (imports, localMembers, templates, mixeds) = templateContent()
 
     val template = Template(
-      PosString(""),
       constructor,
       argsComment,
       args.getOrElse(PosString("()")),
       topImports,
       imports,
-      localDefs,
+      localMembers,
       templates,
       mixeds
     )

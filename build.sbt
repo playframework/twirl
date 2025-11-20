@@ -7,6 +7,8 @@ import org.scalajs.jsenv.nodejs.NodeJSEnv
 import java.util.Properties
 import java.io.StringWriter
 
+import com.typesafe.tools.mima.core._
+
 val ScalaTestVersion = "3.2.19"
 
 def parserCombinators(scalaVersion: String) = "org.scala-lang.modules" %% "scala-parser-combinators" % {
@@ -21,6 +23,25 @@ val previousVersion: Option[String] = Some("2.0.1")
 val mimaSettings = Seq(
   mimaPreviousArtifacts := previousVersion.map(organization.value %% moduleName.value % _).toSet,
   mimaBinaryIssueFilters ++= Seq(
+    // Support for [lazy] val
+    ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.parser.TreeNodes#Template.defs"),
+    ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.parser.TwirlParser.localDef"),
+    ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.parser.TwirlParser.templateDeclaration"),
+    ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.parser.TreeNodes#Template.apply"),
+    ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.parser.TreeNodes#Template.copy"),
+    ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.parser.TreeNodes#Template.copy$default$9"),
+    ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.parser.TreeNodes#Template.name"),
+    ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.parser.TreeNodes#Template.this"),
+    ProblemFilters.exclude[IncompatibleMethTypeProblem]("play.twirl.compiler.TwirlCompiler.templateCode"),
+    ProblemFilters.exclude[IncompatibleResultTypeProblem]("play.twirl.parser.TreeNodes#Template.copy$default$1"),
+    ProblemFilters.exclude[IncompatibleResultTypeProblem]("play.twirl.parser.TreeNodes#Template.copy$default$3"),
+    ProblemFilters.exclude[IncompatibleResultTypeProblem]("play.twirl.parser.TreeNodes#Template.copy$default$4"),
+    ProblemFilters.exclude[IncompatibleResultTypeProblem]("play.twirl.parser.TwirlParser.template"),
+    ProblemFilters.exclude[MissingTypesProblem]("play.twirl.parser.TreeNodes$Template$"),
+    ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.parser.TreeNodes#Template._9"),
+    ProblemFilters.exclude[IncompatibleResultTypeProblem]("play.twirl.parser.TreeNodes#Template._1"),
+    ProblemFilters.exclude[IncompatibleResultTypeProblem]("play.twirl.parser.TreeNodes#Template._3"),
+    ProblemFilters.exclude[IncompatibleResultTypeProblem]("play.twirl.parser.TreeNodes#Template._4"),
   )
 )
 

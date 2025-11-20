@@ -359,20 +359,27 @@ class CompilerSpec extends AnyWordSpec with Matchers {
     val helper = newCompilerHelper
     val hello  = helper.compile[(() => Html)]("nestedTemplates.scala.html", "html.nestedTemplates")
     hello.static().toString.trim.replaceAll(" ", "").replaceAll("\n", "") must be(
-      """_first__defstr__tmpl-defstr__defstr_goodtext_in_between_inner_inner_tmpl_
+      """_same_random_in_val__same_random_in_lazy_val__first__defstr__tmpl-defstr__defstr_goodtext_in_between_inner_inner_tmpl_
         |__tmplinner_defstr___samename1__samedefname1__samename2__samedefname2_
-        |_second__defstr__tmpl-defstr__defstr_goodtext_in_between_inner_inner_tmpl_
+        |_same_random_in_val__same_random_in_lazy_val__second__defstr__tmpl-defstr__defstr_goodtext_in_between_inner_inner_tmpl_
         |__tmplinner_defstr___samename1__samedefname1__samename2__samedefname2_""".stripMargin.replaceAll("\n", "")
+    )
+  }
+
+  "compile successfully ([lazy] val)" in {
+    val helper = newCompilerHelper
+    val hello  = helper.compile[(() => Html)]("vals.scala.html", "html.vals")
+    hello.static().toString.trim.replaceAll(" ", "").replaceAll("\n", "") must be(
+      """step1:0_step2:0_step3:1_step4:5_step5:0_step6:0_step7:0_step8:0
+        |_step9:0_step10:4_step11:4_step12:5
+        |""".stripMargin.replaceAll("\n", "")
     )
   }
 
   "keep order of member and template blocks, as defined in the source template" in {
     val helper = newCompilerHelper
     val hello  = helper.compile[(() => Html)]("codeBlockOrder.scala.html", "html.codeBlockOrder")
-    hello.static().toString.trim.replaceAll(" ", "").replaceAll("\n", "") must be(
-      """HellofromTemplate2calling@localdef1!Hellofromalocaldef1callingtmpl!HellofromTemplate1!""".stripMargin
-        .replaceAll("\n", "")
-    )
+    hello.static().toString.trim.replaceAll(" ", "").replaceAll("\n", "") must be("123456789101112")
   }
 
   "ScalaCompat" should {

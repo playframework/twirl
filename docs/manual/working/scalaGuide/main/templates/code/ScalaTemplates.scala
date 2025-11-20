@@ -131,6 +131,15 @@ object ScalaTemplatesSpec extends Specification {
         segment("reusable") must contain("p2 ($2)")
       }
 
+      "allow pure code blocks assigned to lazy val" in {
+        segment("vals") must contain("John Doe")
+      }
+
+      "allow template blocks assigned to lazy val" in {
+        segment("tmpl-vals") must contain("p1 ($1)")
+        segment("tmpl-vals") must contain("p2 ($2)")
+      }
+
       "allow pure scala reusable code blocks" in {
         body must contain("Hello World")
       }

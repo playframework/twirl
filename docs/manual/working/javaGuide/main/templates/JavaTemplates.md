@@ -194,6 +194,24 @@ You can define scoped values using the `defining` helper:
 }
 ```
 
+Alternatively you can also define immutable variables with pure code blocks, just as you would in Scala with the `val` keyword:
+
+```html
+@val fullName = @{ user.getFirstName() + " " + user.getLastName() }
+@* lazy is also supported: *@
+@lazy val nextId = @{ java.util.UUID.randomUUID() }
+```
+
+You can use `val` and `lazy` to define variables with template code blocks as well:
+
+```html
+@lazy val productSnippet = {
+  @for(p <- products) {
+    <li>@p.name ($@p.price)</li>
+  }
+}
+```
+
 ## Import statements
 
 You can import whatever you want at the beginning of your template (or sub-template):

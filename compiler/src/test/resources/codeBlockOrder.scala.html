@@ -3,12 +3,19 @@
  ****************************************************************************************************************************************************@
 
 @()
-@tmpl1 = {
-   Hello from Template 1!
-}
-@localdef1 = @{"Hello from a local def1 calling tmpl!" + tmpl1; }
-@tmpl2() = {
-    Hello from Template 2 calling @@localdef1!
-    @localdef1
-}
-@tmpl2()
+@val x1 = @{"1"}
+@val x2 = {@{x1}2}
+@val x3 = @{x2.toString + "3"}
+@val x4 = {@{x3}4}
+
+@x5 = @{x4.toString + "5"}
+@x6 = {@{x5}6}
+@x7 = @{x6.toString + "7"}
+@x8 = {@{x7}8}
+
+@lazy val x9 = @{x8.toString + "9"}
+@lazy val x10 = {@{x9}10}
+@lazy val x11 = @{x10.toString + "11"}
+@lazy val x12 = {@{x11}12}
+
+@x12

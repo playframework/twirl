@@ -3,15 +3,17 @@
  ****************************************************************************************************************************************************@
 
 @()
-@* a template can contain imports, localDefs, templates, mixeds *@
+@* a template can contain imports, localMembers, templates, mixeds *@
 @import java.lang.String
 @localdef = @{"_defstr_"}
 
 @* let's define a sub template which itself also contains templates which then also contain templates. *@
 @tmpl(title: String) = {
-    @* a sub template is parsed like the top (page) template and can also contain imports, localDefs, templates, mixeds *@
+    @* a sub template is parsed like the top (page) template and can also contain imports, localMembers, templates, mixeds *@
     @import java.lang.Boolean
     @tmpl_localdef = @{"_tmpl-defstr_"}
+    @val tmpl_val = @{"_tmpl-valstr_" + java.util.UUID.randomUUID().toString() }
+    @lazy val tmpl_lazy_val = @{"tmpl-lazy-valstr_"  + java.util.UUID.randomUUID().toString() }
     @tmpl_inner1(good: Boolean) = {
         @import java.lang.Integer
         @tmpl_localdef
@@ -37,6 +39,8 @@
         @tmpl_inner1_inner
         @tmpl_inner2_inner
     }
+    @if(tmpl_val == tmpl_val) { _same_random_in_val_ } else { _different_random_in_val_ }
+    @if(tmpl_lazy_val == tmpl_lazy_val) { _same_random_in_lazy_val_ } else { _different_random_in_lazy_val_ }
     @tmpl_inner2 = { @inner_def_samename=@{"_samedefname1_"} @inner_tmpl_samename={_samename1_@inner_def_samename} @inner_tmpl_samename }
     @tmpl_inner3 = { @inner_def_samename=@{"_samedefname2_"} @inner_tmpl_samename={_samename2_@inner_def_samename} @inner_tmpl_samename }
     @title@localdef@tmpl_inner1(true)@tmpl_inner2@tmpl_inner3

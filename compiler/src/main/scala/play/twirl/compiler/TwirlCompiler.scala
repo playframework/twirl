@@ -504,11 +504,13 @@ object TwirlCompiler {
     }
   }
 
-  def templateCode(template: Template, resultType: String): collection.Seq[Any] = {
-    val defs = (template.sub ++ template.defs).sortWith((l, r) => l.pos.<(r.pos)).map {
-      case t: Template if t.name.toString == "" => templateCode(t, resultType)
-      case t: Template                          => {
-        Nil :+ (if (t.name.str.startsWith("implicit")) "implicit def " else "def ") :+ Source(
+  def templateCode(template: BaseTemplate, resultType: String): collection.Seq[Any] = {
+    val defs = (template.sub ++ template.members).sortWith((l, r) => l.pos.<(r.pos)).map {
+      case t: SubTemplate if t.name.toString == "" => templateCode(t, resultType)
+      case t: SubTemplate                          => {
+        Nil :+ (if (t.name.str.startsWith("implicit")) "implicit " else "") :+ (if (t.isVal && t.isLazy) "lazy "
+                                                                                else "") :+ (if (t.isVal) "val "
+                                                                                             else "def ") :+ Source(
           t.name.str,
           t.name.pos
         ) :+ Source(
@@ -523,6 +525,13 @@ object TwirlCompiler {
         ) :+ Source(
           params.str,
           params.pos
+        ) :+ resultType.map(":" + _.str).getOrElse("") :+ " = {" :+ block.code :+ "};"
+      }
+      case Val(name, isLazy, resultType, block) => {
+        Nil :+ (if (name.str.startsWith("implicit")) "implicit " else "") :+ (if (isLazy) "lazy "
+                                                                              else "") :+ "val " :+ Source(
+          name.str,
+          name.pos
         ) :+ resultType.map(":" + _.str).getOrElse("") :+ " = {" :+ block.code :+ "};"
       }
     }

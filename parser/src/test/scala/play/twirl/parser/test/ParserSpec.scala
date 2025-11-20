@@ -216,137 +216,518 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
       }
     }
 
-    "handle local definitions" when {
+    "handle local val for pure code blocks" when {
+      "lazy not also defined as val should fail" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@lazy field = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Expected 'val' after 'lazy'")
+        )
+      }
+      // Even though variables can not have type parameters, we still try to parse them correctly
+      // When they are parsed correctly, then we fail (see test below)
+      "val, resultType is not given without implicit prefixed, has empty type params should fail" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@val field[] = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: identifier expected but ']' found")
+        )
+      }
+      "val, resultType is not given without implicit prefixed, has empty type params (with space) should fail" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@val field[ ] = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: identifier expected but ']' found")
+        )
+      }
+      "lazy val, resultType is not given without implicit prefixed, has empty type params should fail" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@lazy val field[] = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: identifier expected but ']' found")
+        )
+      }
+      "lazy val, resultType is not given without implicit prefixed, has empty type params (with space) should fail" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@lazy val field[ ] = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: identifier expected but ']' found")
+        )
+      }
+      // Now the type params are parsed correctly, but still we disallow them for variables
+      "val can not have type parameters" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@val field[FooType] = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have type parameters")
+        )
+      }
+      "lazy val can not have type parameters" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@lazy val field[FooType] = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have type parameters")
+        )
+      }
+      "val can not have arguments" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@val field(foo: String, bar: Int) = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have argument lists")
+        )
+      }
+      "lazy val can not have arguments" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@lazy val field(foo: String, bar: Int) = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have argument lists")
+        )
+      }
+      "val can not have empty arguments" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@val field() = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have argument lists")
+        )
+      }
+      "lazy val can not have empty arguments" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@lazy val field() = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have argument lists")
+        )
+      }
+      "resultType is not given without implicit prefixed, not lazy" in {
+        val tmpl = parseTemplateString(
+          """@val field = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        )
+        val localMember = tmpl.members(0)
+
+        localMember.name.str mustBe "field"
+        localMember.name.pos.line mustBe 1
+        localMember.name.pos.column mustBe 6
+
+        localMember.resultType mustBe None
+
+        localMember match {
+          case Val(name, isLazy, resultType, code) => isLazy mustBe false
+          case _                                   => fail("Should be a Val!")
+        }
+
+        localMember.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+      }
+      "resultType is not given without implicit prefixed, lazy" in {
+        val tmpl = parseTemplateString(
+          """@lazy val field = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        )
+        val localMember = tmpl.members(0)
+
+        localMember.name.str mustBe "field"
+        localMember.name.pos.line mustBe 1
+        localMember.name.pos.column mustBe 11
+
+        localMember.resultType mustBe None
+
+        localMember match {
+          case Val(name, isLazy, resultType, code) => isLazy mustBe true
+          case _                                   => fail("Should be a Val!")
+        }
+
+        localMember.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+      }
+    }
+
+    "handle local val for template code blocks" when {
+      "lazy not also defined as val should fail" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@lazy field = { foo }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Expected 'val' after 'lazy'")
+        )
+      }
+      // Even though variables can not have type parameters, we still try to parse them correctly
+      // When they are parsed correctly, then we fail (see test below)
+      "val, resultType is not given without implicit prefixed, has empty type params should fail" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@val field[] = { foo }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: identifier expected but ']' found")
+        )
+      }
+      "val, resultType is not given without implicit prefixed, has empty type params (with space) should fail" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@val field[ ] = { foo }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: identifier expected but ']' found")
+        )
+      }
+      "lazy val, resultType is not given without implicit prefixed, has empty type params should fail" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@lazy val field[] = { foo }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: identifier expected but ']' found")
+        )
+      }
+      "lazy val, resultType is not given without implicit prefixed, has empty type params (with space) should fail" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@lazy val field[ ] = { foo }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: identifier expected but ']' found")
+        )
+      }
+      // Now the type params are parsed correctly, but still we disallow them for variables
+      "val can not have type parameters" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@val field[FooType] = { foo }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have type parameters")
+        )
+      }
+      "lazy val can not have type parameters" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@lazy val field[FooType] = { foo }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have type parameters")
+        )
+      }
+      "val can not have arguments" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@val field(foo: String, bar: Int) = { foo }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have argument lists")
+        )
+      }
+      "lazy val can not have arguments" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@lazy val field(foo: String, bar: Int) = { foo }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have argument lists")
+        )
+      }
+      "val can not have empty arguments" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@val field() = { foo }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have argument lists")
+        )
+      }
+      "lazy val can not have empty arguments" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@lazy val field() = { foo }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have argument lists")
+        )
+      }
+      "resultType is not given without implicit prefixed, not lazy" in {
+        val tmpl = parseTemplateString(
+          """@val field = { foo }"""
+        )
+        val localSub = tmpl.sub(0)
+
+        localSub.name.str mustBe "field"
+        localSub.name.pos.line mustBe 1
+        localSub.name.pos.column mustBe 6
+
+        localSub.members mustBe empty
+        localSub.sub mustBe empty
+        localSub.imports mustBe empty
+        localSub.params.str mustBe ""
+
+        localSub.isVal mustBe true
+        localSub.isLazy mustBe false
+
+        localSub.content mustBe Array(Plain(" "), Plain("foo "))
+      }
+      "resultType is not given without implicit prefixed, lazy" in {
+        val tmpl = parseTemplateString(
+          """@lazy val field = { foo }"""
+        )
+        val localSub = tmpl.sub(0)
+
+        localSub.name.str mustBe "field"
+        localSub.name.pos.line mustBe 1
+        localSub.name.pos.column mustBe 11
+
+        localSub.members mustBe empty
+        localSub.sub mustBe empty
+        localSub.imports mustBe empty
+        localSub.params.str mustBe ""
+
+        localSub.isVal mustBe true
+        localSub.isLazy mustBe true
+
+        localSub.content mustBe Array(Plain(" "), Plain("foo "))
+      }
+    }
+
+    "handle local pure code block definitions" when {
+      "resultType is not given without implicit prefixed, no argument list" in {
+        val tmpl = parseTemplateString(
+          """@field = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        )
+        val localMember = tmpl.members(0)
+
+        localMember.name.str mustBe "field"
+        localMember.name.pos.line mustBe 1
+        localMember.name.pos.column mustBe 2
+
+        localMember.resultType mustBe None
+
+        localMember match {
+          case Def(name, params, resultType, code) => params.str mustBe ""
+          case _                                   => fail("Should be a Def!")
+        }
+
+        localMember.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+      }
+      "resultType is not given without implicit prefixed, empty argument list" in {
+        val tmpl = parseTemplateString(
+          """@field() = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        )
+        val localMember = tmpl.members(0)
+
+        localMember.name.str mustBe "field"
+        localMember.name.pos.line mustBe 1
+        localMember.name.pos.column mustBe 2
+
+        localMember.resultType mustBe None
+
+        localMember match {
+          case Def(name, params, resultType, code) => params.str mustBe "()"
+          case _                                   => fail("Should be a Def!")
+        }
+
+        localMember.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+      }
+      "resultType is not given without implicit prefixed but prefixed with val" in {
+        val tmpl = parseTemplateString(
+          """@valfield = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        )
+        val localMember = tmpl.members(0)
+
+        localMember.name.str mustBe "valfield"
+        localMember.name.pos.line mustBe 1
+        localMember.name.pos.column mustBe 2
+
+        localMember.resultType mustBe None
+
+        localMember match {
+          case Def(name, params, resultType, code) => params.str mustBe ""
+          case _                                   => fail("Should be a Def!")
+        }
+
+        localMember.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+      }
+      "resultType is not given without implicit prefixed but prefixed with lazy" in {
+        val tmpl = parseTemplateString(
+          """@lazyfield = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        )
+        val localMember = tmpl.members(0)
+
+        localMember.name.str mustBe "lazyfield"
+        localMember.name.pos.line mustBe 1
+        localMember.name.pos.column mustBe 2
+
+        localMember.resultType mustBe None
+
+        localMember match {
+          case Def(name, params, resultType, code) => params.str mustBe ""
+          case _                                   => fail("Should be a Def!")
+        }
+
+        localMember.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+      }
+      "resultType is not given without implicit prefixed but prefixed with lazyval" in {
+        val tmpl = parseTemplateString(
+          """@lazyvalfield = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        )
+        val localMember = tmpl.members(0)
+
+        localMember.name.str mustBe "lazyvalfield"
+        localMember.name.pos.line mustBe 1
+        localMember.name.pos.column mustBe 2
+
+        localMember.resultType mustBe None
+
+        localMember match {
+          case Def(name, params, resultType, code) => params.str mustBe ""
+          case _                                   => fail("Should be a Def!")
+        }
+
+        localMember.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+      }
+      "resultType is not given without implicit prefixed, has type params" in {
+        val tmpl = parseTemplateString(
+          """@field[A,B](a:A, b:B) = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        )
+        val localMember = tmpl.members(0)
+
+        localMember.name.str mustBe "field"
+        localMember.name.pos.line mustBe 1
+        localMember.name.pos.column mustBe 2
+
+        localMember.resultType mustBe None
+
+        localMember match {
+          case Def(name, params, resultType, code) => params.str mustBe "[A,B](a:A, b:B)"
+          case _                                   => fail("Should be a Def!")
+        }
+
+        localMember.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+      }
       "resultType is given" in {
         val tmpl = parseTemplateString(
           """@implicitField: FieldConstructor = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
         )
-        val localDef = tmpl.defs(0)
+        val localMember = tmpl.members(0)
 
-        localDef.name.str mustBe "implicitField"
-        localDef.name.pos.line mustBe 1
-        localDef.name.pos.column mustBe 2
+        localMember.name.str mustBe "implicitField"
+        localMember.name.pos.line mustBe 1
+        localMember.name.pos.column mustBe 2
 
-        val resultType = localDef.resultType.get
+        val resultType = localMember.resultType.get
         resultType.str mustBe "FieldConstructor"
         resultType.pos.line mustBe 1
         resultType.pos.column mustBe 17
 
-        localDef.params.str mustBe ""
+        localMember match {
+          case Def(name, params, resultType, code) => params.str mustBe ""
+          case _                                   => fail("Should be a Def!")
+        }
 
-        localDef.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+        localMember.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
       }
       "resultType is given without implicit prefixed" in {
         val tmpl = parseTemplateString(
           """@field: FieldConstructor = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
         )
-        val localDef = tmpl.defs(0)
+        val localMember = tmpl.members(0)
 
-        localDef.name.str mustBe "field"
-        localDef.name.pos.line mustBe 1
-        localDef.name.pos.column mustBe 2
+        localMember.name.str mustBe "field"
+        localMember.name.pos.line mustBe 1
+        localMember.name.pos.column mustBe 2
 
-        val resultType = localDef.resultType.get
+        val resultType = localMember.resultType.get
         resultType.str mustBe "FieldConstructor"
         resultType.pos.line mustBe 1
         resultType.pos.column mustBe 9
 
-        localDef.params.str mustBe ""
+        localMember match {
+          case Def(name, params, resultType, code) => params.str mustBe ""
+          case _                                   => fail("Should be a Def!")
+        }
 
-        localDef.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+        localMember.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
       }
       "resultType with type is given" in {
         val tmpl = parseTemplateString(
           """@implicitField: FieldConstructor[FooType] = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
         )
-        val localDef = tmpl.defs(0)
+        val localMember = tmpl.members(0)
 
-        localDef.name.str mustBe "implicitField"
-        localDef.name.pos.line mustBe 1
-        localDef.name.pos.column mustBe 2
+        localMember.name.str mustBe "implicitField"
+        localMember.name.pos.line mustBe 1
+        localMember.name.pos.column mustBe 2
 
-        val resultType = localDef.resultType.get
+        val resultType = localMember.resultType.get
         resultType.str mustBe "FieldConstructor[FooType]"
         resultType.pos.line mustBe 1
         resultType.pos.column mustBe 17
 
-        localDef.params.str mustBe ""
+        localMember match {
+          case Def(name, params, resultType, code) => params.str mustBe ""
+          case _                                   => fail("Should be a Def!")
+        }
 
-        localDef.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+        localMember.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
       }
       "resultType is given without spaces" in {
         val tmpl = parseTemplateString(
           """@implicitField:FieldConstructor=@{ FieldConstructor(myFieldConstructorTemplate.f) }"""
         )
-        val localDef = tmpl.defs(0)
+        val localMember = tmpl.members(0)
 
-        localDef.name.str mustBe "implicitField"
-        localDef.name.pos.line mustBe 1
-        localDef.name.pos.column mustBe 2
+        localMember.name.str mustBe "implicitField"
+        localMember.name.pos.line mustBe 1
+        localMember.name.pos.column mustBe 2
 
-        val resultType = localDef.resultType.get
+        val resultType = localMember.resultType.get
         resultType.str mustBe "FieldConstructor"
         resultType.pos.line mustBe 1
         resultType.pos.column mustBe 16
 
-        localDef.params.str mustBe ""
+        localMember match {
+          case Def(name, params, resultType, code) => params.str mustBe ""
+          case _                                   => fail("Should be a Def!")
+        }
 
-        localDef.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+        localMember.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
       }
       "resultType and params are given" in {
         val tmpl = parseTemplateString(
           """@implicitField(foo: String, bar: Int): FieldConstructor = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
         )
-        val localDef = tmpl.defs(0)
+        val localMember = tmpl.members(0)
 
-        localDef.name.str mustBe "implicitField"
-        localDef.name.pos.line mustBe 1
-        localDef.name.pos.column mustBe 2
+        localMember.name.str mustBe "implicitField"
+        localMember.name.pos.line mustBe 1
+        localMember.name.pos.column mustBe 2
 
-        val resultType = localDef.resultType.get
+        val resultType = localMember.resultType.get
         resultType.str mustBe "FieldConstructor"
         resultType.pos.line mustBe 1
         resultType.pos.column mustBe 40
 
-        localDef.params.str mustBe "(foo: String, bar: Int)"
-        localDef.params.pos.line mustBe 1
-        localDef.params.pos.column mustBe 15
+        localMember match {
+          case Def(name, params, resultType, code) =>
+            params.str mustBe "(foo: String, bar: Int)"
+            params.pos.line mustBe 1
+            params.pos.column mustBe 15
+          case _ => fail("Should be a Def!")
+        }
 
-        localDef.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+        localMember.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
       }
       "no resultType and no params are given" in {
         val tmpl = parseTemplateString(
           """@implicitField = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
         )
-        val localDef = tmpl.defs(0)
+        val localMember = tmpl.members(0)
 
-        localDef.name.str mustBe "implicitField"
-        localDef.name.pos.line mustBe 1
-        localDef.name.pos.column mustBe 2
+        localMember.name.str mustBe "implicitField"
+        localMember.name.pos.line mustBe 1
+        localMember.name.pos.column mustBe 2
 
-        localDef.resultType mustBe None
+        localMember.resultType mustBe None
 
-        localDef.params.str mustBe ""
+        localMember match {
+          case Def(name, params, resultType, code) => params.str mustBe ""
+          case _                                   => fail("Should be a Def!")
+        }
 
-        localDef.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+        localMember.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
       }
       "no resultType but params are given" in {
         val tmpl = parseTemplateString(
           """@implicitField(foo: String, bar: Int) = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
         )
-        val localDef = tmpl.defs(0)
+        val localMember = tmpl.members(0)
 
-        localDef.name.str mustBe "implicitField"
-        localDef.name.pos.line mustBe 1
-        localDef.name.pos.column mustBe 2
+        localMember.name.str mustBe "implicitField"
+        localMember.name.pos.line mustBe 1
+        localMember.name.pos.column mustBe 2
 
-        localDef.resultType mustBe None
+        localMember.resultType mustBe None
 
-        localDef.params.str mustBe "(foo: String, bar: Int)"
-        localDef.params.pos.line mustBe 1
-        localDef.params.pos.column mustBe 15
+        localMember match {
+          case Def(name, params, resultType, code) =>
+            params.str mustBe "(foo: String, bar: Int)"
+            params.pos.line mustBe 1
+            params.pos.column mustBe 15
+          case _ => fail("Should be a Def!")
+        }
 
-        localDef.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
+        localMember.code.code mustBe "{ FieldConstructor(myFieldConstructorTemplate.f) }"
       }
       "empty type params are given" in {
         the[RuntimeException] thrownBy parseTemplateString(
@@ -358,6 +739,241 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
       "empty type params that contain spaces are given" in {
         the[RuntimeException] thrownBy parseTemplateString(
           """@field[ ]() = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: identifier expected but ']' found")
+        )
+      }
+    }
+
+    "handle local template code block definitions" when {
+      "resultType is not given without implicit prefixed, no argument list" in {
+        val tmpl = parseTemplateString(
+          """@field = { foo }"""
+        )
+        val localSub = tmpl.sub(0)
+
+        localSub.name.str mustBe "field"
+        localSub.name.pos.line mustBe 1
+        localSub.name.pos.column mustBe 2
+
+        localSub.members mustBe empty
+        localSub.sub mustBe empty
+        localSub.imports mustBe empty
+        localSub.params.str mustBe ""
+
+        localSub.isVal mustBe false
+        localSub.isLazy mustBe false
+
+        localSub.content mustBe Array(Plain(" "), Plain("foo "))
+      }
+      "resultType is not given without implicit prefixed, empty argument list" in {
+        val tmpl = parseTemplateString(
+          """@field() = { foo }"""
+        )
+        val localSub = tmpl.sub(0)
+
+        localSub.name.str mustBe "field"
+        localSub.name.pos.line mustBe 1
+        localSub.name.pos.column mustBe 2
+
+        localSub.members mustBe empty
+        localSub.sub mustBe empty
+        localSub.imports mustBe empty
+        localSub.params.str mustBe "()"
+
+        localSub.isVal mustBe false
+        localSub.isLazy mustBe false
+
+        localSub.content mustBe Array(Plain(" "), Plain("foo "))
+      }
+      "resultType is not given without implicit prefixed but prefixed with val" in {
+        val tmpl = parseTemplateString(
+          """@valfield = { foo }"""
+        )
+        val localSub = tmpl.sub(0)
+
+        localSub.name.str mustBe "valfield"
+        localSub.name.pos.line mustBe 1
+        localSub.name.pos.column mustBe 2
+
+        localSub.members mustBe empty
+        localSub.sub mustBe empty
+        localSub.imports mustBe empty
+        localSub.params.str mustBe ""
+
+        localSub.isVal mustBe false
+        localSub.isLazy mustBe false
+
+        localSub.content mustBe Array(Plain(" "), Plain("foo "))
+      }
+      "resultType is not given without implicit prefixed but prefixed with lazy" in {
+        val tmpl = parseTemplateString(
+          """@lazyfield = { foo }"""
+        )
+        val localSub = tmpl.sub(0)
+
+        localSub.name.str mustBe "lazyfield"
+        localSub.name.pos.line mustBe 1
+        localSub.name.pos.column mustBe 2
+
+        localSub.members mustBe empty
+        localSub.sub mustBe empty
+        localSub.imports mustBe empty
+        localSub.params.str mustBe ""
+
+        localSub.isVal mustBe false
+        localSub.isLazy mustBe false
+
+        localSub.content mustBe Array(Plain(" "), Plain("foo "))
+      }
+      "resultType is not given without implicit prefixed but prefixed with lazyval" in {
+        val tmpl = parseTemplateString(
+          """@lazyvalfield = { foo }"""
+        )
+        val localSub = tmpl.sub(0)
+
+        localSub.name.str mustBe "lazyvalfield"
+        localSub.name.pos.line mustBe 1
+        localSub.name.pos.column mustBe 2
+
+        localSub.members mustBe empty
+        localSub.sub mustBe empty
+        localSub.imports mustBe empty
+        localSub.params.str mustBe ""
+
+        localSub.isVal mustBe false
+        localSub.isLazy mustBe false
+
+        localSub.content mustBe Array(Plain(" "), Plain("foo "))
+      }
+      "resultType is not given without implicit prefixed, has type params" in {
+        val tmpl = parseTemplateString(
+          """@field[A,B](a:A, b:B) = { foo }"""
+        )
+        val localSub = tmpl.sub(0)
+
+        localSub.name.str mustBe "field"
+        localSub.name.pos.line mustBe 1
+        localSub.name.pos.column mustBe 2
+
+        localSub.members mustBe empty
+        localSub.sub mustBe empty
+        localSub.imports mustBe empty
+        localSub.params.str mustBe "[A,B](a:A, b:B)"
+
+        localSub.isVal mustBe false
+        localSub.isLazy mustBe false
+
+        localSub.content mustBe Array(Plain(" "), Plain("foo "))
+      }
+      "not parse when resultType is given" in {
+        val tmpl = parseTemplateString(
+          """@implicitField: play.twirl.api.HtmlFormat.Appendable = { foo }"""
+        )
+        tmpl.sub mustBe empty
+        tmpl.content mustBe Array(
+          Display(ScalaExp(List(Simple("implicitField")))),
+          Plain(": play.twirl.api.HtmlFormat.Appendable = "),
+          Plain("{"),
+          Plain(" "),
+          Plain("foo "),
+          Plain("}")
+        )
+      }
+      "not parse when resultType is given without implicit prefixed" in {
+        val tmpl = parseTemplateString(
+          """@field: play.twirl.api.HtmlFormat.Appendable = { foo }"""
+        )
+        tmpl.sub mustBe empty
+        tmpl.content mustBe Array(
+          Display(ScalaExp(List(Simple("field")))),
+          Plain(": play.twirl.api.HtmlFormat.Appendable = "),
+          Plain("{"),
+          Plain(" "),
+          Plain("foo "),
+          Plain("}")
+        )
+      }
+      "not parse when resultType is given without spaces" in {
+        val tmpl = parseTemplateString(
+          """@implicitField:play.twirl.api.HtmlFormat.Appendable={ foo }"""
+        )
+        tmpl.sub mustBe empty
+        tmpl.content mustBe Array(
+          Display(ScalaExp(List(Simple("implicitField")))),
+          Plain(":play.twirl.api.HtmlFormat.Appendable="),
+          Plain("{"),
+          Plain(" "),
+          Plain("foo "),
+          Plain("}")
+        )
+      }
+      "not parse when resultType and params are given" in {
+        val tmpl = parseTemplateString(
+          """@implicitField(foo: String, bar: Int): FieldConstructor = { foo }"""
+        )
+        tmpl.sub mustBe empty
+        tmpl.content mustBe Array(
+          Display(ScalaExp(List(Simple("implicitField(foo: String, bar: Int)")))),
+          Plain(": FieldConstructor = "),
+          Plain("{"),
+          Plain(" "),
+          Plain("foo "),
+          Plain("}")
+        )
+      }
+      "no resultType and no params are given" in {
+        val tmpl = parseTemplateString(
+          """@implicitField = { foo }"""
+        )
+        val localSub = tmpl.sub(0)
+
+        localSub.name.str mustBe "implicitField"
+        localSub.name.pos.line mustBe 1
+        localSub.name.pos.column mustBe 2
+
+        localSub.members mustBe empty
+        localSub.sub mustBe empty
+        localSub.imports mustBe empty
+        localSub.params.str mustBe ""
+
+        localSub.isVal mustBe false
+        localSub.isLazy mustBe false
+
+        localSub.content mustBe Array(Plain(" "), Plain("foo "))
+      }
+      "no resultType but params are given" in {
+        val tmpl = parseTemplateString(
+          """@implicitField(foo: String, bar: Int) = { foo }"""
+        )
+        val localSub = tmpl.sub(0)
+
+        localSub.name.str mustBe "implicitField"
+        localSub.name.pos.line mustBe 1
+        localSub.name.pos.column mustBe 2
+
+        localSub.members mustBe empty
+        localSub.sub mustBe empty
+        localSub.imports mustBe empty
+        localSub.params.str mustBe "(foo: String, bar: Int)"
+        localSub.params.pos.line mustBe 1
+        localSub.params.pos.column mustBe 15
+
+        localSub.isVal mustBe false
+        localSub.isLazy mustBe false
+
+        localSub.content mustBe Array(Plain(" "), Plain("foo "))
+      }
+      "empty type params are given" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@field[]() = { foo }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: identifier expected but ']' found")
+        )
+      }
+      "empty type params that contain spaces are given" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@field[ ]() = { foo }"""
         ) must have(
           Symbol("message")("Template failed to parse: identifier expected but ']' found")
         )
