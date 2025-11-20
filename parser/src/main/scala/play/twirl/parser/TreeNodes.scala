@@ -15,20 +15,36 @@ object TreeNodes {
     val resultType: Option[PosString]
     val code: Simple
   }
+  trait BaseTemplate extends Positional {
+    val params: PosString
+    val imports: collection.Seq[Simple]
+    val members: collection.Seq[LocalMember]
+    val sub: collection.Seq[SubTemplate]
+    val content: collection.Seq[TemplateTree]
+  }
 
   case class Params(code: String) extends Positional
   case class Constructor(comment: Option[Comment], params: PosString)
   case class Template(
-      name: PosString,
       constructor: Option[Constructor],
       comment: Option[Comment],
       params: PosString,
       topImports: collection.Seq[Simple],
       imports: collection.Seq[Simple],
       members: collection.Seq[LocalMember],
-      sub: collection.Seq[Template],
+      sub: collection.Seq[SubTemplate],
       content: collection.Seq[TemplateTree]
-  ) extends Positional
+  ) extends BaseTemplate
+  case class SubTemplate(
+      isVal: Boolean,
+      isLazy: Boolean, // useless if not isVal
+      name: PosString,
+      params: PosString,
+      imports: collection.Seq[Simple],
+      members: collection.Seq[LocalMember],
+      sub: collection.Seq[SubTemplate],
+      content: collection.Seq[TemplateTree]
+  ) extends BaseTemplate
   case class PosString(str: String) extends Positional {
     override def toString: String = str
   }

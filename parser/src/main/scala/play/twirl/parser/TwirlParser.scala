@@ -887,10 +887,10 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     }
   }
 
-  def template(): Template = {
-    var result: Template = null
-    val resetPosition    = input.offset()
-    val templDecl        = templateOrLocalMemberDeclaration()
+  def template(): SubTemplate = {
+    var result: SubTemplate = null
+    val resetPosition       = input.offset()
+    val templDecl           = templateOrLocalMemberDeclaration()
     if (templDecl != null) {
       anyUntil(c => c != ' ' && c != '\t', inclusive = false)
       if (check("=")) {
@@ -899,7 +899,16 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
           val (imports, localMembers, templates, mixeds) = templateContent()
           if (check("}"))
             result = position(
-              Template(templDecl._1, None, None, templDecl._2, Nil, imports, localMembers, templates, mixeds),
+              SubTemplate(
+                templDecl._3, // isVal
+                templDecl._4, // isLazy
+                templDecl._1,
+                templDecl._2,
+                imports,
+                localMembers,
+                templates,
+                mixeds
+              ),
               resetPosition
             )
         }
@@ -974,12 +983,12 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   def templateContent(): (
       collection.Seq[Simple],
       collection.Seq[LocalMember],
-      collection.Seq[Template],
+      collection.Seq[SubTemplate],
       collection.Seq[TemplateTree]
   ) = {
     val imports      = new ArrayBuffer[Simple]
     val localMembers = new ArrayBuffer[LocalMember]
-    val templates    = new ArrayBuffer[Template]
+    val templates    = new ArrayBuffer[SubTemplate]
     val mixeds       = new ArrayBuffer[TemplateTree]
 
     var done = false
@@ -1098,7 +1107,6 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     val (imports, localMembers, templates, mixeds) = templateContent()
 
     val template = Template(
-      PosString(""),
       constructor,
       argsComment,
       args.getOrElse(PosString("()")),
