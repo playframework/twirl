@@ -366,6 +366,16 @@ class CompilerSpec extends AnyWordSpec with Matchers {
     )
   }
 
+  "compile successfully ([lazy] val)" in {
+    val helper = newCompilerHelper
+    val hello  = helper.compile[(() => Html)]("vals.scala.html", "html.vals")
+    hello.static().toString.trim.replaceAll(" ", "").replaceAll("\n", "") must be(
+      """step1:0_step2:0_step3:1_step4:5_step5:0_step6:0_step7:0_step8:0
+        |_step9:0_step10:4_step11:4_step12:5
+        |""".stripMargin.replaceAll("\n", "")
+    )
+  }
+
   "keep order of member and template blocks, as defined in the source template" in {
     val helper = newCompilerHelper
     val hello  = helper.compile[(() => Html)]("codeBlockOrder.scala.html", "html.codeBlockOrder")
