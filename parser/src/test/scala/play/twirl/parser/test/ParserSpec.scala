@@ -969,8 +969,7 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         localSub.imports mustBe empty
         localSub.params.str mustBe ""
 
-        localSub.isVal mustBe true
-        localSub.isLazy mustBe false
+        localSub.declaration mustBe Right(false) // (not lazy) val
 
         localSub.content mustBe Array(Plain(" "), Plain("foo "))
       }
@@ -989,8 +988,7 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         localSub.imports mustBe empty
         localSub.params.str mustBe ""
 
-        localSub.isVal mustBe true
-        localSub.isLazy mustBe true
+        localSub.declaration mustBe Right(true) // lazy val
 
         localSub.content mustBe Array(Plain(" "), Plain("foo "))
       }
@@ -1297,8 +1295,7 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         localSub.imports mustBe empty
         localSub.params.str mustBe ""
 
-        localSub.isVal mustBe false
-        localSub.isLazy mustBe false
+        localSub.declaration mustBe Left(false) // a def
 
         localSub.content mustBe Array(Plain(" "), Plain("foo "))
       }
@@ -1317,8 +1314,7 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         localSub.imports mustBe empty
         localSub.params.str mustBe "()"
 
-        localSub.isVal mustBe false
-        localSub.isLazy mustBe false
+        localSub.declaration mustBe Left(false) // a def
 
         localSub.content mustBe Array(Plain(" "), Plain("foo "))
       }
@@ -1337,8 +1333,7 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         localSub.imports mustBe empty
         localSub.params.str mustBe ""
 
-        localSub.isVal mustBe false
-        localSub.isLazy mustBe false
+        localSub.declaration mustBe Left(false) // a def
 
         localSub.content mustBe Array(Plain(" "), Plain("foo "))
       }
@@ -1357,8 +1352,7 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         localSub.imports mustBe empty
         localSub.params.str mustBe ""
 
-        localSub.isVal mustBe false
-        localSub.isLazy mustBe false
+        localSub.declaration mustBe Left(false) // a def
 
         localSub.content mustBe Array(Plain(" "), Plain("foo "))
       }
@@ -1377,8 +1371,7 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         localSub.imports mustBe empty
         localSub.params.str mustBe ""
 
-        localSub.isVal mustBe false
-        localSub.isLazy mustBe false
+        localSub.declaration mustBe Left(false) // a def
 
         localSub.content mustBe Array(Plain(" "), Plain("foo "))
       }
@@ -1397,8 +1390,7 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         localSub.imports mustBe empty
         localSub.params.str mustBe "[A,B](a:A, b:B)"
 
-        localSub.isVal mustBe false
-        localSub.isLazy mustBe false
+        localSub.declaration mustBe Left(false) // a def
 
         localSub.content mustBe Array(Plain(" "), Plain("foo "))
       }
@@ -1473,8 +1465,7 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         localSub.imports mustBe empty
         localSub.params.str mustBe ""
 
-        localSub.isVal mustBe false
-        localSub.isLazy mustBe false
+        localSub.declaration mustBe Left(false) // a def
 
         localSub.content mustBe Array(Plain(" "), Plain("foo "))
       }
@@ -1495,8 +1486,7 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         localSub.params.pos.line mustBe 1
         localSub.params.pos.column mustBe 15
 
-        localSub.isVal mustBe false
-        localSub.isLazy mustBe false
+        localSub.declaration mustBe Left(false) // a def
 
         localSub.content mustBe Array(Plain(" "), Plain("foo "))
       }
