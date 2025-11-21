@@ -437,11 +437,14 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
           anyUntil(c => c != ' ' && c != '\t', inclusive = false)
           val code = scalaBlock()
           if (code != null) {
-            if (templDecl._3) {
-              result = position(Val(templDecl._1, templDecl._4, resultType, code), resetPosition)
-            } else {
-              result = position(Def(templDecl._1, templDecl._2, resultType, code), resetPosition)
-            }
+            result = position(
+              templDecl._3.fold(
+                isVar =>
+                  if (isVar) Var(templDecl._1, resultType, code) else Def(templDecl._1, templDecl._2, resultType, code),
+                valIsLazy => Val(templDecl._1, valIsLazy, resultType, code)
+              ),
+              resetPosition
+            )
           }
         }
       }
@@ -471,7 +474,10 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     result
   }
 
-  def mixed(): ListBuffer[TemplateTree] = {
+  def mixed(
+      previousDefinedLocalMembersInParents: ArrayBuffer[LocalMember],
+      previousDefinedTemplatesInParents: ArrayBuffer[SubTemplate]
+  ): ListBuffer[TemplateTree] = {
     // parses: comment | scalaBlockDisplayed | forExpression | ifExpression | matchExpOrSafeExpOrExpr | caseExpression | plain
     def opt1(): ListBuffer[TemplateTree] = {
       val t =
@@ -481,7 +487,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
               case null =>
                 forExpression() match {
                   case null =>
-                    ifExpression() match {
+                    ifExpression(previousDefinedLocalMembersInParents, previousDefinedTemplatesInParents) match {
                       case null =>
                         matchExpOrSafeExpOrExpr() match {
                           case null =>
@@ -509,7 +515,11 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       if (check("{")) {
         var buffer = new ListBuffer[TemplateTree]
         buffer += position(Plain("{"), lbracepos)
-        for (m <- several[ListBuffer[TemplateTree], ListBuffer[ListBuffer[TemplateTree]]] { () => mixed() })
+        for (
+          m <- several[ListBuffer[TemplateTree], ListBuffer[ListBuffer[TemplateTree]]] { () =>
+            mixed(previousDefinedLocalMembersInParents, previousDefinedTemplatesInParents)
+          }
+        )
           buffer =
             buffer ++ m // creates a new object, but is constant in time, as opposed to buffer ++= m which is linear (proportional to size of m)
         val rbracepos = input.offset()
@@ -556,21 +566,27 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     }
   }
 
-  def block(blockArgsAllowed: Boolean, parseContentAsTemplate: Boolean): Block = {
+  def block(
+      blockArgsAllowed: Boolean,
+      parseContentAsTemplate: Boolean,
+      previousDefinedLocalMembersInParents: ArrayBuffer[LocalMember],
+      previousDefinedTemplatesInParents: ArrayBuffer[SubTemplate]
+  ): Block = {
     var result: Block = null
     val p             = input.offset()
     val ws            = whitespaceNoBreak()
     if (check("{")) {
       val blkArgs     = if (blockArgsAllowed) Option(blockArgs()) else None
       val blkContents =
-        if (parseContentAsTemplate) templateContent()
+        if (parseContentAsTemplate)
+          templateContent(previousDefinedLocalMembersInParents, previousDefinedTemplatesInParents)
         else
           (
             Seq.empty, // no imports
             Seq.empty, // no localMembers
             Seq.empty, // no (sub)templates
             several[ListBuffer[TemplateTree], ListBuffer[ListBuffer[TemplateTree]]] { () =>
-              mixed()
+              mixed(previousDefinedLocalMembersInParents, previousDefinedTemplatesInParents)
             }.flatten // TODO - not use flatten here (if it's a performance problem)
           )
       accept("}")
@@ -591,7 +607,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     val p     = input.offset()
     if (check("case ")) {
       val pattern = position(Simple("case " + anyUntil("=>", inclusive = true)), p)
-      val blk     = block(blockArgsAllowed = true, parseContentAsTemplate = false)
+      val blk     = block(blockArgsAllowed = true, parseContentAsTemplate = false, ArrayBuffer.empty, ArrayBuffer.empty)
       if (blk != null) {
         result = ScalaExp(ListBuffer(pattern, blk))
         whitespace()
@@ -622,7 +638,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       val ws    = whitespaceNoBreak()
       if (check("match")) {
         val m   = position(Simple(ws + "match"), mpos)
-        val blk = block(blockArgsAllowed = false, parseContentAsTemplate = false)
+        val blk = block(blockArgsAllowed = false, parseContentAsTemplate = false, ArrayBuffer.empty, ArrayBuffer.empty)
         if (blk != null) {
           exprs.append(m)
           exprs.append(blk)
@@ -644,7 +660,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     if (check("@for")) {
       val parens = parentheses()
       if (parens != null) {
-        val blk = block(blockArgsAllowed = true, parseContentAsTemplate = false)
+        val blk = block(blockArgsAllowed = true, parseContentAsTemplate = false, ArrayBuffer.empty, ArrayBuffer.empty)
         if (blk != null) {
           result = Display(
             ScalaExp(ListBuffer(position(Simple("for" + parens + " yield "), p + 1), blk))
@@ -702,6 +718,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
             scalaBlockChainedAllowed = false,
             whitespaceBeforeSimpleParensAllowed = false,
             parseBlockContentAsTemplate = false,
+            ArrayBuffer.empty,
+            ArrayBuffer.empty,
           )
         }
         parts.prepend(position(Simple(code), pos))
@@ -727,7 +745,9 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       chainedMethodsAllowed: Boolean,
       scalaBlockChainedAllowed: Boolean,
       whitespaceBeforeSimpleParensAllowed: Boolean,
-      parseBlockContentAsTemplate: Boolean
+      parseBlockContentAsTemplate: Boolean,
+      previousDefinedLocalMembersInParents: ArrayBuffer[LocalMember],
+      previousDefinedTemplatesInParents: ArrayBuffer[SubTemplate],
   ): ScalaExpPart = {
     def simpleParens() = {
       val p = input.offset()
@@ -749,7 +769,12 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
 
     (if (chainedMethodsAllowed) chainedMethods() else null) match {
       case null =>
-        block(blockArgsAllowed, parseContentAsTemplate = parseBlockContentAsTemplate) match {
+        block(
+          blockArgsAllowed,
+          parseContentAsTemplate = parseBlockContentAsTemplate,
+          previousDefinedLocalMembersInParents,
+          previousDefinedTemplatesInParents
+        ) match {
           case null =>
             (if (scalaBlockChainedAllowed) wsThenScalaBlockChained() else null) match {
               case null => simpleParens()
@@ -839,7 +864,10 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       exclusiveDot()
   }
 
-  def ifExpression(): Display = {
+  def ifExpression(
+      previousDefinedLocalMembersInParents: ArrayBuffer[LocalMember],
+      previousDefinedTemplatesInParents: ArrayBuffer[SubTemplate],
+  ): Display = {
     val result: ListBuffer[ScalaExpPart] = ListBuffer.empty
     val defaultElse                      = Simple(" else {null} ")
     val p                                = input.offset()
@@ -854,16 +882,20 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
             scalaBlockChainedAllowed = true,
             whitespaceBeforeSimpleParensAllowed = true,
             parseBlockContentAsTemplate = true,
+            previousDefinedLocalMembersInParents,
+            previousDefinedTemplatesInParents,
           )
         if (blk != null) {
           positional = Simple("if" + parens)
           result += Simple("if" + parens)
           result += blk
 
-          val elseIfCallParts = several[Seq[ScalaExpPart], ArrayBuffer[Seq[ScalaExpPart]]] { () => elseIfCall() }
+          val elseIfCallParts = several[Seq[ScalaExpPart], ArrayBuffer[Seq[ScalaExpPart]]] { () =>
+            elseIfCall(previousDefinedLocalMembersInParents, previousDefinedTemplatesInParents)
+          }
           result ++= elseIfCallParts.flatten
 
-          val elseCallPart = elseCall()
+          val elseCallPart = elseCall(previousDefinedLocalMembersInParents, previousDefinedTemplatesInParents)
           if (elseCallPart == null) {
             result += defaultElse
           } else {
@@ -884,7 +916,10 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     }
   }
 
-  def elseIfCall(): Seq[ScalaExpPart] = {
+  def elseIfCall(
+      previousDefinedLocalMembersInParents: ArrayBuffer[LocalMember],
+      previousDefinedTemplatesInParents: ArrayBuffer[SubTemplate],
+  ): Seq[ScalaExpPart] = {
     val reset = input.offset()
     whitespaceNoBreak()
     if (check("else if")) {
@@ -909,6 +944,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
             scalaBlockChainedAllowed = true,
             whitespaceBeforeSimpleParensAllowed = true,
             parseBlockContentAsTemplate = true,
+            previousDefinedLocalMembersInParents,
+            previousDefinedTemplatesInParents,
           )
         if (blk != null) {
           Seq(Simple("else if" + args), blk)
@@ -929,7 +966,10 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     }
   }
 
-  def elseCall(): Seq[ScalaExpPart] = {
+  def elseCall(
+      previousDefinedLocalMembersInParents: ArrayBuffer[LocalMember],
+      previousDefinedTemplatesInParents: ArrayBuffer[SubTemplate],
+  ): Seq[ScalaExpPart] = {
     val reset = input.offset()
     whitespaceNoBreak()
     if (check("else")) {
@@ -950,6 +990,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
         scalaBlockChainedAllowed = true,
         whitespaceBeforeSimpleParensAllowed = true,
         parseBlockContentAsTemplate = true,
+        previousDefinedLocalMembersInParents,
+        previousDefinedTemplatesInParents,
       )
       if (blk != null) {
         Seq(Simple("else"), blk)
@@ -966,7 +1008,10 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     }
   }
 
-  def template(): SubTemplate = {
+  def template(
+      previousDefinedLocalMembersInParents: ArrayBuffer[LocalMember],
+      previousDefinedTemplatesInParents: ArrayBuffer[SubTemplate]
+  ): SubTemplate = {
     var result: SubTemplate = null
     val resetPosition       = input.offset()
     val templDecl           = templateOrLocalMemberDeclaration()
@@ -975,12 +1020,12 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       if (check("=")) {
         anyUntil(c => c != ' ' && c != '\t', inclusive = false)
         if (check("{")) {
-          val (imports, localMembers, templates, mixeds) = templateContent()
+          val (imports, localMembers, templates, mixeds) =
+            templateContent(previousDefinedLocalMembersInParents, previousDefinedTemplatesInParents)
           if (check("}"))
             result = position(
               SubTemplate(
-                templDecl._3, // isVal
-                templDecl._4, // isLazy
+                templDecl._3,
                 templDecl._1,
                 templDecl._2,
                 imports,
@@ -999,7 +1044,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     result
   }
 
-  def templateOrLocalMemberDeclaration(): (PosString, PosString, Boolean, Boolean) = {
+  def templateOrLocalMemberDeclaration(): (PosString, PosString, Either[Boolean, Boolean]) = {
     val resetPosition = input.offset()
     if (check("@")) {
       val lazypos = input.offset()
@@ -1008,11 +1053,21 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
         // The word 'lazy' could be parsed, but no whitespace afterwards -> isLazy is false, but the pointer moved forward...
         input.regressTo(lazypos)
       }
-      val valpos = input.offset()
-      val isVal  = check("val") && !whitespaceNoBreak().isEmpty
+      val valorvarpos = input.offset()
+      val isVal       = check("val") && !whitespaceNoBreak().isEmpty
       if (!isVal) {
         // The word 'val' could be parsed, but no whitespace afterwards -> isVal is false, but the pointer moved forward...
-        input.regressTo(valpos)
+        input.regressTo(valorvarpos)
+      }
+      val isVar = !isVal && check("var") && !whitespaceNoBreak().isEmpty
+      if (!isVal && !isVar) {
+        // The word 'var' could be parsed, but no whitespace afterwards -> isVar is false, but the pointer moved forward...
+        input.regressTo(valorvarpos)
+      }
+      if (isLazy && isVar) {
+        input.regressTo(resetPosition) // don't consume @
+        error("'lazy' not allowed here. Only val definitions can be lazy.", lazypos)
+        return null
       }
       if (isLazy && !isVal) {
         input.regressTo(resetPosition) // don't consume @
@@ -1033,7 +1088,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
           error(s"identifier expected but ']' found", paramspos)
           return null
         }
-        if (isVal && !types.isEmpty) {
+        if ((isVal || isVar) && !types.isEmpty) {
           input.regressTo(resetPosition) // don't consume @
           error(
             s"Invalid variable definition: '${name.str}' cannot have type parameters.",
@@ -1042,7 +1097,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
           return null
         }
         val args = several[String, ArrayBuffer[String]] { () => parentheses() }
-        if (isVal && !args.isEmpty) {
+        if ((isVal || isVar) && !args.isEmpty) {
           input.regressTo(resetPosition) // don't consume @
           error(
             s"Invalid variable definition: '${name.str}' cannot have parameter lists.",
@@ -1052,14 +1107,17 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
         }
         val params = position(PosString(types + args.mkString), paramspos)
         if (params != null)
-          return (name, params, isVal, isLazy)
+          return (name, params, Either.cond[Boolean, Boolean](isVal, isLazy, isVar))
       } else input.regressTo(resetPosition) // don't consume @
     }
 
     null
   }
 
-  def templateContent(): (
+  def templateContent(
+      previousDefinedLocalMembersInParents: ArrayBuffer[LocalMember],
+      previousDefinedTemplatesInParents: ArrayBuffer[SubTemplate]
+  ): (
       collection.Seq[Simple],
       collection.Seq[LocalMember],
       collection.Seq[SubTemplate],
@@ -1075,13 +1133,74 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       val impExp = importExpression()
       if (impExp != null) imports += impExp
       else {
-        val lmember = localMember()
-        if (lmember != null) localMembers += lmember
-        else {
-          val templ = template()
-          if (templ != null) templates += templ
-          else {
-            val mix = mixed()
+        def nameAlreadyDefinedMsg(name: String) =
+          s"$name is already defined. To reassign $name, remove any argument lists or type parameters. Otherwise choose a different name."
+        val memberPosition                                 = input.offset()
+        def varWithSameNameAlreadyDefined(name: PosString) =
+          (previousDefinedLocalMembersInParents ++ localMembers).exists(_ match {
+            case Var(varname, _, _) if name.str == varname.str => true
+            case _                                             => false
+          })
+        val lmemberOrVarReassignment = localMember() match {
+          case Def(name, params, resultType, code) if varWithSameNameAlreadyDefined(name) => {
+            if (!params.str.isEmpty) {
+              input.regressTo(memberPosition)
+              error(nameAlreadyDefinedMsg(name.str), memberPosition)
+              null
+            } else if (!resultType.map(_.str.isEmpty).getOrElse(true)) {
+              input.regressTo(memberPosition)
+              error("Type annotation is not allowed on variable reassignment.", memberPosition)
+              null
+            } else {
+              val reassignment = position(Reassignment(Right(Var(name, None, code))), memberPosition)
+              mixeds += reassignment
+              reassignment
+            }
+          }
+          case lmember if lmember != null => {
+            localMembers += lmember
+            lmember
+          }
+          case _ => null
+        }
+        if (lmemberOrVarReassignment == null) {
+          def tmplVarWithSameNameAlreadyDefined(name: PosString) =
+            (previousDefinedTemplatesInParents ++ templates).exists(_ match {
+              case SubTemplate(declaration, varname, _, _, _, _, _)
+                  if name.str == varname.str && declaration.left.exists(_ == true) => // same name && "var"
+                true
+              case _ => false
+            })
+          val templatePosition          = input.offset()
+          val templateOrVarReassignment = template(
+            previousDefinedLocalMembersInParents ++ localMembers,
+            previousDefinedTemplatesInParents ++ templates
+          ) match {
+            case tmpl @ SubTemplate(declaration, name, params, _, _, _, _)
+                if declaration.left // we only care about `@name = { ... }`, meaning no `var`, `val` or `lazy` keyword was given,
+                  .exists(_ == false) && // so it would be a `def` if there wouldn't be a var with same name to reassign
+                  tmplVarWithSameNameAlreadyDefined(name) => {
+              if (!params.str.isEmpty) {
+                input.regressTo(templatePosition)
+                error(nameAlreadyDefinedMsg(name.str), templatePosition)
+                null
+              } else {
+                val reassignment = position(Reassignment(Left(tmpl)), templatePosition)
+                mixeds += reassignment
+                reassignment
+              }
+            }
+            case templ if templ != null => {
+              templates += templ
+              templ
+            }
+            case _ => null
+          }
+          if (templateOrVarReassignment == null) {
+            val mix = mixed(
+              previousDefinedLocalMembersInParents ++ localMembers,
+              previousDefinedTemplatesInParents ++ templates
+            )
             if (mix != null) mixeds ++= mix
             else {
               // check for an invalid '@' symbol, and just skip it so we can continue the parse
@@ -1183,7 +1302,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       }
     }
     val args                                       = maybeTemplateArgs()
-    val (imports, localMembers, templates, mixeds) = templateContent()
+    val (imports, localMembers, templates, mixeds) = templateContent(ArrayBuffer.empty, ArrayBuffer.empty)
 
     val template = Template(
       constructor,

@@ -474,7 +474,7 @@ object TwirlCompiler {
   def visit(
       elem: collection.Seq[TemplateTree],
       previous: collection.Seq[Any],
-      resultType: String
+      resultType: Option[String]
   ): collection.Seq[Any] = {
     elem.toList match {
       case head :: tail =>
@@ -513,6 +513,18 @@ object TwirlCompiler {
                     resultType
                   ) :+ "}"
               }
+            case Reassignment(Left(template)) => {
+              (if (previous.isEmpty) Nil else previous :+ ",") :+ Source(
+                "{" + template.name + " = _display_{",
+                template.pos
+              ) :+ templateCode(template, None) :+ Source("}}", template.pos)
+            }
+            case Reassignment(Right(variable)) => {
+              (if (previous.isEmpty) Nil else previous :+ ",") :+ Source(
+                "{" + variable.name + " = " + variable.code.code + "}",
+                variable.pos
+              )
+            }
           },
           resultType
         )
@@ -520,19 +532,20 @@ object TwirlCompiler {
     }
   }
 
-  def templateCode(template: BaseTemplate, resultType: String): collection.Seq[Any] = {
+  def templateCode(template: BaseTemplate, resultType: Option[String]): collection.Seq[Any] = {
     val defs = (template.sub ++ template.members).sortWith((l, r) => l.pos.<(r.pos)).map {
       case t: SubTemplate if t.name.toString == "" => templateCode(t, resultType)
       case t: SubTemplate                          => {
-        Nil :+ (if (t.name.str.startsWith("implicit")) "implicit " else "") :+ (if (t.isVal && t.isLazy) "lazy "
-                                                                                else "") :+ (if (t.isVal) "val "
-                                                                                             else "def ") :+ Source(
+        Nil :+ (if (t.name.str.startsWith("implicit")) "implicit " else "") :+ t.declaration.fold(
+          isVar => if (isVar) "var " else "def ",
+          valIsLazy => if (valIsLazy) "lazy val " else "val "
+        ) :+ Source(
           t.name.str,
           t.name.pos
         ) :+ Source(
           t.params.str,
           t.params.pos
-        ) :+ ":" :+ resultType :+ " = {_display_{" :+ templateCode(t, resultType) :+ "}};"
+        ) :+ resultType.map(rt => ":" :+ rt).getOrElse(Nil) :+ " = {_display_{" :+ templateCode(t, resultType) :+ "}};"
       }
       case Def(name, params, resultType, block) => {
         Nil :+ (if (name.str.startsWith("implicit")) "implicit def " else "def ") :+ Source(
@@ -550,6 +563,13 @@ object TwirlCompiler {
           name.pos
         ) :+ resultType.map(":" + _.str).getOrElse("") :+ " = {" :+ block.code :+ "};"
       }
+      case Var(name, resultType, block) => {
+        Nil :+ (if (name.str.startsWith("implicit")) "implicit var " else "var ") :+ Source(
+          name.str,
+          name.pos
+        ) :+ resultType.map(":" + _.str).getOrElse("") :+ " = {" :+ block.code :+ "};"
+      }
+
     }
 
     val imports = formatImports(template.imports)
@@ -611,7 +631,7 @@ package """ :+ packageName :+ """
   def apply""" :+ Source(root.params.str, root.params.pos) :+ """:""" :+ resultType :+ """ = {
     _display_ {
       {
-""" :+ templateCode(root, resultType) :+ """
+""" :+ templateCode(root, Some(resultType)) :+ """
       }
     }
   }
@@ -835,6 +855,7 @@ object Source {
       lines: ListBuffer[(Int, Int)]
   ): Unit = {
     parts.foreach {
+      case c: Character                                  => source.append(c)
       case s: String                                     => source.append(s)
       case Source(code, pos @ OffsetPosition(_, offset)) => {
         source.append("/*" + pos + "*/")

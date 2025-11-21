@@ -34,8 +34,10 @@ object TreeNodes {
       content: collection.Seq[TemplateTree]
   ) extends BaseTemplate
   case class SubTemplate(
-      isVal: Boolean,
-      isLazy: Boolean, // useless if not isVal
+      declaration: Either[
+        Boolean, // left: true->var, false->def
+        Boolean  // right: it is a val. true->lazy, false->eager
+      ],
       name: PosString,
       params: PosString,
       imports: collection.Seq[Simple],
@@ -60,10 +62,12 @@ object TreeNodes {
   }
   case class Def(name: PosString, params: PosString, resultType: Option[PosString], code: Simple) extends LocalMember
   case class Val(name: PosString, isLazy: Boolean, resultType: Option[PosString], code: Simple)   extends LocalMember
+  case class Var(name: PosString, resultType: Option[PosString], code: Simple)                    extends LocalMember
   case class Plain(text: String)                           extends TemplateTree with Positional
   case class Display(exp: ScalaExp)                        extends TemplateTree with Positional
   case class Comment(msg: String)                          extends TemplateTree with Positional
   case class ScalaExp(parts: collection.Seq[ScalaExpPart]) extends TemplateTree with Positional
+  case class Reassignment(ref: Either[SubTemplate, Var])   extends TemplateTree with Positional
   case class Simple(code: String)                          extends ScalaExpPart with Positional
   case class Block(whitespace: String, args: Option[PosString], contents: BlockTemplate)
       extends ScalaExpPart
