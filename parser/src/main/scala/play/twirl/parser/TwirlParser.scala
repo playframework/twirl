@@ -21,15 +21,15 @@ import scala.util.parsing.input.OffsetPosition
  * as follows:
  * {{{
  *   parser : comment? whitespace? ('@' parentheses+)? templateContent
- *   templateContent : (importExpression | localMember | template | mixed)*
- *   templateOrLocalMemberDeclaration : '@' (('lazy' whitespaceNoBreak+)? 'val' whitespaceNoBreak+)? identifier squareBrackets? parentheses*
- *   localMember : templateOrLocalMemberDeclaration (' ' | '\t')* '=' (' ' | '\t') scalaBlock
- *   template : templateOrLocalMemberDeclaration (' ' | '\t')* '=' (' ' | '\t') '{' templateContent '}'
+ *   templateContent : (importExpression | localDef | template | mixed)*
+ *   templateDeclaration : '@' identifier squareBrackets? parentheses*
+ *   localDef : templateDeclaration (' ' | '\t')* '=' (' ' | '\t') scalaBlock
+ *   template : templateDeclaration (' ' | '\t')* '=' (' ' | '\t') '{' templateContent '}'
  *   mixed : (comment | scalaBlockDisplayed | caseExpression | matchExpression | forExpression | safeExpression | plain | expression) | ('{' mixed* '}')
  *   scalaBlockDisplayed : scalaBlock
  *   scalaBlockChained : scalaBlock
  *   scalaBlock : '@' brackets
- *   importExpression : '@' 'import ' .* '\r'? '\n'
+ *   importExpression : '@' 'import' .* '\r'? '\n'
  *   caseExpression : whitespace? 'case' .+ '=>' block whitespace?
  *   forExpression : '@' "for" parentheses block
  *   matchExpression : '@' (simpleExpr | complexExpr) whitespaceNoBreak 'match' block
