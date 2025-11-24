@@ -4,7 +4,7 @@ nexus-publish = "2.0.0"
 spotless = "8.0.0"
 assertj = "3.27.6"
 commons-io = "2.21.0"
-commons-lang = "3.19.0"
+commons-lang = "3.20.0"
 freemarker = "2.3.34"
 
 [libraries]
