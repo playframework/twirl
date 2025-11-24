@@ -685,7 +685,9 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       val pos  = input.offset()
       val code = methodCall()
       if (code != null) {
-        val parts = several[ScalaExpPart, ListBuffer[ScalaExpPart]] { () => expressionPart(blockArgsAllowed = true) }
+        val parts = several[ScalaExpPart, ListBuffer[ScalaExpPart]] { () =>
+          expressionPart(blockArgsAllowed = true, scalaBlockChainedAllowed = false)
+        }
         parts.prepend(position(Simple(code), pos))
         result = Display(ScalaExp(parts))
       } else input.regressTo(pos - 1) // don't consume the @
@@ -704,7 +706,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     } else null
   }
 
-  def expressionPart(blockArgsAllowed: Boolean): ScalaExpPart = {
+  def expressionPart(blockArgsAllowed: Boolean, scalaBlockChainedAllowed: Boolean): ScalaExpPart = {
     def simpleParens() = {
       val p      = input.offset()
       val parens = parentheses()
@@ -724,7 +726,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       case null =>
         block(blockArgsAllowed) match {
           case null =>
-            wsThenScalaBlockChained() match {
+            (if (scalaBlockChainedAllowed) wsThenScalaBlockChained() else null) match {
               case null => simpleParens()
               case x    => x
             }
@@ -820,7 +822,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     if (check("@if")) {
       val parens = parentheses()
       if (parens != null) {
-        val blk = expressionPart(blockArgsAllowed = true)
+        val blk = expressionPart(blockArgsAllowed = true, scalaBlockChainedAllowed = true)
         if (blk != null) {
           positional = Simple("if" + parens)
           result += Simple("if" + parens)
@@ -855,7 +857,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       whitespaceNoBreak()
       val args = parentheses()
       if (args != null) {
-        val blk = expressionPart(blockArgsAllowed = true)
+        val blk =
+          expressionPart(blockArgsAllowed = true, scalaBlockChainedAllowed = true)
         if (blk != null) {
           Seq(Simple("else if" + args), blk)
         } else {
@@ -875,7 +878,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     whitespaceNoBreak()
     if (check("else")) {
       whitespaceNoBreak()
-      val blk = expressionPart(blockArgsAllowed = true)
+      val blk = expressionPart(blockArgsAllowed = true, scalaBlockChainedAllowed = true)
       if (blk != null) {
         Seq(Simple("else"), blk)
       } else {
