@@ -215,6 +215,384 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         afterWhitespaces mustBe Plain("Some plain text with whitespaces")
       }
 
+      "'if' expression does not have body" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@if(condition)"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Expected '{ ... }', '@{ ... }' or '(...)' after 'if(...)'")
+        )
+      }
+
+      "'if' expression does not have body but some plain text instead" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@if(condition) foo"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Expected '{ ... }', '@{ ... }' or '(...)' after 'if(...)'")
+        )
+      }
+
+      "@expression without curly braces or parens as 'if' expression body is currently not supported" in { // might change in future
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@if(condition) @someexpr"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Expected '{ ... }', '@{ ... }' or '(...)' after 'if(...)'")
+        )
+      }
+
+      "@expression without curly braces or parens as 'if' expression body is currently not supported also when using escaped expression" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@if(condition) @@someexpr"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Expected '{ ... }', '@{ ... }' or '(...)' after 'if(...)'")
+        )
+      }
+
+      "@(expression) without curly braces or parens as 'if' expression body is currently not supported" in { // might change in future
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@if(condition) @(someexpr)"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Expected '{ ... }', '@{ ... }' or '(...)' after 'if(...)'")
+        )
+      }
+
+      "@(expression) without curly braces or parens as 'if' expression body is currently not supported also when using escaped expression" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@if(condition) @@(someexpr)"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Expected '{ ... }', '@{ ... }' or '(...)' after 'if(...)'")
+        )
+      }
+
+      "'if' expression body is invalid when it mimics a method call" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@if(condition).callmethod"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Expected '{ ... }', '@{ ... }' or '(...)' after 'if(...)'")
+        )
+      }
+
+      "'if' expression body is invalid when it mimics a method call (with space between)" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@if(condition) .callmethod"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Expected '{ ... }', '@{ ... }' or '(...)' after 'if(...)'")
+        )
+      }
+
+      "'if' expression body is invalid when it only contains one closing bracket" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@if(condition)}"""
+        ) must have(
+          Symbol("message")("Template failed to parse: Expected '{ ... }', '@{ ... }' or '(...)' after 'if(...)'")
+        )
+      }
+
+      "'if' expression with pure block body without else body is valid" in {
+        val template = parseTemplateString(
+          """@if(condition){good}"""
+        )
+        val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
+        ifExpression(0) must be(Simple("if(condition)"))
+        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
+        ifExpression.size must be(3)
+        template.content.size must be(1)
+      }
+
+      "'if' expression with scala block body without else body is valid" in {
+        val template = parseTemplateString(
+          """@if(condition)@{expr}"""
+        )
+        val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
+        ifExpression(0) must be(Simple("if(condition)"))
+        ifExpression(1).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts(0) must be(Simple("{expr}"))
+        ifExpression(1).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts.size must be(1)
+        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
+        ifExpression.size must be(3)
+        template.content.size must be(1)
+      }
+
+      "'if' expression with simple parens body without else body is valid" in {
+        val template = parseTemplateString(
+          """@if(condition)(expr)"""
+        )
+        val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
+        ifExpression(0) must be(Simple("if(condition)"))
+        ifExpression(1).asInstanceOf[Simple] must be(Simple("(expr)"))
+        ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
+        ifExpression.size must be(3)
+        template.content.size must be(1)
+      }
+
+      "'else', after an 'if' expression, that does not have a parsable body is be handled as plain text" in {
+        val template = parseTemplateString(
+          """@if(condition){good}else"""
+        )
+        val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
+        ifExpression(0) must be(Simple("if(condition)"))
+        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
+        ifExpression.size must be(3)
+        template.content(1) mustBe Plain("else")
+        template.content.size must be(2)
+      }
+
+      "'elsewhere', after an 'if' expression, is not handled as 'else' but handled as plain text" in {
+        val template = parseTemplateString(
+          """@if(condition){good}elsewhere"""
+        )
+        val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
+        ifExpression(0) must be(Simple("if(condition)"))
+        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
+        ifExpression.size must be(3)
+        template.content(1) mustBe Plain("elsewhere")
+        template.content.size must be(2)
+      }
+
+      "@expression without curly braces or parens after 'else' expression is currently not supported" in { // might change in future
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@if(condition){good}else @someexpr"""
+        ) must have(
+          Symbol("message")(
+            "Template failed to parse: Expected '{ ... }', '@{ ... }' or '(...)' after 'else'. Hint: To ignore 'else...' and render it as plain string instead you can escape @ with @@."
+          )
+        )
+      }
+
+      "escaped @expression after an 'else' expression makes the whole 'else' part handled as plain text" in {
+        val template = parseTemplateString(
+          """@if(condition){good}else @@someexpr"""
+        )
+        val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
+        ifExpression(0) must be(Simple("if(condition)"))
+        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
+        ifExpression.size must be(3)
+        template.content(1) mustBe Plain("else @someexpr")
+        template.content.size must be(2)
+      }
+
+      "@(expression) without curly braces or parens after 'else' expression is currently not supported" in { // might change in future
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@if(condition){good}else @(someexpr)"""
+        ) must have(
+          Symbol("message")(
+            "Template failed to parse: Expected '{ ... }', '@{ ... }' or '(...)' after 'else'. Hint: To ignore 'else...' and render it as plain string instead you can escape @ with @@."
+          )
+        )
+      }
+
+      "escaped @(expression) after an 'else' expression makes the whole 'else' part handled as plain text" in {
+        val template = parseTemplateString(
+          """@if(condition){good}else @@(someexpr)"""
+        )
+        val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
+        ifExpression(0) must be(Simple("if(condition)"))
+        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
+        ifExpression.size must be(3)
+        template.content(1) mustBe Plain("else @(someexpr)")
+        template.content.size must be(2)
+      }
+
+      "'else if' expression after an 'if' expression, without body is handled as plain text" in {
+        val template = parseTemplateString(
+          """@if(condition){good}else if(true)"""
+        )
+        val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
+        ifExpression(0) must be(Simple("if(condition)"))
+        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
+        ifExpression.size must be(3)
+        template.content(1) mustBe Plain("else if(true)")
+        template.content.size must be(2)
+      }
+
+      "@expression without curly braces or parens after 'else if' expression is currently not supported" in { // might change in future
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@if(condition){good}else if(true) @someexpr"""
+        ) must have(
+          Symbol("message")(
+            "Template failed to parse: Expected '{ ... }', '@{ ... }' or '(...)' after 'else if(...)'. Hint: To ignore 'else if...' and render it as plain string instead you can escape @ with @@."
+          )
+        )
+      }
+
+      "escaped @expression after an 'else if' expression makes the whole 'else if' part handled as plain text" in {
+        val template = parseTemplateString(
+          """@if(condition){good}else if(true) @@someexpr"""
+        )
+        val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
+        ifExpression(0) must be(Simple("if(condition)"))
+        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
+        ifExpression.size must be(3)
+        template.content(1) mustBe Plain("else if(true) @someexpr")
+        template.content.size must be(2)
+      }
+
+      "@(expression) without curly braces or parens after 'else if' expression is currently not supported" in { // might change in future
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@if(condition){good}else if(true) @(someexpr)"""
+        ) must have(
+          Symbol("message")(
+            "Template failed to parse: Expected '{ ... }', '@{ ... }' or '(...)' after 'else if(...)'. Hint: To ignore 'else if...' and render it as plain string instead you can escape @ with @@."
+          )
+        )
+      }
+
+      "escaped @(expression) after an 'else if' expression makes the whole 'else if' part handled as plain text" in {
+        val template = parseTemplateString(
+          """@if(condition){good}else if(true) @@(someexpr)"""
+        )
+        val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
+        ifExpression(0) must be(Simple("if(condition)"))
+        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
+        ifExpression.size must be(3)
+        template.content(1) mustBe Plain("else if(true) @(someexpr)")
+        template.content.size must be(2)
+      }
+
+      "do not render whitespaces which are part of an 'if' expression with {...}" in {
+        val template = parseTemplateString(
+          """@if(condition)    {good}"""
+        )
+        val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
+        ifExpression(0) must be(Simple("if(condition)"))
+        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
+        ifExpression.size must be(3)
+        template.content.size must be(1)
+      }
+
+      "do not render whitespaces which are part of an 'if' expression with @{...}" in {
+        val template = parseTemplateString(
+          """@if(condition)    @{good}"""
+        )
+        val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
+        ifExpression(0) must be(Simple("if(condition)"))
+        ifExpression(1).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts(0) must be(Simple("{good}"))
+        ifExpression(1).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts.size must be(1)
+        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
+        ifExpression.size must be(3)
+        template.content.size must be(1)
+      }
+
+      "do not render whitespaces which are part of an 'if' expression with (...)" in {
+        val template = parseTemplateString(
+          """@if(condition)    (good)"""
+        )
+        val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
+        ifExpression(0) must be(Simple("if(condition)"))
+        ifExpression(1).asInstanceOf[Simple] must be(Simple("(good)"))
+        ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
+        ifExpression.size must be(3)
+        template.content.size must be(1)
+      }
+
+      "do not render whitespaces which are part of an 'if'/'else' expression with {...}" in {
+        val template = parseTemplateString(
+          """@if(condition)    {good}     else        {somevar}"""
+        )
+        val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
+        ifExpression(0) must be(Simple("if(condition)"))
+        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(2).asInstanceOf[Simple] must be(Simple("else"))
+        ifExpression(3).asInstanceOf[Block].content(0) mustBe Plain("somevar")
+        ifExpression(3).asInstanceOf[Block].content.size must be(1)
+        ifExpression.size must be(4)
+        template.content.size must be(1)
+      }
+
+      "do not render whitespaces which are part of an 'if'/'else' expression with @{...}" in {
+        val template = parseTemplateString(
+          """@if(condition)    @{good}     else        @{somevar}"""
+        )
+        val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
+        ifExpression(0) must be(Simple("if(condition)"))
+        ifExpression(1).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts(0) must be(Simple("{good}"))
+        ifExpression(1).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts.size must be(1)
+        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(2).asInstanceOf[Simple] must be(Simple("else"))
+        ifExpression(3).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts(0) must be(Simple("{somevar}"))
+        ifExpression(3).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts.size must be(1)
+        ifExpression(3).asInstanceOf[Block].content.size must be(1)
+        ifExpression.size must be(4)
+        template.content.size must be(1)
+      }
+
+      "do not render whitespaces which are part of an 'if'/'else' expression with (...)" in {
+        val template = parseTemplateString(
+          """@if(condition)    (good)    else        (somevar)"""
+        )
+        val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
+        ifExpression(0) must be(Simple("if(condition)"))
+        ifExpression(1).asInstanceOf[Simple] must be(Simple("(good)"))
+        ifExpression(2).asInstanceOf[Simple] must be(Simple("else"))
+        ifExpression(3).asInstanceOf[Simple] must be(Simple("(somevar)"))
+        ifExpression.size must be(4)
+        template.content.size must be(1)
+      }
+
+      "do not render whitespaces which are part of an 'if'/'else if' expression with {...}" in {
+        val template = parseTemplateString(
+          """@if(condition)    {good}     else if(true)        {somevar}"""
+        )
+        val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
+        ifExpression(0) must be(Simple("if(condition)"))
+        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(2).asInstanceOf[Simple] must be(Simple("else if(true)"))
+        ifExpression(3).asInstanceOf[Block].content(0) mustBe Plain("somevar")
+        ifExpression(3).asInstanceOf[Block].content.size must be(1)
+        ifExpression.size must be(5)
+        template.content.size must be(1)
+      }
+
+      "do not render whitespaces which are part of an 'if'/'else if' expression with @{...}" in {
+        val template = parseTemplateString(
+          """@if(condition)    @{good}     else if(true)        @{somevar}"""
+        )
+        val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
+        ifExpression(0) must be(Simple("if(condition)"))
+        ifExpression(1).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts(0) must be(Simple("{good}"))
+        ifExpression(1).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts.size must be(1)
+        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(2).asInstanceOf[Simple] must be(Simple("else if(true)"))
+        ifExpression(3).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts(0) must be(Simple("{somevar}"))
+        ifExpression(3).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts.size must be(1)
+        ifExpression(3).asInstanceOf[Block].content.size must be(1)
+        ifExpression.size must be(5)
+        template.content.size must be(1)
+      }
+
+      "do not render whitespaces which are part of an 'if'/'else if' expression with (...)" in {
+        val template = parseTemplateString(
+          """@if(condition)    (good)    else if(true)        (somevar)"""
+        )
+        val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
+        ifExpression(0) must be(Simple("if(condition)"))
+        ifExpression(1).asInstanceOf[Simple] must be(Simple("(good)"))
+        ifExpression(2).asInstanceOf[Simple] must be(Simple("else if(true)"))
+        ifExpression(3).asInstanceOf[Simple] must be(Simple("(somevar)"))
+        ifExpression.size must be(5)
+        template.content.size must be(1)
+      }
+
       "parsing @x @{x}" in {
         val template = parseTemplateString("""@x @{x}""")
         template.content(0).asInstanceOf[Display].exp.parts.head must be(Simple("x"))
