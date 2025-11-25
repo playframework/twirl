@@ -214,6 +214,46 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         val afterWhitespaces = template.content(2)
         afterWhitespaces mustBe Plain("Some plain text with whitespaces")
       }
+
+      "parsing @x @{x}" in {
+        val template = parseTemplateString("""@x @{x}""")
+        template.content(0).asInstanceOf[Display].exp.parts.head must be(Simple("x"))
+        template.content(0).asInstanceOf[Display].exp.parts.size must be(1)
+        template.content(1).asInstanceOf[Plain] must be(Plain(" "))
+        template.content(2).asInstanceOf[Display].exp.parts.head must be(Simple("{x}"))
+        template.content(2).asInstanceOf[Display].exp.parts.size must be(1)
+        template.content.size must be(3)
+      }
+
+      "parsing @{x} @x" in {
+        val template = parseTemplateString("""@{x} @x""")
+        template.content(0).asInstanceOf[Display].exp.parts.head must be(Simple("{x}"))
+        template.content(0).asInstanceOf[Display].exp.parts.size must be(1)
+        template.content(1).asInstanceOf[Plain] must be(Plain(" "))
+        template.content(2).asInstanceOf[Display].exp.parts.head must be(Simple("x"))
+        template.content(2).asInstanceOf[Display].exp.parts.size must be(1)
+        template.content.size must be(3)
+      }
+
+      "parsing @{x} @{x}" in {
+        val template = parseTemplateString("""@{x} @{x}""")
+        template.content(0).asInstanceOf[Display].exp.parts.head must be(Simple("{x}"))
+        template.content(0).asInstanceOf[Display].exp.parts.size must be(1)
+        template.content(1).asInstanceOf[Plain] must be(Plain(" "))
+        template.content(2).asInstanceOf[Display].exp.parts.head must be(Simple("{x}"))
+        template.content(2).asInstanceOf[Display].exp.parts.size must be(1)
+        template.content.size must be(3)
+      }
+
+      "parsing @x @x" in {
+        val template = parseTemplateString("""@x @x""")
+        template.content(0).asInstanceOf[Display].exp.parts.head must be(Simple("x"))
+        template.content(0).asInstanceOf[Display].exp.parts.size must be(1)
+        template.content(1).asInstanceOf[Plain] must be(Plain(" "))
+        template.content(2).asInstanceOf[Display].exp.parts.head must be(Simple("x"))
+        template.content(2).asInstanceOf[Display].exp.parts.size must be(1)
+        template.content.size must be(3)
+      }
     }
 
     "handle local val for pure code blocks" when {
