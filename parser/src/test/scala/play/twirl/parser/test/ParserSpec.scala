@@ -109,12 +109,20 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
           ) // "@attrs.map{ v =>" should not be handled as block args
         val ifExpressions = tmpl.content(0).asInstanceOf[Display].exp.parts
         ifExpressions.head must be(Simple("if(attrs!=null)"))
-        val ifBlockBody = ifExpressions(1).asInstanceOf[Block].content(0).asInstanceOf[Display].exp.parts
+        ifExpressions(1).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpressions(1).asInstanceOf[Block].contents.members mustBe empty
+        ifExpressions(1).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpressions(1).asInstanceOf[Block].contents.content.size must be(1)
+        val ifBlockBody = ifExpressions(1).asInstanceOf[Block].contents.content(0).asInstanceOf[Display].exp.parts
         ifBlockBody.head must be(Simple("attrs"))
         ifBlockBody(1) must be(Simple(".map"))
         val mapBlock = ifBlockBody(2).asInstanceOf[Block]
         mapBlock.args.map(_.toString) mustBe Some(" v =>")
-        val mapBlockBody = ifBlockBody(2).asInstanceOf[Block].content(1).asInstanceOf[Display].exp.parts
+        ifBlockBody(2).asInstanceOf[Block].contents.imports mustBe empty
+        ifBlockBody(2).asInstanceOf[Block].contents.members mustBe empty
+        ifBlockBody(2).asInstanceOf[Block].contents.sub mustBe empty
+        ifBlockBody(2).asInstanceOf[Block].contents.content.size must be(3)
+        val mapBlockBody = ifBlockBody(2).asInstanceOf[Block].contents.content(1).asInstanceOf[Display].exp.parts
         mapBlockBody.head must be(Simple("v"))
         mapBlockBody(1) must be(Simple("._1"))
       }
@@ -126,7 +134,11 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
           ) // "@attrs.map( v =>" should not be handled as block args
         val ifExpressions = tmpl.content(0).asInstanceOf[Display].exp.parts
         ifExpressions.head must be(Simple("if(attrs!=null)"))
-        val ifBlockBody = ifExpressions(1).asInstanceOf[Block].content(0).asInstanceOf[Display].exp.parts
+        ifExpressions(1).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpressions(1).asInstanceOf[Block].contents.members mustBe empty
+        ifExpressions(1).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpressions(1).asInstanceOf[Block].contents.content.size must be(1)
+        val ifBlockBody = ifExpressions(1).asInstanceOf[Block].contents.content(0).asInstanceOf[Display].exp.parts
         ifBlockBody.head must be(Simple("attrs"))
         ifBlockBody(1) must be(Simple(".map( v => @v._1 )"))
       }
@@ -140,7 +152,11 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         ifExpressions.head must be(Simple("if(attrs!=null)"))
         val ifBlock = ifExpressions(1).asInstanceOf[Block]
         ifBlock.args.map(_.toString) mustBe Some("( arg1, arg2 ) =>")
-        val ifBlockBody = ifBlock.content(1).asInstanceOf[Display].exp.parts
+        ifBlock.contents.imports mustBe empty
+        ifBlock.contents.members mustBe empty
+        ifBlock.contents.sub mustBe empty
+        ifBlock.contents.content.size must be(3)
+        val ifBlockBody = ifBlock.contents.content(1).asInstanceOf[Display].exp.parts
         ifBlockBody.head must be(Simple("arg1"))
         ifBlockBody(1) must be(Simple(".toString"))
       }
@@ -152,7 +168,11 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
           ) // "blockbody}Some plain text with =>" should not be handled as block args
         val ifExpressions = tmpl.content(0).asInstanceOf[Display].exp.parts
         ifExpressions.head must be(Simple("if(attrs!=null)"))
-        val ifBlockBody = ifExpressions(1).asInstanceOf[Block].content(0).asInstanceOf[Plain]
+        ifExpressions(1).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpressions(1).asInstanceOf[Block].contents.members mustBe empty
+        ifExpressions(1).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpressions(1).asInstanceOf[Block].contents.content.size must be(1)
+        val ifBlockBody = ifExpressions(1).asInstanceOf[Block].contents.content(0).asInstanceOf[Plain]
         ifBlockBody.text mustBe "blockbody"
         val outsideIf = tmpl.content(1).asInstanceOf[Plain]
         outsideIf.text mustBe "Some plain text with => inside"
@@ -166,17 +186,30 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         matchExpressions.head must be(Simple("fooVariable"))
         matchExpressions(1) must be(Simple(" match"))
 
-        val matchBlock = matchExpressions(2).asInstanceOf[Block].content
+        matchExpressions(2).asInstanceOf[Block].contents.imports mustBe empty
+        matchExpressions(2).asInstanceOf[Block].contents.members mustBe empty
+        matchExpressions(2).asInstanceOf[Block].contents.sub mustBe empty
+        matchExpressions(2).asInstanceOf[Block].contents.content.size must be(2)
+
+        val matchBlock = matchExpressions(2).asInstanceOf[Block].contents.content
 
         val firstCaseBlock = matchBlock.head.asInstanceOf[ScalaExp].parts
         firstCaseBlock.head must be(Simple("case x: String =>"))
         val firstCaseBlockBody = firstCaseBlock(1).asInstanceOf[Block]
-        firstCaseBlockBody.content(1).asInstanceOf[Plain].text mustBe "Nice string "
+        firstCaseBlockBody.contents.imports mustBe empty
+        firstCaseBlockBody.contents.members mustBe empty
+        firstCaseBlockBody.contents.sub mustBe empty
+        firstCaseBlockBody.contents.content.size must be(2)
+        firstCaseBlockBody.contents.content(1).asInstanceOf[Plain].text mustBe "Nice string "
 
         val secondCaseBlock = matchBlock(1).asInstanceOf[ScalaExp].parts
         secondCaseBlock.head must be(Simple("case _ =>"))
         val secondCaseBlockBody = secondCaseBlock(1).asInstanceOf[Block]
-        secondCaseBlockBody.content(1).asInstanceOf[Plain].text mustBe "Not a nice string "
+        secondCaseBlockBody.contents.imports mustBe empty
+        secondCaseBlockBody.contents.members mustBe empty
+        secondCaseBlockBody.contents.sub mustBe empty
+        secondCaseBlockBody.contents.content.size must be(2)
+        secondCaseBlockBody.contents.content(1).asInstanceOf[Plain].text mustBe "Not a nice string "
       }
 
       "whitespaces after 'else {...}' as plain" in {
@@ -185,11 +218,19 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         )
         val ifExpressions = template.content(0).asInstanceOf[Display].exp.parts
         ifExpressions.head must be(Simple("if(condition)"))
-        val ifBlockBody = ifExpressions(1).asInstanceOf[Block].content(0)
+        ifExpressions(1).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpressions(1).asInstanceOf[Block].contents.members mustBe empty
+        ifExpressions(1).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpressions(1).asInstanceOf[Block].contents.content.size must be(1)
+        val ifBlockBody = ifExpressions(1).asInstanceOf[Block].contents.content(0)
         ifBlockBody mustBe Plain("ifblock body")
         val elsePart = ifExpressions(2)
         elsePart mustBe Simple("else")
-        val elseBlockBody = ifExpressions(3).asInstanceOf[Block].content(0)
+        ifExpressions(3).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpressions(3).asInstanceOf[Block].contents.members mustBe empty
+        ifExpressions(3).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpressions(3).asInstanceOf[Block].contents.content.size must be(1)
+        val elseBlockBody = ifExpressions(3).asInstanceOf[Block].contents.content(0)
         elseBlockBody mustBe Plain("elseblock body")
         val afterIfExpressionOfWhitespaces = template.content(1)
         afterIfExpressionOfWhitespaces mustBe Plain("  ")
@@ -203,11 +244,19 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         )
         val ifExpressions = template.content(0).asInstanceOf[Display].exp.parts
         ifExpressions.head must be(Simple("if(condition)"))
-        val ifBlockBody = ifExpressions(1).asInstanceOf[Block].content(0)
+        ifExpressions(1).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpressions(1).asInstanceOf[Block].contents.members mustBe empty
+        ifExpressions(1).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpressions(1).asInstanceOf[Block].contents.content.size must be(1)
+        val ifBlockBody = ifExpressions(1).asInstanceOf[Block].contents.content(0)
         ifBlockBody mustBe Plain("ifblock body")
         val elseIfPart = ifExpressions(2)
         elseIfPart mustBe Simple("else if(condition2)")
-        val elseBlockBody = ifExpressions(3).asInstanceOf[Block].content(0)
+        ifExpressions(3).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpressions(3).asInstanceOf[Block].contents.members mustBe empty
+        ifExpressions(3).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpressions(3).asInstanceOf[Block].contents.content.size must be(1)
+        val elseBlockBody = ifExpressions(3).asInstanceOf[Block].contents.content(0)
         elseBlockBody mustBe Plain("elseifblock body")
         val afterIfExpressionOfWhitespaces = template.content(1)
         afterIfExpressionOfWhitespaces mustBe Plain("  ")
@@ -293,8 +342,11 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         )
         val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
         ifExpression(0) must be(Simple("if(condition)"))
-        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
-        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(1).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.members mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].contents.content.size must be(1)
         ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
         ifExpression.size must be(3)
         template.content.size must be(1)
@@ -306,9 +358,14 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         )
         val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
         ifExpression(0) must be(Simple("if(condition)"))
-        ifExpression(1).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts(0) must be(Simple("{expr}"))
-        ifExpression(1).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts.size must be(1)
-        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(1).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.members mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.content(0).asInstanceOf[ScalaExp].parts(0) must be(
+          Simple("{expr}")
+        )
+        ifExpression(1).asInstanceOf[Block].contents.content(0).asInstanceOf[ScalaExp].parts.size must be(1)
+        ifExpression(1).asInstanceOf[Block].contents.content.size must be(1)
         ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
         ifExpression.size must be(3)
         template.content.size must be(1)
@@ -332,8 +389,11 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         )
         val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
         ifExpression(0) must be(Simple("if(condition)"))
-        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
-        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(1).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.members mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].contents.content.size must be(1)
         ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
         ifExpression.size must be(3)
         template.content(1) mustBe Plain("else")
@@ -346,8 +406,11 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         )
         val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
         ifExpression(0) must be(Simple("if(condition)"))
-        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
-        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(1).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.members mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].contents.content.size must be(1)
         ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
         ifExpression.size must be(3)
         template.content(1) mustBe Plain("elsewhere")
@@ -370,8 +433,11 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         )
         val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
         ifExpression(0) must be(Simple("if(condition)"))
-        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
-        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(1).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.members mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].contents.content.size must be(1)
         ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
         ifExpression.size must be(3)
         template.content(1) mustBe Plain("else @someexpr")
@@ -394,8 +460,11 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         )
         val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
         ifExpression(0) must be(Simple("if(condition)"))
-        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
-        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(1).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.members mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].contents.content.size must be(1)
         ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
         ifExpression.size must be(3)
         template.content(1) mustBe Plain("else @(someexpr)")
@@ -408,8 +477,11 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         )
         val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
         ifExpression(0) must be(Simple("if(condition)"))
-        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
-        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(1).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.members mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].contents.content.size must be(1)
         ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
         ifExpression.size must be(3)
         template.content(1) mustBe Plain("else if(true)")
@@ -432,8 +504,11 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         )
         val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
         ifExpression(0) must be(Simple("if(condition)"))
-        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
-        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(1).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.members mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].contents.content.size must be(1)
         ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
         ifExpression.size must be(3)
         template.content(1) mustBe Plain("else if(true) @someexpr")
@@ -456,8 +531,11 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         )
         val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
         ifExpression(0) must be(Simple("if(condition)"))
-        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
-        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(1).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.members mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].contents.content.size must be(1)
         ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
         ifExpression.size must be(3)
         template.content(1) mustBe Plain("else if(true) @(someexpr)")
@@ -470,8 +548,11 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         )
         val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
         ifExpression(0) must be(Simple("if(condition)"))
-        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
-        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(1).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.members mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].contents.content.size must be(1)
         ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
         ifExpression.size must be(3)
         template.content.size must be(1)
@@ -483,9 +564,14 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         )
         val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
         ifExpression(0) must be(Simple("if(condition)"))
-        ifExpression(1).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts(0) must be(Simple("{good}"))
-        ifExpression(1).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts.size must be(1)
-        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(1).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.members mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.content(0).asInstanceOf[ScalaExp].parts(0) must be(
+          Simple("{good}")
+        )
+        ifExpression(1).asInstanceOf[Block].contents.content(0).asInstanceOf[ScalaExp].parts.size must be(1)
+        ifExpression(1).asInstanceOf[Block].contents.content.size must be(1)
         ifExpression(2).asInstanceOf[Simple] must be(Simple(" else {null} "))
         ifExpression.size must be(3)
         template.content.size must be(1)
@@ -509,11 +595,17 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         )
         val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
         ifExpression(0) must be(Simple("if(condition)"))
-        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
-        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(1).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.members mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].contents.content.size must be(1)
         ifExpression(2).asInstanceOf[Simple] must be(Simple("else"))
-        ifExpression(3).asInstanceOf[Block].content(0) mustBe Plain("somevar")
-        ifExpression(3).asInstanceOf[Block].content.size must be(1)
+        ifExpression(3).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpression(3).asInstanceOf[Block].contents.members mustBe empty
+        ifExpression(3).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpression(3).asInstanceOf[Block].contents.content(0) mustBe Plain("somevar")
+        ifExpression(3).asInstanceOf[Block].contents.content.size must be(1)
         ifExpression.size must be(4)
         template.content.size must be(1)
       }
@@ -524,13 +616,23 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         )
         val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
         ifExpression(0) must be(Simple("if(condition)"))
-        ifExpression(1).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts(0) must be(Simple("{good}"))
-        ifExpression(1).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts.size must be(1)
-        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(1).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.members mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.content(0).asInstanceOf[ScalaExp].parts(0) must be(
+          Simple("{good}")
+        )
+        ifExpression(1).asInstanceOf[Block].contents.content(0).asInstanceOf[ScalaExp].parts.size must be(1)
+        ifExpression(1).asInstanceOf[Block].contents.content.size must be(1)
         ifExpression(2).asInstanceOf[Simple] must be(Simple("else"))
-        ifExpression(3).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts(0) must be(Simple("{somevar}"))
-        ifExpression(3).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts.size must be(1)
-        ifExpression(3).asInstanceOf[Block].content.size must be(1)
+        ifExpression(3).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpression(3).asInstanceOf[Block].contents.members mustBe empty
+        ifExpression(3).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpression(3).asInstanceOf[Block].contents.content(0).asInstanceOf[ScalaExp].parts(0) must be(
+          Simple("{somevar}")
+        )
+        ifExpression(3).asInstanceOf[Block].contents.content(0).asInstanceOf[ScalaExp].parts.size must be(1)
+        ifExpression(3).asInstanceOf[Block].contents.content.size must be(1)
         ifExpression.size must be(4)
         template.content.size must be(1)
       }
@@ -554,11 +656,17 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         )
         val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
         ifExpression(0) must be(Simple("if(condition)"))
-        ifExpression(1).asInstanceOf[Block].content(0) mustBe Plain("good")
-        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(1).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.members mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.content(0) mustBe Plain("good")
+        ifExpression(1).asInstanceOf[Block].contents.content.size must be(1)
         ifExpression(2).asInstanceOf[Simple] must be(Simple("else if(true)"))
-        ifExpression(3).asInstanceOf[Block].content(0) mustBe Plain("somevar")
-        ifExpression(3).asInstanceOf[Block].content.size must be(1)
+        ifExpression(3).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpression(3).asInstanceOf[Block].contents.members mustBe empty
+        ifExpression(3).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpression(3).asInstanceOf[Block].contents.content(0) mustBe Plain("somevar")
+        ifExpression(3).asInstanceOf[Block].contents.content.size must be(1)
         ifExpression.size must be(5)
         template.content.size must be(1)
       }
@@ -569,13 +677,23 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         )
         val ifExpression = template.content(0).asInstanceOf[Display].exp.parts
         ifExpression(0) must be(Simple("if(condition)"))
-        ifExpression(1).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts(0) must be(Simple("{good}"))
-        ifExpression(1).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts.size must be(1)
-        ifExpression(1).asInstanceOf[Block].content.size must be(1)
+        ifExpression(1).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.members mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpression(1).asInstanceOf[Block].contents.content(0).asInstanceOf[ScalaExp].parts(0) must be(
+          Simple("{good}")
+        )
+        ifExpression(1).asInstanceOf[Block].contents.content(0).asInstanceOf[ScalaExp].parts.size must be(1)
+        ifExpression(1).asInstanceOf[Block].contents.content.size must be(1)
         ifExpression(2).asInstanceOf[Simple] must be(Simple("else if(true)"))
-        ifExpression(3).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts(0) must be(Simple("{somevar}"))
-        ifExpression(3).asInstanceOf[Block].content(0).asInstanceOf[ScalaExp].parts.size must be(1)
-        ifExpression(3).asInstanceOf[Block].content.size must be(1)
+        ifExpression(3).asInstanceOf[Block].contents.imports mustBe empty
+        ifExpression(3).asInstanceOf[Block].contents.members mustBe empty
+        ifExpression(3).asInstanceOf[Block].contents.sub mustBe empty
+        ifExpression(3).asInstanceOf[Block].contents.content(0).asInstanceOf[ScalaExp].parts(0) must be(
+          Simple("{somevar}")
+        )
+        ifExpression(3).asInstanceOf[Block].contents.content(0).asInstanceOf[ScalaExp].parts.size must be(1)
+        ifExpression(3).asInstanceOf[Block].contents.content.size must be(1)
         ifExpression.size must be(5)
         template.content.size must be(1)
       }

@@ -497,16 +497,19 @@ object TwirlCompiler {
             case ScalaExp(parts) =>
               previous :+ parts.map {
                 case s @ Simple(code) => Source(code, s.pos)
-                case b @ Block(whitespace, args, _, _, _, content) if content.forall(_.isInstanceOf[ScalaExp]) =>
-                  Nil :+ Source(whitespace + "{" + args.getOrElse(""), b.pos) :+ visit(content, Nil, resultType) :+ "}"
-                case b @ Block(whitespace, args, imports, members, sub, content)
-                    if imports.isEmpty && members.isEmpty && sub.isEmpty =>
-                  Nil :+ Source(whitespace + "{" + args.getOrElse(""), b.pos) :+ displayVisitedChildren(
-                    visit(content, Nil, resultType)
+                case b @ Block(whitespace, args, contents) if contents.content.forall(_.isInstanceOf[ScalaExp]) =>
+                  Nil :+ Source(whitespace + "{" + args.getOrElse(""), b.pos) :+ visit(
+                    contents.content,
+                    Nil,
+                    resultType
                   ) :+ "}"
-                case b @ Block(whitespace, args, imports, members, sub, content) =>
+                case b @ Block(whitespace, args, contents) if !contents.rich() =>
+                  Nil :+ Source(whitespace + "{" + args.getOrElse(""), b.pos) :+ displayVisitedChildren(
+                    visit(contents.content, Nil, resultType)
+                  ) :+ "}"
+                case b @ Block(whitespace, args, contents) if contents.rich() =>
                   Nil :+ Source(whitespace + "{" + args.getOrElse(""), b.pos) :+ templateCode(
-                    BlockTemplate(imports, members, sub, content),
+                    contents,
                     resultType
                   ) :+ "}"
               }

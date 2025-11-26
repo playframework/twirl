@@ -53,11 +53,13 @@ val mimaSettings = Seq(
     ProblemFilters.exclude[MissingFieldProblem]("play.twirl.parser.TreeNodes.Value"),
     // Allow imports, val, def and subtemplates in body of 'if'/'else if'/'else'
     ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.compiler.TwirlCompiler.visit"),
-    ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.parser.TreeNodes#Block.apply"),
-    ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.parser.TreeNodes#Block.copy"),
-    ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.parser.TreeNodes#Block.this"),
     ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.parser.TwirlParser.block"),
-    ProblemFilters.exclude[MissingTypesProblem]("play.twirl.parser.TreeNodes$Block$"),
+    ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.parser.TreeNodes#Block.content"),
+    ProblemFilters.exclude[IncompatibleMethTypeProblem]("play.twirl.parser.TreeNodes#Block.apply"),
+    ProblemFilters.exclude[IncompatibleMethTypeProblem]("play.twirl.parser.TreeNodes#Block.copy"),
+    ProblemFilters.exclude[IncompatibleMethTypeProblem]("play.twirl.parser.TreeNodes#Block.this"),
+    ProblemFilters.exclude[IncompatibleResultTypeProblem]("play.twirl.parser.TreeNodes#Block.copy$default$3"),
+    ProblemFilters.exclude[IncompatibleResultTypeProblem]("play.twirl.parser.TreeNodes#Block._3"),
   )
 )
 

@@ -574,7 +574,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
             }.flatten // TODO - not use flatten here (if it's a performance problem)
           )
       accept("}")
-      result = position(Block(ws, blkArgs, blkContents._1, blkContents._2, blkContents._3, blkContents._4), p)
+      result =
+        position(Block(ws, blkArgs, BlockTemplate(blkContents._1, blkContents._2, blkContents._3, blkContents._4)), p)
     } else {
       input.regressTo(p)
     }
@@ -763,7 +764,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   def scalaBlockChained(): Block = {
     val blk = scalaBlock()
     if (blk != null)
-      Block("", None, Seq.empty, Seq.empty, Seq.empty, ListBuffer(ScalaExp(ListBuffer(blk))))
+      Block("", None, BlockTemplate(Seq.empty, Seq.empty, Seq.empty, ListBuffer(ScalaExp(ListBuffer(blk)))))
     else null
   }
 
