@@ -472,7 +472,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
   }
 
   def mixed(): ListBuffer[TemplateTree] = {
-    // parses: comment | scalaBlockDisplayed | forExpression | matchExpOrSafeExprOrExpr | caseExpression | plain
+    // parses: comment | scalaBlockDisplayed | forExpression | ifExpression | matchExpOrSafeExpOrExpr | caseExpression | plain
     def opt1(): ListBuffer[TemplateTree] = {
       val t =
         comment() match {
@@ -686,7 +686,12 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       val code = methodCall()
       if (code != null) {
         val parts = several[ScalaExpPart, ListBuffer[ScalaExpPart]] { () =>
-          expressionPart(blockArgsAllowed = true, scalaBlockChainedAllowed = false)
+          expressionPart(
+            blockArgsAllowed = true,
+            chainedMethodsAllowed = true,
+            scalaBlockChainedAllowed = false,
+            whitespaceBeforeSimpleParensAllowed = false
+          )
         }
         parts.prepend(position(Simple(code), pos))
         result = Display(ScalaExp(parts))
@@ -706,9 +711,17 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     } else null
   }
 
-  def expressionPart(blockArgsAllowed: Boolean, scalaBlockChainedAllowed: Boolean): ScalaExpPart = {
+  def expressionPart(
+      blockArgsAllowed: Boolean,
+      chainedMethodsAllowed: Boolean,
+      scalaBlockChainedAllowed: Boolean,
+      whitespaceBeforeSimpleParensAllowed: Boolean,
+  ): ScalaExpPart = {
     def simpleParens() = {
-      val p      = input.offset()
+      val p = input.offset()
+      if (whitespaceBeforeSimpleParensAllowed) {
+        whitespaceNoBreak()
+      }
       val parens = parentheses()
       if (parens != null) position(Simple(parens), p)
       else null
@@ -722,7 +735,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       chained
     }
 
-    chainedMethods() match {
+    (if (chainedMethodsAllowed) chainedMethods() else null) match {
       case null =>
         block(blockArgsAllowed) match {
           case null =>
@@ -822,7 +835,13 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     if (check("@if")) {
       val parens = parentheses()
       if (parens != null) {
-        val blk = expressionPart(blockArgsAllowed = true, scalaBlockChainedAllowed = true)
+        val blk =
+          expressionPart(
+            blockArgsAllowed = true,
+            chainedMethodsAllowed = false,
+            scalaBlockChainedAllowed = true,
+            whitespaceBeforeSimpleParensAllowed = true
+          )
         if (blk != null) {
           positional = Simple("if" + parens)
           result += Simple("if" + parens)
@@ -837,6 +856,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
           } else {
             result ++= elseCallPart
           }
+        } else {
+          error("Expected '{ ... }', '@{ ... }' or '(...)' after 'if(...)'", p)
         }
       }
     }
@@ -857,14 +878,35 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
       whitespaceNoBreak()
       val args = parentheses()
       if (args != null) {
+        val afterElseIfPos = input.offset()
+        whitespaceNoBreak()
+        if (check("@@") || (!check("{") && !check("@") && !check("("))) {
+          // We only parse `else if(...)` if it is one of the following (with 0 to n whitespaces allowed):
+          // - `else if(...) {`
+          // - `else if(...) (`
+          // - `else if(...) @`
+          input.regressTo(reset)
+          return null
+        }
+        input.regressTo(afterElseIfPos) // above is just a check, we are not consuming
         val blk =
-          expressionPart(blockArgsAllowed = true, scalaBlockChainedAllowed = true)
+          expressionPart(
+            blockArgsAllowed = true,
+            chainedMethodsAllowed = false,
+            scalaBlockChainedAllowed = true,
+            whitespaceBeforeSimpleParensAllowed = true
+          )
         if (blk != null) {
           Seq(Simple("else if" + args), blk)
         } else {
+          error(
+            "Expected '{ ... }', '@{ ... }' or '(...)' after 'else if(...)'. Hint: To ignore 'else if...' and render it as plain string instead you can escape @ with @@.",
+            reset
+          )
           null
         }
       } else {
+        input.regressTo(reset) // Don't swallow 'else if'
         null
       }
     } else {
@@ -878,10 +920,29 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
     whitespaceNoBreak()
     if (check("else")) {
       whitespaceNoBreak()
-      val blk = expressionPart(blockArgsAllowed = true, scalaBlockChainedAllowed = true)
+      val afterElsePos = input.offset()
+      if (check("@@") || (!check("{") && !check("@") && !check("("))) {
+        // We only parse `else` if it is one of the following (with 0 to n whitespaces allowed):
+        // - `else {`
+        // - `else (`
+        // - `else @`
+        input.regressTo(reset)
+        return null
+      }
+      input.regressTo(afterElsePos) // above is just a check, we are not consuming
+      val blk = expressionPart(
+        blockArgsAllowed = true,
+        chainedMethodsAllowed = false,
+        scalaBlockChainedAllowed = true,
+        whitespaceBeforeSimpleParensAllowed = true
+      )
       if (blk != null) {
         Seq(Simple("else"), blk)
       } else {
+        error(
+          "Expected '{ ... }', '@{ ... }' or '(...)' after 'else'. Hint: To ignore 'else...' and render it as plain string instead you can escape @ with @@.",
+          reset
+        )
         null
       }
     } else {
