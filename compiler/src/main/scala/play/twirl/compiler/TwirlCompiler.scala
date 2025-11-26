@@ -471,7 +471,11 @@ object TwirlCompiler {
     Seq(tripleQuote, text.replaceAll(tripleQuote, tripleQuoteReplacement), tripleQuote)
   }
 
-  def visit(elem: collection.Seq[TemplateTree], previous: collection.Seq[Any]): collection.Seq[Any] = {
+  def visit(
+      elem: collection.Seq[TemplateTree],
+      previous: collection.Seq[Any],
+      resultType: String
+  ): collection.Seq[Any] = {
     elem.toList match {
       case head :: tail =>
         visit(
@@ -487,18 +491,27 @@ object TwirlCompiler {
                 grouped.tail.flatMap { t => Seq(",\nformat.raw(", quoteAndEscape(t), ")") }
             case Comment(msg) => previous
             case Display(exp) =>
-              (if (previous.isEmpty) Nil else previous :+ ",") :+ displayVisitedChildren(visit(Seq(exp), Nil))
+              (if (previous.isEmpty) Nil else previous :+ ",") :+ displayVisitedChildren(
+                visit(Seq(exp), Nil, resultType)
+              )
             case ScalaExp(parts) =>
               previous :+ parts.map {
                 case s @ Simple(code) => Source(code, s.pos)
-                case b @ Block(whitespace, args, content) if content.forall(_.isInstanceOf[ScalaExp]) =>
-                  Nil :+ Source(whitespace + "{" + args.getOrElse(""), b.pos) :+ visit(content, Nil) :+ "}"
-                case b @ Block(whitespace, args, content) =>
+                case b @ Block(whitespace, args, _, _, _, content) if content.forall(_.isInstanceOf[ScalaExp]) =>
+                  Nil :+ Source(whitespace + "{" + args.getOrElse(""), b.pos) :+ visit(content, Nil, resultType) :+ "}"
+                case b @ Block(whitespace, args, imports, members, sub, content)
+                    if imports.isEmpty && members.isEmpty && sub.isEmpty =>
                   Nil :+ Source(whitespace + "{" + args.getOrElse(""), b.pos) :+ displayVisitedChildren(
-                    visit(content, Nil)
+                    visit(content, Nil, resultType)
+                  ) :+ "}"
+                case b @ Block(whitespace, args, imports, members, sub, content) =>
+                  Nil :+ Source(whitespace + "{" + args.getOrElse(""), b.pos) :+ templateCode(
+                    BlockTemplate(imports, members, sub, content),
+                    resultType
                   ) :+ "}"
               }
-          }
+          },
+          resultType
         )
       case Nil => previous
     }
@@ -538,7 +551,7 @@ object TwirlCompiler {
 
     val imports = formatImports(template.imports)
 
-    Nil :+ imports :+ "\n" :+ defs :+ "\n" :+ "Seq[Any](" :+ visit(template.content, Nil) :+ ")"
+    Nil :+ imports :+ "\n" :+ defs :+ "\n" :+ "Seq[Any](" :+ visit(template.content, Nil, resultType) :+ ")"
   }
 
   def generateCode(
