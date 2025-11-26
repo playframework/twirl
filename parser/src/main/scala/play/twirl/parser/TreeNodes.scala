@@ -23,7 +23,6 @@ object TreeNodes {
     val content: collection.Seq[TemplateTree]
   }
 
-  case class Params(code: String) extends Positional
   case class Constructor(comment: Option[Comment], params: PosString)
   case class Template(
       constructor: Option[Constructor],
@@ -58,5 +57,4 @@ object TreeNodes {
   case class Block(whitespace: String, args: Option[PosString], content: collection.Seq[TemplateTree])
       extends ScalaExpPart
       with Positional
-  case class Value(ident: PosString, block: Block) extends Positional
 }

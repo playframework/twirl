@@ -44,6 +44,13 @@ val mimaSettings = Seq(
     ProblemFilters.exclude[IncompatibleResultTypeProblem]("play.twirl.parser.TreeNodes#Template._4"),
     // Chaining a scala block is not always allowed in expressionPart
     ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.parser.TwirlParser.expressionPart"),
+    // Remove unused case classes
+    ProblemFilters.exclude[MissingClassProblem]("play.twirl.parser.TreeNodes$Params"),
+    ProblemFilters.exclude[MissingClassProblem]("play.twirl.parser.TreeNodes$Params$"),
+    ProblemFilters.exclude[MissingClassProblem]("play.twirl.parser.TreeNodes$Value"),
+    ProblemFilters.exclude[MissingClassProblem]("play.twirl.parser.TreeNodes$Value$"),
+    ProblemFilters.exclude[MissingFieldProblem]("play.twirl.parser.TreeNodes.Params"),
+    ProblemFilters.exclude[MissingFieldProblem]("play.twirl.parser.TreeNodes.Value"),
   )
 )
 
