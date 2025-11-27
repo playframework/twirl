@@ -16,7 +16,6 @@ object TreeNodes {
     val code: Simple
   }
   trait BaseTemplate extends Positional {
-    val params: PosString
     val imports: collection.Seq[Simple]
     val members: collection.Seq[LocalMember]
     val sub: collection.Seq[SubTemplate]
@@ -44,6 +43,18 @@ object TreeNodes {
       sub: collection.Seq[SubTemplate],
       content: collection.Seq[TemplateTree]
   ) extends BaseTemplate
+  case class BlockTemplate(
+      imports: collection.Seq[Simple],
+      members: collection.Seq[LocalMember],
+      sub: collection.Seq[SubTemplate],
+      content: collection.Seq[TemplateTree],
+  ) extends BaseTemplate {
+
+    /**
+     * If this template contains more than just basic content: imports, vals, defs, sub-templates,...
+     */
+    def rich() = !imports.isEmpty || !members.isEmpty || !sub.isEmpty
+  }
   case class PosString(str: String) extends Positional {
     override def toString: String = str
   }
@@ -54,7 +65,7 @@ object TreeNodes {
   case class Comment(msg: String)                          extends TemplateTree with Positional
   case class ScalaExp(parts: collection.Seq[ScalaExpPart]) extends TemplateTree with Positional
   case class Simple(code: String)                          extends ScalaExpPart with Positional
-  case class Block(whitespace: String, args: Option[PosString], content: collection.Seq[TemplateTree])
+  case class Block(whitespace: String, args: Option[PosString], contents: BlockTemplate)
       extends ScalaExpPart
       with Positional
 }

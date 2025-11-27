@@ -1,0 +1,371 @@
+@****************************************************************************************************************************************************
+ * Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com> *
+ ****************************************************************************************************************************************************@
+
+@(name:String, surname: String, condition: Integer, secondCondition: Integer)
+
+@if(condition == 1) {
+    @import java.lang.Boolean;
+    @lazy val val1 = @{ "value1" }
+    @val1
+    @def1 = @{ "def1" }
+    @def1
+    text1
+    @{
+       "scala block 1"
+    }
+    @*************
+    * Comment #1 *
+    **************@
+    @main(content: Html) = {
+        <div>@content</div>
+    }
+    @link(path: String, page: Int) = @{
+        s"$path/$page"
+    }
+    @header(p1: String, p2: String) = {
+        @val subvalue1 = @{ "value1_sub1" }
+        @subdef1 = { subdef1 @subvalue1 }
+        <header class="@if(p1 == "twirl") @{if(p2 == "play") "play-twirl1" else "twirl1"}">
+            @link(p1, 0) @subdef1
+        </header>
+    }
+    @main {
+        @header(name, surname)
+    }
+    @if(secondCondition == 1) {
+        @lazy val val1 = @{ "shadow_value1" }
+        @val1
+    }
+    @if(secondCondition == 1) {
+        @import java.lang.Boolean;
+        @lazy val val2 = @{ "value2" }
+        @val2
+        @def2 = @{ "def2" }
+        @def2
+        text2
+        @{
+           "scala block 2"
+        }
+        @*************
+        * Comment #2 *
+        **************@
+        @main2(content: Html) = {
+            <div>@content</div>
+        }
+        @link2(path: String, page: Int) = @{
+            s"$path/$page"
+        }
+        @header2(p1: String, p2: String) = {
+            @val subvalue2 = @{ "value2_sub2" }
+            @subdef2 = { subdef2 @subvalue2 }
+            <header class="@if(p1 == "twirl") @{if(p2 == "play") "play-twirl2" else "twirl2"}">
+                @link2(p1, 0) @subdef2
+            </header>
+        }
+        @main2 {
+            @header2(name, surname)
+        }
+    } else if(secondCondition == 2) {
+        @import java.lang.Boolean;
+        @lazy val val3 = @{ "value3" }
+        @val3
+        @def3 = @{ "def3" }
+        @def3
+        text3
+        @{
+           "scala block 3"
+        }
+        @*************
+        * Comment #3 *
+        **************@
+        @main3(content: Html) = {
+            <div>@content</div>
+        }
+        @link3(path: String, page: Int) = @{
+            s"$path/$page"
+        }
+        @header3(p1: String, p2: String) = {
+            @val subvalue3 = @{ "value3_sub3" }
+            @subdef3 = { subdef3 @subvalue3 }
+            <header class="@if(p1 == "twirl") @{if(p2 == "play") "play-twirl3" else "twirl3"}">
+                @link3(p1, 0) @subdef3
+            </header>
+        }
+        @main3 {
+            @header3(name, surname)
+        }
+    } else {
+        @import java.lang.Boolean;
+        @lazy val val4 = @{ "value4" }
+        @val4
+        @def4 = @{ "def4" }
+        @def4
+        text4
+        @{
+           "scala block 4"
+        }
+        @*************
+        * Comment #4 *
+        **************@
+        @main4(content: Html) = {
+            <div>@content</div>
+        }
+        @link4(path: String, page: Int) = @{
+            s"$path/$page"
+        }
+        @header4(p1: String, p2: String) = {
+            @val subvalue4 = @{ "value4_sub4" }
+            @subdef4 = { subdef4 @subvalue4 }
+            <header class="@if(p1 == "twirl") @{if(p2 == "play") "play-twirl4" else "twirl4"}">
+                @link4(p1, 0) @subdef4
+            </header>
+        }
+        @main4 {
+            @header4(name, surname)
+        }
+    }
+} else if(condition == 2) {
+    @import java.lang.Boolean;
+    @lazy val val1 = @{ "elseif_value1" }
+    @val1
+    @def1 = @{ "elseif_def1" }
+    @def1
+    text1
+    @{
+       "elseif_scala block 1"
+    }
+    @*************
+    * Comment #1 *
+    **************@
+    @main(content: Html) = {
+        <div>@content</div>
+    }
+    @link(path: String, page: Int) = @{
+        s"$path/$page"
+    }
+    @header(p1: String, p2: String) = {
+        @val subvalue1 = @{ "elseif_value1_sub1" }
+        @subdef1 = { subdef1 @subvalue1 }
+        <header class="@if(p1 == "twirl") @{if(p2 == "play") "elseif_play-twirl1" else "elseif_twirl1"}">
+            @link(p1, 0) @subdef1
+        </header>
+    }
+    @main {
+        @header(name, surname)
+    }
+    @if(secondCondition == 1) {
+        @lazy val val1 = @{ "elseif_shadow_value1" }
+        @val1
+    }
+    @if(secondCondition == 1) {
+        @import java.lang.Boolean;
+        @lazy val val2 = @{ "elseif_value2" }
+        @val2
+        @def2 = @{ "elseif_def2" }
+        @def2
+        text2
+        @{
+           "elseif_scala block 2"
+        }
+        @*************
+        * Comment #2 *
+        **************@
+        @main2(content: Html) = {
+            <div>@content</div>
+        }
+        @link2(path: String, page: Int) = @{
+            s"$path/$page"
+        }
+        @header2(p1: String, p2: String) = {
+            @val subvalue2 = @{ "elseif_value2_sub2" }
+            @subdef2 = { subdef2 @subvalue2 }
+            <header class="@if(p1 == "twirl") @{if(p2 == "play") "elseif_play-twirl2" else "elseif_twirl2"}">
+                @link2(p1, 0) @subdef2
+            </header>
+        }
+        @main2 {
+            @header2(name, surname)
+        }
+    } else if(secondCondition == 2) {
+        @import java.lang.Boolean;
+        @lazy val val3 = @{ "elseif_value3" }
+        @val3
+        @def3 = @{ "elseif_def3" }
+        @def3
+        text3
+        @{
+           "elseif_scala block 3"
+        }
+        @*************
+        * Comment #3 *
+        **************@
+        @main3(content: Html) = {
+            <div>@content</div>
+        }
+        @link3(path: String, page: Int) = @{
+            s"$path/$page"
+        }
+        @header3(p1: String, p2: String) = {
+            @val subvalue3 = @{ "elseif_value3_sub3" }
+            @subdef3 = { subdef3 @subvalue3 }
+            <header class="@if(p1 == "twirl") @{if(p2 == "play") "elseif_play-twirl3" else "elseif_twirl3"}">
+                @link3(p1, 0) @subdef3
+            </header>
+        }
+        @main3 {
+            @header3(name, surname)
+        }
+    } else {
+        @import java.lang.Boolean;
+        @lazy val val4 = @{ "elseif_value4" }
+        @val4
+        @def4 = @{ "elseif_def4" }
+        @def4
+        text4
+        @{
+           "elseif_scala block 4"
+        }
+        @*************
+        * Comment #4 *
+        **************@
+        @main4(content: Html) = {
+            <div>@content</div>
+        }
+        @link4(path: String, page: Int) = @{
+            s"$path/$page"
+        }
+        @header4(p1: String, p2: String) = {
+            @val subvalue4 = @{ "elseif_value4_sub4" }
+            @subdef4 = { subdef4 @subvalue4 }
+            <header class="@if(p1 == "twirl") @{if(p2 == "play") "elseif_play-twirl4" else "elseif_twirl4"}">
+                @link4(p1, 0) @subdef4
+            </header>
+        }
+        @main4 {
+            @header4(name, surname)
+        }
+    }
+} else {
+    @import java.lang.Boolean;
+    @lazy val val1 = @{ "else_value1" }
+    @val1
+    @def1 = @{ "else_def1" }
+    @def1
+    text1
+    @{
+       "else_scala block 1"
+    }
+    @*************
+    * Comment #1 *
+    **************@
+    @main(content: Html) = {
+        <div>@content</div>
+    }
+    @link(path: String, page: Int) = @{
+        s"$path/$page"
+    }
+    @header(p1: String, p2: String) = {
+        @val subvalue1 = @{ "else_value1_sub1" }
+        @subdef1 = { subdef1 @subvalue1 }
+        <header class="@if(p1 == "twirl") @{if(p2 == "play") "else_play-twirl1" else "else_twirl1"}">
+            @link(p1, 0) @subdef1
+        </header>
+    }
+    @main {
+        @header(name, surname)
+    }
+    @if(secondCondition == 1) {
+        @lazy val val1 = @{ "else_shadow_value1" }
+        @val1
+    }
+    @if(secondCondition == 1) {
+        @import java.lang.Boolean;
+        @lazy val val2 = @{ "else_value2" }
+        @val2
+        @def2 = @{ "else_def2" }
+        @def2
+        text2
+        @{
+           "else_scala block 2"
+        }
+        @*************
+        * Comment #2 *
+        **************@
+        @main2(content: Html) = {
+            <div>@content</div>
+        }
+        @link2(path: String, page: Int) = @{
+            s"$path/$page"
+        }
+        @header2(p1: String, p2: String) = {
+            @val subvalue2 = @{ "else_value2_sub2" }
+            @subdef2 = { subdef2 @subvalue2 }
+            <header class="@if(p1 == "twirl") @{if(p2 == "play") "else_play-twirl2" else "else_twirl2"}">
+                @link2(p1, 0) @subdef2
+            </header>
+        }
+        @main2 {
+            @header2(name, surname)
+        }
+    } else if(secondCondition == 2) {
+        @import java.lang.Boolean;
+        @lazy val val3 = @{ "else_value3" }
+        @val3
+        @def3 = @{ "else_def3" }
+        @def3
+        text3
+        @{
+           "else_scala block 3"
+        }
+        @*************
+        * Comment #3 *
+        **************@
+        @main3(content: Html) = {
+            <div>@content</div>
+        }
+        @link3(path: String, page: Int) = @{
+            s"$path/$page"
+        }
+        @header3(p1: String, p2: String) = {
+            @val subvalue3 = @{ "else_value3_sub3" }
+            @subdef3 = { subdef3 @subvalue3 }
+            <header class="@if(p1 == "twirl") @{if(p2 == "play") "else_play-twirl3" else "else_twirl3"}">
+                @link3(p1, 0) @subdef3
+            </header>
+        }
+        @main3 {
+            @header3(name, surname)
+        }
+    } else {
+        @import java.lang.Boolean;
+        @lazy val val4 = @{ "else_value4" }
+        @val4
+        @def4 = @{ "else_def4" }
+        @def4
+        text4
+        @{
+           "else_scala block 4"
+        }
+        @*************
+        * Comment #4 *
+        **************@
+        @main4(content: Html) = {
+            <div>@content</div>
+        }
+        @link4(path: String, page: Int) = @{
+            s"$path/$page"
+        }
+        @header4(p1: String, p2: String) = {
+            @val subvalue4 = @{ "else_value4_sub4" }
+            @subdef4 = { subdef4 @subvalue4 }
+            <header class="@if(p1 == "twirl") @{if(p2 == "play") "else_play-twirl4" else "else_twirl4"}">
+                @link4(p1, 0) @subdef4
+            </header>
+        }
+        @main4 {
+            @header4(name, surname)
+        }
+    }
+}
+always visible

@@ -51,6 +51,15 @@ val mimaSettings = Seq(
     ProblemFilters.exclude[MissingClassProblem]("play.twirl.parser.TreeNodes$Value$"),
     ProblemFilters.exclude[MissingFieldProblem]("play.twirl.parser.TreeNodes.Params"),
     ProblemFilters.exclude[MissingFieldProblem]("play.twirl.parser.TreeNodes.Value"),
+    // Allow imports, val, def and subtemplates in body of 'if'/'else if'/'else'
+    ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.compiler.TwirlCompiler.visit"),
+    ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.parser.TwirlParser.block"),
+    ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.parser.TreeNodes#Block.content"),
+    ProblemFilters.exclude[IncompatibleMethTypeProblem]("play.twirl.parser.TreeNodes#Block.apply"),
+    ProblemFilters.exclude[IncompatibleMethTypeProblem]("play.twirl.parser.TreeNodes#Block.copy"),
+    ProblemFilters.exclude[IncompatibleMethTypeProblem]("play.twirl.parser.TreeNodes#Block.this"),
+    ProblemFilters.exclude[IncompatibleResultTypeProblem]("play.twirl.parser.TreeNodes#Block.copy$default$3"),
+    ProblemFilters.exclude[IncompatibleResultTypeProblem]("play.twirl.parser.TreeNodes#Block._3"),
   )
 )
 
