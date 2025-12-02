@@ -199,6 +199,172 @@ class CompilerSpec extends AnyWordSpec with Matchers {
       text must be("<h1>Hello World!</h1>")
     }
 
+    "compile successfully (if/else/elseIf)" when {
+      "input is in if clause" in {
+        val helper = newCompilerHelper
+        val hello  = helper.compile[((Int) => Html)]("elseIf.scala.html", "html.elseIf").static(0).toString.trim
+        hello must be("hello")
+      }
+      "input is in else if clause" in {
+        val helper = newCompilerHelper
+        val hello  = helper.compile[((Int) => Html)]("elseIf.scala.html", "html.elseIf").static(1).toString.trim
+        hello must be("world")
+      }
+      "input is in else clause" in {
+        val helper = newCompilerHelper
+        val hello  = helper.compile[((Int) => Html)]("elseIf.scala.html", "html.elseIf").static(25).toString.trim
+        hello must be("fail!")
+      }
+
+      "if with brackets" in {
+        val helper = newCompilerHelper
+        val hello  = helper.compile[(String => Html)]("ifWithBrackets.scala.html", "html.ifWithBrackets")
+        hello.static("twirl").toString.trim must be("twirl")
+        hello.static("something-else").toString.trim must be("")
+      }
+
+      "if without brackets" in {
+        val helper = newCompilerHelper
+        val hello = helper.compile[((String, String) => Html)]("ifWithoutBrackets.scala.html", "html.ifWithoutBrackets")
+        hello.static("twirl", "play").toString.trim must be("twirl-play")
+        hello.static("twirl", "something-else").toString.trim must be("twirl")
+      }
+
+      "complex if without brackets" in {
+        val helper = newCompilerHelper
+        val hello  =
+          helper
+            .compile[((String, String) => Html)]("ifWithoutBracketsComplex.scala.html", "html.ifWithoutBracketsComplex")
+        hello.static("twirl", "play").toString.trim must include("""<header class="play-twirl">""")
+        hello.static("twirl", "something-else").toString.trim must include("""<header class="twirl">""")
+      }
+
+      "'if'/'else if'/'else' containing imports, val, def and subtemplates" in {
+        val helper = newCompilerHelper
+        val hello  =
+          helper.compile[((String, String, Integer, Integer) => Html)](
+            "ifimportsValDefSubtemplates.scala.html",
+            "html.ifimportsValDefSubtemplates"
+          )
+        hello.static("twirl", "play", 1, 1).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """value1def1text1scalablock1<div><headerclass="play-twirl1">twirl/0subdef1value1_sub1</header></div>shadow_value1value2def2text2scalablock2<div><headerclass="play-twirl2">twirl/0subdef2value2_sub2</header></div>alwaysvisible"""
+        )
+        hello.static("twirl", "play", 1, 2).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """value1def1text1scalablock1<div><headerclass="play-twirl1">twirl/0subdef1value1_sub1</header></div>value3def3text3scalablock3<div><headerclass="play-twirl3">twirl/0subdef3value3_sub3</header></div>alwaysvisible"""
+        )
+        hello.static("twirl", "play", 1, 3).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """value1def1text1scalablock1<div><headerclass="play-twirl1">twirl/0subdef1value1_sub1</header></div>value4def4text4scalablock4<div><headerclass="play-twirl4">twirl/0subdef4value4_sub4</header></div>alwaysvisible"""
+        )
+
+        hello.static("twirl", "play", 2, 1).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """elseif_value1elseif_def1text1elseif_scalablock1<div><headerclass="elseif_play-twirl1">twirl/0subdef1elseif_value1_sub1</header></div>elseif_shadow_value1elseif_value2elseif_def2text2elseif_scalablock2<div><headerclass="elseif_play-twirl2">twirl/0subdef2elseif_value2_sub2</header></div>alwaysvisible"""
+        )
+        hello.static("twirl", "play", 2, 2).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """elseif_value1elseif_def1text1elseif_scalablock1<div><headerclass="elseif_play-twirl1">twirl/0subdef1elseif_value1_sub1</header></div>elseif_value3elseif_def3text3elseif_scalablock3<div><headerclass="elseif_play-twirl3">twirl/0subdef3elseif_value3_sub3</header></div>alwaysvisible"""
+        )
+        hello.static("twirl", "play", 2, 3).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """elseif_value1elseif_def1text1elseif_scalablock1<div><headerclass="elseif_play-twirl1">twirl/0subdef1elseif_value1_sub1</header></div>elseif_value4elseif_def4text4elseif_scalablock4<div><headerclass="elseif_play-twirl4">twirl/0subdef4elseif_value4_sub4</header></div>alwaysvisible"""
+        )
+
+        hello.static("twirl", "play", 3, 1).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """else_value1else_def1text1else_scalablock1<div><headerclass="else_play-twirl1">twirl/0subdef1else_value1_sub1</header></div>else_shadow_value1else_value2else_def2text2else_scalablock2<div><headerclass="else_play-twirl2">twirl/0subdef2else_value2_sub2</header></div>alwaysvisible"""
+        )
+        hello.static("twirl", "play", 3, 2).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """else_value1else_def1text1else_scalablock1<div><headerclass="else_play-twirl1">twirl/0subdef1else_value1_sub1</header></div>else_value3else_def3text3else_scalablock3<div><headerclass="else_play-twirl3">twirl/0subdef3else_value3_sub3</header></div>alwaysvisible"""
+        )
+        hello.static("twirl", "play", 3, 3).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """else_value1else_def1text1else_scalablock1<div><headerclass="else_play-twirl1">twirl/0subdef1else_value1_sub1</header></div>else_value4else_def4text4else_scalablock4<div><headerclass="else_play-twirl4">twirl/0subdef4else_value4_sub4</header></div>alwaysvisible"""
+        )
+
+        hello.static("twirl", "something-else", 1, 1).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """value1def1text1scalablock1<div><headerclass="twirl1">twirl/0subdef1value1_sub1</header></div>shadow_value1value2def2text2scalablock2<div><headerclass="twirl2">twirl/0subdef2value2_sub2</header></div>alwaysvisible"""
+        )
+        hello.static("twirl", "something-else", 1, 2).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """value1def1text1scalablock1<div><headerclass="twirl1">twirl/0subdef1value1_sub1</header></div>value3def3text3scalablock3<div><headerclass="twirl3">twirl/0subdef3value3_sub3</header></div>alwaysvisible"""
+        )
+        hello.static("twirl", "something-else", 1, 3).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """value1def1text1scalablock1<div><headerclass="twirl1">twirl/0subdef1value1_sub1</header></div>value4def4text4scalablock4<div><headerclass="twirl4">twirl/0subdef4value4_sub4</header></div>alwaysvisible"""
+        )
+
+        hello.static("twirl", "something-else", 2, 1).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """elseif_value1elseif_def1text1elseif_scalablock1<div><headerclass="elseif_twirl1">twirl/0subdef1elseif_value1_sub1</header></div>elseif_shadow_value1elseif_value2elseif_def2text2elseif_scalablock2<div><headerclass="elseif_twirl2">twirl/0subdef2elseif_value2_sub2</header></div>alwaysvisible"""
+        )
+        hello.static("twirl", "something-else", 2, 2).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """elseif_value1elseif_def1text1elseif_scalablock1<div><headerclass="elseif_twirl1">twirl/0subdef1elseif_value1_sub1</header></div>elseif_value3elseif_def3text3elseif_scalablock3<div><headerclass="elseif_twirl3">twirl/0subdef3elseif_value3_sub3</header></div>alwaysvisible"""
+        )
+        hello.static("twirl", "something-else", 2, 3).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """elseif_value1elseif_def1text1elseif_scalablock1<div><headerclass="elseif_twirl1">twirl/0subdef1elseif_value1_sub1</header></div>elseif_value4elseif_def4text4elseif_scalablock4<div><headerclass="elseif_twirl4">twirl/0subdef4elseif_value4_sub4</header></div>alwaysvisible"""
+        )
+
+        hello.static("twirl", "something-else", 3, 1).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """else_value1else_def1text1else_scalablock1<div><headerclass="else_twirl1">twirl/0subdef1else_value1_sub1</header></div>else_shadow_value1else_value2else_def2text2else_scalablock2<div><headerclass="else_twirl2">twirl/0subdef2else_value2_sub2</header></div>alwaysvisible"""
+        )
+        hello.static("twirl", "something-else", 3, 2).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """else_value1else_def1text1else_scalablock1<div><headerclass="else_twirl1">twirl/0subdef1else_value1_sub1</header></div>else_value3else_def3text3else_scalablock3<div><headerclass="else_twirl3">twirl/0subdef3else_value3_sub3</header></div>alwaysvisible"""
+        )
+        hello.static("twirl", "something-else", 3, 3).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """else_value1else_def1text1else_scalablock1<div><headerclass="else_twirl1">twirl/0subdef1else_value1_sub1</header></div>else_value4else_def4text4else_scalablock4<div><headerclass="else_twirl4">twirl/0subdef4else_value4_sub4</header></div>alwaysvisible"""
+        )
+      }
+    }
+
+    "compile successfully (local definitions)" in {
+      val helper = newCompilerHelper
+      val hello  =
+        helper.compile[(() => Html)]("localDef.scala.html", "html.localDef")
+      hello.static().toString.trim must be(
+        "Play-Framework-Vienna-Austria-Europe-The High Velocity Web Framework For Java and Scala-2023"
+      )
+    }
+
+    "compile successfully (block with tuple)" in {
+      val helper = newCompilerHelper
+      val hello  = helper.compile[(Seq[(String, String)] => Html)]("blockWithTuple.scala.html", "html.blockWithTuple")
+
+      val args = Seq[(String, String)](
+        "the-key" -> "the-value"
+      )
+      hello.static(args).toString.trim must be("the-key => the-value")
+    }
+
+    "compile successfully (block with nested tuples)" in {
+      val helper = newCompilerHelper
+      val hello  =
+        helper.compile[(Seq[(String, String)] => Html)]("blockWithNestedTuple.scala.html", "html.blockWithNestedTuple")
+
+      val args = Seq[(String, String)](
+        "the-key" -> "the-value"
+      )
+      hello.static(args).toString.trim must be("the-key => the-value")
+    }
+
+    "compile successfully (nested templates)" in {
+      val helper = newCompilerHelper
+      val hello  = helper.compile[(() => Html)]("nestedTemplates.scala.html", "html.nestedTemplates")
+      hello.static().toString.trim.replaceAll(" ", "").replaceAll("\n", "") must be(
+        """_same_random_in_val__same_random_in_lazy_val__first__defstr__tmpl-defstr__defstr_goodtext_in_between_inner_inner_tmpl_
+          |__tmplinner_defstr___samename1__samedefname1__samename2__samedefname2_
+          |_same_random_in_val__same_random_in_lazy_val__second__defstr__tmpl-defstr__defstr_goodtext_in_between_inner_inner_tmpl_
+          |__tmplinner_defstr___samename1__samedefname1__samename2__samedefname2_""".stripMargin.replaceAll("\n", "")
+      )
+    }
+
+    "compile successfully ([lazy] val)" in {
+      val helper = newCompilerHelper
+      val hello  = helper.compile[(() => Html)]("vals.scala.html", "html.vals")
+      hello.static().toString.trim.replaceAll(" ", "").replaceAll("\n", "") must be(
+        """step1:0_step2:0_step3:1_step4:5_step5:0_step6:0_step7:0_step8:0
+          |_step9:0_step10:4_step11:4_step12:5
+          |""".stripMargin.replaceAll("\n", "")
+      )
+    }
+
+    "keep order of member and template blocks, as defined in the source template" in {
+      val helper = newCompilerHelper
+      val hello  = helper.compile[(() => Html)]("codeBlockOrder.scala.html", "html.codeBlockOrder")
+      hello.static().toString.trim.replaceAll(" ", "").replaceAll("\n", "") must be("123456789101112")
+    }
+
     "fail compilation for error.scala.html" in {
       val helper = newCompilerHelper
       the[CompilationError] thrownBy helper.compile[(() => Html)]("error.scala.html", "html.error") must have(
@@ -283,171 +449,6 @@ class CompilerSpec extends AnyWordSpec with Matchers {
     "split after a surrogate pair" in {
       (StringGrouper(line, 7) must contain).allOf("abcde" + beer, "fg")
     }
-  }
-
-  "compile successfully (elseIf)" when {
-    "input is in if clause" in {
-      val helper = newCompilerHelper
-      val hello  = helper.compile[((Int) => Html)]("elseIf.scala.html", "html.elseIf").static(0).toString.trim
-      hello must be("hello")
-    }
-    "input is in else if clause" in {
-      val helper = newCompilerHelper
-      val hello  = helper.compile[((Int) => Html)]("elseIf.scala.html", "html.elseIf").static(1).toString.trim
-      hello must be("world")
-    }
-    "input is in else clause" in {
-      val helper = newCompilerHelper
-      val hello  = helper.compile[((Int) => Html)]("elseIf.scala.html", "html.elseIf").static(25).toString.trim
-      hello must be("fail!")
-    }
-  }
-
-  "compile successfully (if with brackets)" in {
-    val helper = newCompilerHelper
-    val hello  = helper.compile[(String => Html)]("ifWithBrackets.scala.html", "html.ifWithBrackets")
-    hello.static("twirl").toString.trim must be("twirl")
-    hello.static("something-else").toString.trim must be("")
-  }
-
-  "compile successfully (if without brackets)" in {
-    val helper = newCompilerHelper
-    val hello  = helper.compile[((String, String) => Html)]("ifWithoutBrackets.scala.html", "html.ifWithoutBrackets")
-    hello.static("twirl", "play").toString.trim must be("twirl-play")
-    hello.static("twirl", "something-else").toString.trim must be("twirl")
-  }
-
-  "compile successfully (complex if without brackets)" in {
-    val helper = newCompilerHelper
-    val hello  =
-      helper.compile[((String, String) => Html)]("ifWithoutBracketsComplex.scala.html", "html.ifWithoutBracketsComplex")
-    hello.static("twirl", "play").toString.trim must include("""<header class="play-twirl">""")
-    hello.static("twirl", "something-else").toString.trim must include("""<header class="twirl">""")
-  }
-
-  "compile successfully ('if'/'else if'/'else' containing imports, val, def and subtemplates)" in {
-    val helper = newCompilerHelper
-    val hello  =
-      helper.compile[((String, String, Integer, Integer) => Html)](
-        "ifimportsValDefSubtemplates.scala.html",
-        "html.ifimportsValDefSubtemplates"
-      )
-    hello.static("twirl", "play", 1, 1).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
-      """value1def1text1scalablock1<div><headerclass="play-twirl1">twirl/0subdef1value1_sub1</header></div>shadow_value1value2def2text2scalablock2<div><headerclass="play-twirl2">twirl/0subdef2value2_sub2</header></div>alwaysvisible"""
-    )
-    hello.static("twirl", "play", 1, 2).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
-      """value1def1text1scalablock1<div><headerclass="play-twirl1">twirl/0subdef1value1_sub1</header></div>value3def3text3scalablock3<div><headerclass="play-twirl3">twirl/0subdef3value3_sub3</header></div>alwaysvisible"""
-    )
-    hello.static("twirl", "play", 1, 3).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
-      """value1def1text1scalablock1<div><headerclass="play-twirl1">twirl/0subdef1value1_sub1</header></div>value4def4text4scalablock4<div><headerclass="play-twirl4">twirl/0subdef4value4_sub4</header></div>alwaysvisible"""
-    )
-
-    hello.static("twirl", "play", 2, 1).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
-      """elseif_value1elseif_def1text1elseif_scalablock1<div><headerclass="elseif_play-twirl1">twirl/0subdef1elseif_value1_sub1</header></div>elseif_shadow_value1elseif_value2elseif_def2text2elseif_scalablock2<div><headerclass="elseif_play-twirl2">twirl/0subdef2elseif_value2_sub2</header></div>alwaysvisible"""
-    )
-    hello.static("twirl", "play", 2, 2).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
-      """elseif_value1elseif_def1text1elseif_scalablock1<div><headerclass="elseif_play-twirl1">twirl/0subdef1elseif_value1_sub1</header></div>elseif_value3elseif_def3text3elseif_scalablock3<div><headerclass="elseif_play-twirl3">twirl/0subdef3elseif_value3_sub3</header></div>alwaysvisible"""
-    )
-    hello.static("twirl", "play", 2, 3).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
-      """elseif_value1elseif_def1text1elseif_scalablock1<div><headerclass="elseif_play-twirl1">twirl/0subdef1elseif_value1_sub1</header></div>elseif_value4elseif_def4text4elseif_scalablock4<div><headerclass="elseif_play-twirl4">twirl/0subdef4elseif_value4_sub4</header></div>alwaysvisible"""
-    )
-
-    hello.static("twirl", "play", 3, 1).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
-      """else_value1else_def1text1else_scalablock1<div><headerclass="else_play-twirl1">twirl/0subdef1else_value1_sub1</header></div>else_shadow_value1else_value2else_def2text2else_scalablock2<div><headerclass="else_play-twirl2">twirl/0subdef2else_value2_sub2</header></div>alwaysvisible"""
-    )
-    hello.static("twirl", "play", 3, 2).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
-      """else_value1else_def1text1else_scalablock1<div><headerclass="else_play-twirl1">twirl/0subdef1else_value1_sub1</header></div>else_value3else_def3text3else_scalablock3<div><headerclass="else_play-twirl3">twirl/0subdef3else_value3_sub3</header></div>alwaysvisible"""
-    )
-    hello.static("twirl", "play", 3, 3).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
-      """else_value1else_def1text1else_scalablock1<div><headerclass="else_play-twirl1">twirl/0subdef1else_value1_sub1</header></div>else_value4else_def4text4else_scalablock4<div><headerclass="else_play-twirl4">twirl/0subdef4else_value4_sub4</header></div>alwaysvisible"""
-    )
-
-    hello.static("twirl", "something-else", 1, 1).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
-      """value1def1text1scalablock1<div><headerclass="twirl1">twirl/0subdef1value1_sub1</header></div>shadow_value1value2def2text2scalablock2<div><headerclass="twirl2">twirl/0subdef2value2_sub2</header></div>alwaysvisible"""
-    )
-    hello.static("twirl", "something-else", 1, 2).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
-      """value1def1text1scalablock1<div><headerclass="twirl1">twirl/0subdef1value1_sub1</header></div>value3def3text3scalablock3<div><headerclass="twirl3">twirl/0subdef3value3_sub3</header></div>alwaysvisible"""
-    )
-    hello.static("twirl", "something-else", 1, 3).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
-      """value1def1text1scalablock1<div><headerclass="twirl1">twirl/0subdef1value1_sub1</header></div>value4def4text4scalablock4<div><headerclass="twirl4">twirl/0subdef4value4_sub4</header></div>alwaysvisible"""
-    )
-
-    hello.static("twirl", "something-else", 2, 1).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
-      """elseif_value1elseif_def1text1elseif_scalablock1<div><headerclass="elseif_twirl1">twirl/0subdef1elseif_value1_sub1</header></div>elseif_shadow_value1elseif_value2elseif_def2text2elseif_scalablock2<div><headerclass="elseif_twirl2">twirl/0subdef2elseif_value2_sub2</header></div>alwaysvisible"""
-    )
-    hello.static("twirl", "something-else", 2, 2).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
-      """elseif_value1elseif_def1text1elseif_scalablock1<div><headerclass="elseif_twirl1">twirl/0subdef1elseif_value1_sub1</header></div>elseif_value3elseif_def3text3elseif_scalablock3<div><headerclass="elseif_twirl3">twirl/0subdef3elseif_value3_sub3</header></div>alwaysvisible"""
-    )
-    hello.static("twirl", "something-else", 2, 3).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
-      """elseif_value1elseif_def1text1elseif_scalablock1<div><headerclass="elseif_twirl1">twirl/0subdef1elseif_value1_sub1</header></div>elseif_value4elseif_def4text4elseif_scalablock4<div><headerclass="elseif_twirl4">twirl/0subdef4elseif_value4_sub4</header></div>alwaysvisible"""
-    )
-
-    hello.static("twirl", "something-else", 3, 1).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
-      """else_value1else_def1text1else_scalablock1<div><headerclass="else_twirl1">twirl/0subdef1else_value1_sub1</header></div>else_shadow_value1else_value2else_def2text2else_scalablock2<div><headerclass="else_twirl2">twirl/0subdef2else_value2_sub2</header></div>alwaysvisible"""
-    )
-    hello.static("twirl", "something-else", 3, 2).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
-      """else_value1else_def1text1else_scalablock1<div><headerclass="else_twirl1">twirl/0subdef1else_value1_sub1</header></div>else_value3else_def3text3else_scalablock3<div><headerclass="else_twirl3">twirl/0subdef3else_value3_sub3</header></div>alwaysvisible"""
-    )
-    hello.static("twirl", "something-else", 3, 3).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
-      """else_value1else_def1text1else_scalablock1<div><headerclass="else_twirl1">twirl/0subdef1else_value1_sub1</header></div>else_value4else_def4text4else_scalablock4<div><headerclass="else_twirl4">twirl/0subdef4else_value4_sub4</header></div>alwaysvisible"""
-    )
-  }
-
-  "compile successfully (local definitions)" in {
-    val helper = newCompilerHelper
-    val hello  =
-      helper.compile[(() => Html)]("localDef.scala.html", "html.localDef")
-    hello.static().toString.trim must be(
-      "Play-Framework-Vienna-Austria-Europe-The High Velocity Web Framework For Java and Scala-2023"
-    )
-  }
-
-  "compile successfully (block with tuple)" in {
-    val helper = newCompilerHelper
-    val hello  = helper.compile[(Seq[(String, String)] => Html)]("blockWithTuple.scala.html", "html.blockWithTuple")
-
-    val args = Seq[(String, String)](
-      "the-key" -> "the-value"
-    )
-    hello.static(args).toString.trim must be("the-key => the-value")
-  }
-
-  "compile successfully (block with nested tuples)" in {
-    val helper = newCompilerHelper
-    val hello  =
-      helper.compile[(Seq[(String, String)] => Html)]("blockWithNestedTuple.scala.html", "html.blockWithNestedTuple")
-
-    val args = Seq[(String, String)](
-      "the-key" -> "the-value"
-    )
-    hello.static(args).toString.trim must be("the-key => the-value")
-  }
-
-  "compile successfully (nested templates)" in {
-    val helper = newCompilerHelper
-    val hello  = helper.compile[(() => Html)]("nestedTemplates.scala.html", "html.nestedTemplates")
-    hello.static().toString.trim.replaceAll(" ", "").replaceAll("\n", "") must be(
-      """_same_random_in_val__same_random_in_lazy_val__first__defstr__tmpl-defstr__defstr_goodtext_in_between_inner_inner_tmpl_
-        |__tmplinner_defstr___samename1__samedefname1__samename2__samedefname2_
-        |_same_random_in_val__same_random_in_lazy_val__second__defstr__tmpl-defstr__defstr_goodtext_in_between_inner_inner_tmpl_
-        |__tmplinner_defstr___samename1__samedefname1__samename2__samedefname2_""".stripMargin.replaceAll("\n", "")
-    )
-  }
-
-  "compile successfully ([lazy] val)" in {
-    val helper = newCompilerHelper
-    val hello  = helper.compile[(() => Html)]("vals.scala.html", "html.vals")
-    hello.static().toString.trim.replaceAll(" ", "").replaceAll("\n", "") must be(
-      """step1:0_step2:0_step3:1_step4:5_step5:0_step6:0_step7:0_step8:0
-        |_step9:0_step10:4_step11:4_step12:5
-        |""".stripMargin.replaceAll("\n", "")
-    )
-  }
-
-  "keep order of member and template blocks, as defined in the source template" in {
-    val helper = newCompilerHelper
-    val hello  = helper.compile[(() => Html)]("codeBlockOrder.scala.html", "html.codeBlockOrder")
-    hello.static().toString.trim.replaceAll(" ", "").replaceAll("\n", "") must be("123456789101112")
   }
 
   "ScalaCompat" should {
