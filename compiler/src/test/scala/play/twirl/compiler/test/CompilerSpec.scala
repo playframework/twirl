@@ -200,20 +200,23 @@ class CompilerSpec extends AnyWordSpec with Matchers {
     }
 
     "fail compilation for error.scala.html" in {
+      val msg    = if (BuildInfo.scalaVersion.startsWith("3.")) "Not found: world" else "not found: value world"
       val helper = newCompilerHelper
       the[CompilationError] thrownBy helper.compile[(() => Html)]("error.scala.html", "html.error") must have(
         Symbol("line")(5),
-//        Symbol("column")(12) TODO: need fix https://github.com/playframework/twirl/issues/571 to back
+        Symbol("message")(msg),
         Symbol("column")(463)
       )
     }
 
     "fail compilation for errorInTemplateArgs.scala.html" in {
       val helper = newCompilerHelper
+      val msg    =
+        if (BuildInfo.scalaVersion.startsWith("3.")) "':' expected, but ')' found" else "':' expected but ')' found."
       the[CompilationError] thrownBy helper
         .compile[(() => Html)]("errorInTemplateArgs.scala.html", "html.errorInTemplateArgs") must have(
         Symbol("line")(5),
-//        Symbol("column")(6) TODO: need fix https://github.com/playframework/twirl/issues/571 to back
+        Symbol("message")(msg),
         Symbol("column")(458)
       )
     }
