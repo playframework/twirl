@@ -10,6 +10,7 @@ import play.twirl.parser.TreeNodes._
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
+import scala.collection.mutable.ArrayBuffer
 import scala.collection.mutable.ListBuffer
 
 class ParserSpec extends AnyWordSpec with Matchers with Inside {
@@ -1244,6 +1245,286 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
       "fail to define var when empty parameter list is given" in {
         the[RuntimeException] thrownBy parseTemplateString(
           """@var field() = @{ "bar1" }""".stripMargin
+        ) must have(
+          Symbol("message")(
+            "Template failed to parse: Invalid variable definition: 'field' cannot have parameter lists."
+          )
+        )
+      }
+    }
+
+    "handle local var for template code blocks" when {
+      "allow reassigning variable" in {
+        val tmpl = parseTemplateString(
+          """@var field = { "bar1" }
+            |@field = { "bar2" }
+            |@field""".stripMargin
+        )
+
+        tmpl.members.size mustBe 0
+
+        val subTemplate = tmpl.sub(0)
+        subTemplate.name.str mustBe "field"
+        subTemplate.declaration mustBe Left(true)
+        subTemplate.content mustBe ArrayBuffer(Plain(" "), Plain(""""bar1" """))
+
+        tmpl.content(0) mustBe Plain("""
+                                       |""".stripMargin)
+        tmpl.content(1) mustBe Reassignment(
+          Left(
+            SubTemplate(
+              Left(false),
+              PosString("field"),
+              PosString(""),
+              ArrayBuffer(),
+              ArrayBuffer(),
+              ArrayBuffer(),
+              ArrayBuffer(Plain(" "), Plain(""""bar2" """))
+            )
+          )
+        )
+        tmpl.content(2) mustBe Plain("""
+                                       |""".stripMargin)
+        tmpl.content(3) mustBe Display(ScalaExp(ListBuffer(Simple("field"))))
+        tmpl.content.size mustBe 4
+      }
+
+      "allow reassigning variable in if/elseif/else" in {
+        val tmpl = parseTemplateString(
+          """@(condition: Integer, secondCondition: Integer)
+            |@var field = { bar1 }
+            |@if(condition == 1) {
+            |  @field = { bar2 }
+            |} else if(secondCondition == 1) {
+            |  @field = { bar3 }
+            |} else {
+            |  @field = { bar4 }
+            |}
+            |@field""".stripMargin
+        )
+        tmpl.params.str mustBe "(condition: Integer, secondCondition: Integer)"
+
+        tmpl.members.size mustBe 0
+
+        val subTemplate = tmpl.sub(0)
+        subTemplate.name.str mustBe "field"
+        subTemplate.declaration mustBe Left(true)
+        subTemplate.content mustBe ArrayBuffer(Plain(" "), Plain("bar1 "))
+
+        tmpl.content(0) mustBe Plain("""
+                                       |""".stripMargin)
+        tmpl.content(1) mustBe Display(
+          ScalaExp(
+            ListBuffer(
+              Simple("if(condition == 1)"),
+              Block(
+                " ",
+                None,
+                BlockTemplate(
+                  ArrayBuffer(),
+                  ArrayBuffer(),
+                  ArrayBuffer(),
+                  ArrayBuffer(
+                    Plain("""
+                            |  """.stripMargin),
+                    Reassignment(
+                      Left(
+                        SubTemplate(
+                          Left(false),
+                          PosString("field"),
+                          PosString(""),
+                          ArrayBuffer(),
+                          ArrayBuffer(),
+                          ArrayBuffer(),
+                          ArrayBuffer(Plain(" "), Plain("bar2 "))
+                        )
+                      )
+                    ),
+                    Plain("""
+                            |""".stripMargin)
+                  )
+                )
+              ),
+              Simple("else if(secondCondition == 1)"),
+              Block(
+                " ",
+                None,
+                BlockTemplate(
+                  ArrayBuffer(),
+                  ArrayBuffer(),
+                  ArrayBuffer(),
+                  ArrayBuffer(
+                    Plain("""
+                            |  """.stripMargin),
+                    Reassignment(
+                      Left(
+                        SubTemplate(
+                          Left(false),
+                          PosString("field"),
+                          PosString(""),
+                          ArrayBuffer(),
+                          ArrayBuffer(),
+                          ArrayBuffer(),
+                          ArrayBuffer(Plain(" "), Plain("bar3 "))
+                        )
+                      )
+                    ),
+                    Plain("""
+                            |""".stripMargin)
+                  )
+                )
+              ),
+              Simple("else"),
+              Block(
+                "",
+                None,
+                BlockTemplate(
+                  ArrayBuffer(),
+                  ArrayBuffer(),
+                  ArrayBuffer(),
+                  ArrayBuffer(
+                    Plain("""
+                            |  """.stripMargin),
+                    Reassignment(
+                      Left(
+                        SubTemplate(
+                          Left(false),
+                          PosString("field"),
+                          PosString(""),
+                          ArrayBuffer(),
+                          ArrayBuffer(),
+                          ArrayBuffer(),
+                          ArrayBuffer(Plain(" "), Plain("bar4 "))
+                        )
+                      )
+                    ),
+                    Plain("""
+                            |""".stripMargin)
+                  )
+                )
+              )
+            )
+          )
+        )
+        tmpl.content(2) mustBe Plain("""
+                                       |""".stripMargin)
+        tmpl.content(3) mustBe Display(ScalaExp(ListBuffer(Simple("field"))))
+        tmpl.content.size mustBe 4
+      }
+
+      "ignore variable reassignment and handle as string if type annotation present " in {
+        val tmpl = parseTemplateString(
+          """@var field = { "bar1" }
+            |@field:String = { "bar2" }""".stripMargin
+        )
+
+        tmpl.members.size mustBe 0
+
+        val subTemplate = tmpl.sub(0)
+        subTemplate.name.str mustBe "field"
+        subTemplate.declaration mustBe Left(true)
+        subTemplate.content mustBe ArrayBuffer(Plain(" "), Plain(""""bar1" """))
+
+        tmpl.content(0) mustBe Plain("""
+                                       |""".stripMargin)
+        tmpl.content(1) mustBe Display(ScalaExp(ListBuffer(Simple("field"))))
+        tmpl.content(2) mustBe Plain(""":String = """.stripMargin)
+        tmpl.content(3) mustBe Plain("{")
+        tmpl.content(4) mustBe Plain(" ")
+        tmpl.content(5) mustBe Plain(""""bar2" """)
+        tmpl.content(6) mustBe Plain("}")
+        tmpl.content.size mustBe 7
+      }
+      "lazy not allowed for var" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@lazy var foo = { "bar1" }"""
+        ) must have(
+          Symbol("message")("Template failed to parse: 'lazy' not allowed here. Only val definitions can be lazy.")
+        )
+      }
+      "fail to reassign a function to a var" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@var field = { "bar1" }
+            |@field() = { "bar2" }""".stripMargin
+        ) must have(
+          Symbol("message")(
+            "Template failed to parse: field is already defined. To reassign field, remove any argument lists or type parameters. Otherwise choose a different name."
+          )
+        )
+      }
+      "fail to reassign a function with typ params and parens to a var" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@var field = { "bar1" }
+            |@field[A]() = { "bar2" }""".stripMargin
+        ) must have(
+          Symbol("message")(
+            "Template failed to parse: field is already defined. To reassign field, remove any argument lists or type parameters. Otherwise choose a different name."
+          )
+        )
+      }
+      "fail to reassign a function with typ params to a var" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@var field = { "bar1" }
+            |@field[A] = { "bar2" }""".stripMargin
+        ) must have(
+          Symbol("message")(
+            "Template failed to parse: field is already defined. To reassign field, remove any argument lists or type parameters. Otherwise choose a different name."
+          )
+        )
+      }
+      "fail to reassign when empty type params are given" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@var field = { "bar1" }
+            |@field[] = { "bar2" }""".stripMargin
+        ) must have(
+          Symbol("message")("Template failed to parse: identifier expected but ']' found")
+        )
+      }
+      "fail to reassign when empty type params that contain spaces are given" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@var field = { "bar1" }
+            |@field[ ] = { "bar2" }""".stripMargin
+        ) must have(
+          Symbol("message")("Template failed to parse: identifier expected but ']' found")
+        )
+      }
+      "fail to define var when empty type params are given" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@var field[] = { "bar1" }""".stripMargin
+        ) must have(
+          Symbol("message")("Template failed to parse: identifier expected but ']' found")
+        )
+      }
+      "fail to define var when valid type params are given" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@var field[FooType] = { "bar1" }""".stripMargin
+        ) must have(
+          Symbol("message")(
+            "Template failed to parse: Invalid variable definition: 'field' cannot have type parameters."
+          )
+        )
+      }
+      "fail to define var when valid type params and parens are given" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@var field[FooType]() = { "bar1" }""".stripMargin
+        ) must have(
+          Symbol("message")(
+            "Template failed to parse: Invalid variable definition: 'field' cannot have type parameters."
+          )
+        )
+      }
+      "fail to define var when parameter list is given" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@var field(foo: String, bar: Int) = { "bar1" }""".stripMargin
+        ) must have(
+          Symbol("message")(
+            "Template failed to parse: Invalid variable definition: 'field' cannot have parameter lists."
+          )
+        )
+      }
+      "fail to define var when empty parameter list is given" in {
+        the[RuntimeException] thrownBy parseTemplateString(
+          """@var field() = { "bar1" }""".stripMargin
         ) must have(
           Symbol("message")(
             "Template failed to parse: Invalid variable definition: 'field' cannot have parameter lists."
