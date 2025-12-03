@@ -1036,7 +1036,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
         if (isVal && !types.isEmpty) {
           input.regressTo(resetPosition) // don't consume @
           error(
-            s"Wrong variable definiton: '${name.str}' can not have type parameters",
+            s"Invalid variable definition: '${name.str}' cannot have type parameters.",
             namepos
           )
           return null
@@ -1045,7 +1045,7 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
         if (isVal && !args.isEmpty) {
           input.regressTo(resetPosition) // don't consume @
           error(
-            s"Wrong variable definiton: '${name.str}' can not have argument lists",
+            s"Invalid variable definition: '${name.str}' cannot have parameter lists.",
             namepos
           )
           return null
