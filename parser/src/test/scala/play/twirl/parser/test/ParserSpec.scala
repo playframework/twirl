@@ -795,42 +795,54 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         the[RuntimeException] thrownBy parseTemplateString(
           """@val field[FooType] = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
         ) must have(
-          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have type parameters")
+          Symbol("message")(
+            "Template failed to parse: Invalid variable definition: 'field' cannot have type parameters."
+          )
         )
       }
       "lazy val can not have type parameters" in {
         the[RuntimeException] thrownBy parseTemplateString(
           """@lazy val field[FooType] = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
         ) must have(
-          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have type parameters")
+          Symbol("message")(
+            "Template failed to parse: Invalid variable definition: 'field' cannot have type parameters."
+          )
         )
       }
       "val can not have arguments" in {
         the[RuntimeException] thrownBy parseTemplateString(
           """@val field(foo: String, bar: Int) = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
         ) must have(
-          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have argument lists")
+          Symbol("message")(
+            "Template failed to parse: Invalid variable definition: 'field' cannot have parameter lists."
+          )
         )
       }
       "lazy val can not have arguments" in {
         the[RuntimeException] thrownBy parseTemplateString(
           """@lazy val field(foo: String, bar: Int) = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
         ) must have(
-          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have argument lists")
+          Symbol("message")(
+            "Template failed to parse: Invalid variable definition: 'field' cannot have parameter lists."
+          )
         )
       }
       "val can not have empty arguments" in {
         the[RuntimeException] thrownBy parseTemplateString(
           """@val field() = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
         ) must have(
-          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have argument lists")
+          Symbol("message")(
+            "Template failed to parse: Invalid variable definition: 'field' cannot have parameter lists."
+          )
         )
       }
       "lazy val can not have empty arguments" in {
         the[RuntimeException] thrownBy parseTemplateString(
           """@lazy val field() = @{ FieldConstructor(myFieldConstructorTemplate.f) }"""
         ) must have(
-          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have argument lists")
+          Symbol("message")(
+            "Template failed to parse: Invalid variable definition: 'field' cannot have parameter lists."
+          )
         )
       }
       "resultType is not given without implicit prefixed, not lazy" in {
@@ -916,42 +928,54 @@ class ParserSpec extends AnyWordSpec with Matchers with Inside {
         the[RuntimeException] thrownBy parseTemplateString(
           """@val field[FooType] = { foo }"""
         ) must have(
-          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have type parameters")
+          Symbol("message")(
+            "Template failed to parse: Invalid variable definition: 'field' cannot have type parameters."
+          )
         )
       }
       "lazy val can not have type parameters" in {
         the[RuntimeException] thrownBy parseTemplateString(
           """@lazy val field[FooType] = { foo }"""
         ) must have(
-          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have type parameters")
+          Symbol("message")(
+            "Template failed to parse: Invalid variable definition: 'field' cannot have type parameters."
+          )
         )
       }
       "val can not have arguments" in {
         the[RuntimeException] thrownBy parseTemplateString(
           """@val field(foo: String, bar: Int) = { foo }"""
         ) must have(
-          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have argument lists")
+          Symbol("message")(
+            "Template failed to parse: Invalid variable definition: 'field' cannot have parameter lists."
+          )
         )
       }
       "lazy val can not have arguments" in {
         the[RuntimeException] thrownBy parseTemplateString(
           """@lazy val field(foo: String, bar: Int) = { foo }"""
         ) must have(
-          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have argument lists")
+          Symbol("message")(
+            "Template failed to parse: Invalid variable definition: 'field' cannot have parameter lists."
+          )
         )
       }
       "val can not have empty arguments" in {
         the[RuntimeException] thrownBy parseTemplateString(
           """@val field() = { foo }"""
         ) must have(
-          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have argument lists")
+          Symbol("message")(
+            "Template failed to parse: Invalid variable definition: 'field' cannot have parameter lists."
+          )
         )
       }
       "lazy val can not have empty arguments" in {
         the[RuntimeException] thrownBy parseTemplateString(
           """@lazy val field() = { foo }"""
         ) must have(
-          Symbol("message")("Template failed to parse: Wrong variable definiton: 'field' can not have argument lists")
+          Symbol("message")(
+            "Template failed to parse: Invalid variable definition: 'field' cannot have parameter lists."
+          )
         )
       }
       "resultType is not given without implicit prefixed, not lazy" in {
