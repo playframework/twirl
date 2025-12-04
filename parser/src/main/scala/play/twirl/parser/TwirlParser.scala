@@ -57,7 +57,7 @@ import scala.util.parsing.input.OffsetPosition
  * {{{
  *   parser : comment? whitespace? ('@' parentheses+)? templateContent
  *   templateContent : (importExpression | localMember | template | mixed)*
- *   templateOrLocalMemberDeclaration : '@' (('lazy' whitespaceNoBreak+)? 'val' whitespaceNoBreak+)? identifier squareBrackets? parentheses*
+ *   templateOrLocalMemberDeclaration : '@' ((('lazy' whitespaceNoBreak+)? 'val' whitespaceNoBreak+) | ('var' whitespaceNoBreak+))? identifier squareBrackets? parentheses*
  *   localMember : templateOrLocalMemberDeclaration (' ' | '\t')* '=' (' ' | '\t') scalaBlock
  *   template : templateOrLocalMemberDeclaration (' ' | '\t')* '=' (' ' | '\t') '{' templateContent '}'
  *   mixed : (comment | scalaBlockDisplayed | forExpression | ifExpression | matchExpOrSafeExpOrExpr | caseExpression | plain) | ('{' mixed* '}')
