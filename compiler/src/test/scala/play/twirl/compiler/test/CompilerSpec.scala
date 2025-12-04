@@ -401,6 +401,18 @@ class CompilerSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach {
         )
       }
 
+      "using template code blocks" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@var field = { bar1 }
+            |@field = { bar2 }
+            |@field""".stripMargin
+        )
+        val helper = newCompilerHelper
+        val result = helper.compile[(() => Html)]("temporary.scala.html", "html.temporary")
+        result.static().toString.trim.replace("\n", "").replaceAll("\\s+", "") must be("bar2")
+      }
+
     }
 
     "compile successfully reassigning var using pure code blocks" when {
@@ -456,6 +468,71 @@ class CompilerSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach {
             |@if(condition == 1) {
             |  @field
             |  @field = @{ "bar2 " }
+            |  @field
+            |}
+            |@field""".stripMargin
+        )
+        val helper = newCompilerHelper
+        val result = helper.compile[((Integer) => Html)]("temporary.scala.html", "html.temporary")
+        result.static(2).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """bar1"""
+        )
+      }
+    }
+
+    "compile successfully reassigning var using template code blocks" when {
+
+      "within if" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@(condition: Integer)
+            |@var field = { bar1 }
+            |@if(condition == 1) {
+            |  @field
+            |  @field = { bar2 }
+            |  @field
+            |}
+            |@field""".stripMargin
+        )
+        val helper = newCompilerHelper
+        val result = helper.compile[((Integer) => Html)]("temporary.scala.html", "html.temporary")
+        result.static(1).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """bar1bar2bar2"""
+        )
+      }
+
+      "within if/elseif/else" in {
+        val helper = newCompilerHelper
+        val hello  =
+          helper.compile[((Integer, Integer) => Html)]("varsTemplateBlocks.scala.html", "html.varsTemplateBlocks")
+        hello.static(1, 1).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """bar1bar2bar2bar5bar5bar5"""
+        )
+        hello.static(1, 10).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """bar1bar2bar2bar2"""
+        )
+        hello.static(2, 1).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """bar1bar3bar3bar6bar6bar6"""
+        )
+        hello.static(2, 10).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """bar1bar3bar3bar3"""
+        )
+        hello.static(3, 1).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """bar1bar4bar4bar7bar7bar7"""
+        )
+        hello.static(3, 10).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """bar1bar4bar4bar4"""
+        )
+      }
+
+      "within if but not visiting if" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@(condition: Integer)
+            |@var field = { bar1 }
+            |@if(condition == 1) {
+            |  @field
+            |  @field = { bar2 }
             |  @field
             |}
             |@field""".stripMargin
@@ -693,6 +770,231 @@ class CompilerSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach {
       }
     }
 
+    "compile successfully shadowing using template code blocks" when {
+
+      "def in if shadowing outside val" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@(condition: Integer)
+            |@val field = { bar1 }
+            |@if(condition == 1) {
+            |  @field
+            |  @field = { bar2 }
+            |  @field
+            |}
+            |@field""".stripMargin
+        )
+        val helper = newCompilerHelper
+        val hello  = helper.compile[((Integer) => Html)]("temporary.scala.html", "html.temporary")
+        hello.static(1).toString.trim.replaceAll(" ", "").replaceAll("\n", "") must be("bar2bar2bar1")
+      }
+
+      "val in if shadowing outside val" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@(condition: Integer)
+            |@val field = { bar1 }
+            |@if(condition == 1) {
+            |  @field
+            |  @val field = { bar2 }
+            |  @field
+            |}
+            |@field""".stripMargin
+        )
+        val helper = newCompilerHelper
+        val hello  = helper.compile[((Integer) => Html)]("temporary.scala.html", "html.temporary")
+        hello.static(1).toString.trim.replaceAll(" ", "").replaceAll("\n", "") must be("bar2bar2bar1")
+      }
+
+      "def in if shadowing outside def" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@(condition: Integer)
+            |@field = { bar1 }
+            |@if(condition == 1) {
+            |  @field
+            |  @field = { bar2 }
+            |  @field
+            |}
+            |@field""".stripMargin
+        )
+        val helper = newCompilerHelper
+        val hello  = helper.compile[((Integer) => Html)]("temporary.scala.html", "html.temporary")
+        hello.static(1).toString.trim.replaceAll(" ", "").replaceAll("\n", "") must be("bar2bar2bar1")
+      }
+
+      "def in if shadowing val in if shadowing val" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@(condition: Integer, secondCondition: Integer)
+            |@val field = { bar1 }
+            |@if(condition == 1) {
+            |  @field
+            |  @val field = { bar2 }
+            |  @field
+            |  @if(secondCondition == 1) {
+            |    @field
+            |    @field = { bar5 }
+            |    @field
+            |  }
+            |  @field
+            |}
+            |@field""".stripMargin
+        )
+        val helper = newCompilerHelper
+        val hello  = helper.compile[((Integer, Integer) => Html)]("temporary.scala.html", "html.temporary")
+        hello.static(1, 1).toString.trim.replaceAll(" ", "").replaceAll("\n", "") must be("bar2bar2bar5bar5bar2bar1")
+      }
+
+      "val in if shadowing val in if shadowing val" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@(condition: Integer, secondCondition: Integer)
+            |@val field = { bar1 }
+            |@if(condition == 1) {
+            |  @field
+            |  @val field = { bar2 }
+            |  @field
+            |  @if(secondCondition == 1) {
+            |    @field
+            |    @val field = { bar5 }
+            |    @field
+            |  }
+            |  @field
+            |}
+            |@field""".stripMargin
+        )
+        val helper = newCompilerHelper
+        val hello  = helper.compile[((Integer, Integer) => Html)]("temporary.scala.html", "html.temporary")
+        hello.static(1, 1).toString.trim.replaceAll(" ", "").replaceAll("\n", "") must be("bar2bar2bar5bar5bar2bar1")
+      }
+
+      "reassigning var in if defined in parent if that shadows var" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@(condition: Integer, secondCondition: Integer)
+            |@var field = { bar1 }
+            |@if(condition == 1) {
+            |  @field
+            |  @var field = { bar2 }
+            |  @field
+            |  @if(secondCondition == 1) {
+            |    @field
+            |    @field = { bar5 }
+            |    @field
+            |  }
+            |  @field
+            |}
+            |@field""".stripMargin
+        )
+        val helper = newCompilerHelper
+        val result = helper.compile[((Integer, Integer) => Html)]("temporary.scala.html", "html.temporary")
+        result.static(1, 1).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """bar2bar2bar2bar5bar5bar1"""
+        )
+      }
+
+      "reassigning var in if defined in parent if that shadows val" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@(condition: Integer, secondCondition: Integer)
+            |@val field = { bar1 }
+            |@if(condition == 1) {
+            |  @field
+            |  @var field = { bar2 }
+            |  @field
+            |  @if(secondCondition == 1) {
+            |    @field
+            |    @field = { bar5 }
+            |    @field
+            |  }
+            |  @field
+            |}
+            |@field""".stripMargin
+        )
+        val helper = newCompilerHelper
+        val result = helper.compile[((Integer, Integer) => Html)]("temporary.scala.html", "html.temporary")
+        result.static(1, 1).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """bar2bar2bar2bar5bar5bar1"""
+        )
+      }
+
+      "reassigning var in if shadowing var in if shadowing var" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@(condition: Integer, secondCondition: Integer)
+            |@var field = { bar1 }
+            |@if(condition == 1) {
+            |  @field
+            |  @var field = { bar2 }
+            |  @field
+            |  @if(secondCondition == 1) {
+            |    @field
+            |    @var field = { bar5 }
+            |    @field
+            |  }
+            |  @field
+            |}
+            |@field""".stripMargin
+        )
+        val helper = newCompilerHelper
+        val result = helper.compile[((Integer, Integer) => Html)]("temporary.scala.html", "html.temporary")
+        result.static(1, 1).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """bar2bar2bar5bar5bar2bar1"""
+        )
+      }
+
+      "defining var in if shadowing val in if shadowing var" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@(condition: Integer, secondCondition: Integer)
+            |@var field = { bar1 }
+            |@if(condition == 1) {
+            |  @field
+            |  @val field = { bar2 }
+            |  @field
+            |  @if(secondCondition == 1) {
+            |    @field
+            |    @var field = { bar5 }
+            |    @field
+            |  }
+            |  @field
+            |}
+            |@field""".stripMargin
+        )
+        val helper = newCompilerHelper
+        val result = helper.compile[((Integer, Integer) => Html)]("temporary.scala.html", "html.temporary")
+        result.static(1, 1).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """bar2bar2bar5bar5bar2bar1"""
+        )
+      }
+
+      "defining var in if shadowing val in if shadowing val" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@(condition: Integer, secondCondition: Integer)
+            |@var field = { bar1 }
+            |@if(condition == 1) {
+            |  @field
+            |  @val field = { bar2 }
+            |  @field
+            |  @if(secondCondition == 1) {
+            |    @field
+            |    @var field = { bar5 }
+            |    @field
+            |  }
+            |  @field
+            |}
+            |@field""".stripMargin
+        )
+        val helper = newCompilerHelper
+        val result = helper.compile[((Integer, Integer) => Html)]("temporary.scala.html", "html.temporary")
+        result.static(1, 1).toString.trim.replace("\n", "").replaceAll("\\s+", "") must be(
+          """bar2bar2bar5bar5bar2bar1"""
+        )
+      }
+    }
+
     "fail val shadowing var and reassigning val in if" when {
 
       "using pure code blocks" in {
@@ -719,6 +1021,33 @@ class CompilerSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach {
           Symbol("line")(9),
           Symbol("message")(msg),
           Symbol("point")(203)
+        )
+      }
+
+      "using template code blocks" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@(condition: Integer, secondCondition: Integer)
+            |@var field = { bar1 }
+            |@if(condition == 1) {
+            |  @field
+            |  @val field = { bar2 }
+            |  @field
+            |  @if(secondCondition == 1) {
+            |    @field
+            |    @field = { bar5 }
+            |    @field
+            |  }
+            |  @field
+            |}
+            |@field""".stripMargin
+        )
+        val msg    = if (BuildInfo.scalaVersion.startsWith("3.")) "Reassignment to val field" else "reassignment to val"
+        val helper = newCompilerHelper
+        the[CompilationError] thrownBy helper.compile[(() => Html)]("temporary.scala.html", "html.temporary") must have(
+          Symbol("line")(9),
+          Symbol("message")(msg),
+          Symbol("point")(186)
         )
       }
 
@@ -975,6 +1304,257 @@ class CompilerSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach {
       }
     }
 
+    "fail compilation with same name using template code blocks" when {
+
+      "two val" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@val field = { bar1 }
+            |@val field = { bar1 }""".stripMargin
+        )
+        val helper = newCompilerHelper
+        the[CompilationError] thrownBy helper.compile[(() => Html)]("temporary.scala.html", "html.temporary") must have(
+          Symbol("line")(2),
+          Symbol("message")(fieldAlreadyDefinedAs("value")),
+          Symbol("point")(27)
+        )
+      }
+
+      "two var" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@var field = { bar1 }
+            |@var field = { bar2 }""".stripMargin
+        )
+        val helper = newCompilerHelper
+        the[CompilationError] thrownBy helper.compile[(() => Html)]("temporary.scala.html", "html.temporary") must have(
+          Symbol("line")(2),
+          Symbol("message")(fieldAlreadyDefinedAs("variable")),
+          Symbol("point")(27)
+        )
+      }
+
+      "two def" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@field = { bar1 }
+            |@field = { bar2 }""".stripMargin
+        )
+        val helper = newCompilerHelper
+        the[CompilationError] thrownBy helper.compile[(() => Html)]("temporary.scala.html", "html.temporary") must have(
+          Symbol("line")(2),
+          Symbol("message")(fieldAlreadyDefinedAsMethod("18:12")),
+          Symbol("point")(19)
+        )
+      }
+
+      "val and var" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@val field = { bar1 }
+            |@var field = { bar2 }""".stripMargin
+        )
+        val helper = newCompilerHelper
+        the[CompilationError] thrownBy helper.compile[(() => Html)]("temporary.scala.html", "html.temporary") must have(
+          Symbol("line")(2),
+          Symbol("message")(fieldAlreadyDefinedAs("value")),
+          Symbol("point")(27)
+        )
+      }
+
+      "var and val" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@var field = { bar1 }
+            |@val field = { bar2 }""".stripMargin
+        )
+        val helper = newCompilerHelper
+        the[CompilationError] thrownBy helper.compile[(() => Html)]("temporary.scala.html", "html.temporary") must have(
+          Symbol("line")(2),
+          Symbol("message")(fieldAlreadyDefinedAs("variable")),
+          Symbol("point")(27)
+        )
+      }
+
+      "def and var" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@field = { bar1 }
+            |@var field = { bar2 }""".stripMargin
+        )
+        val helper = newCompilerHelper
+        the[CompilationError] thrownBy helper.compile[(() => Html)]("temporary.scala.html", "html.temporary") must have(
+          Symbol("line")(2),
+          Symbol("message")(fieldAlreadyDefinedAsMethod("18:12", "variable")),
+          Symbol("point")(23)
+        )
+      }
+
+      "def and val" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@field = { bar1 }
+            |@val field = { bar2 }""".stripMargin
+        )
+        val helper = newCompilerHelper
+        the[CompilationError] thrownBy helper.compile[(() => Html)]("temporary.scala.html", "html.temporary") must have(
+          Symbol("line")(2),
+          Symbol("message")(fieldAlreadyDefinedAsMethod("18:12", "value")),
+          Symbol("point")(23)
+        )
+      }
+
+      "two var within if" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@(condition: Integer)
+            |@var field = { bar1  }
+            |@if(condition == 1) {
+            |  @field
+            |  @var field = { bar1 }
+            |  @var field = { bar3 }
+            |  @field
+            |}
+            |@field""".stripMargin
+        )
+        val helper = newCompilerHelper
+        the[CompilationError] thrownBy helper
+          .compile[((Integer) => Html)]("temporary.scala.html", "html.temporary") must have(
+          Symbol("line")(6),
+          Symbol("message")(fieldAlreadyDefinedAs("variable")),
+          Symbol("point")(107)
+        )
+      }
+
+      "two val within if" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@(condition: Integer)
+            |@var field = { bar1  }
+            |@if(condition == 1) {
+            |  @field
+            |  @val field = { bar1 }
+            |  @val field = { bar3 }
+            |  @field
+            |}
+            |@field""".stripMargin
+        )
+        val helper = newCompilerHelper
+        the[CompilationError] thrownBy helper
+          .compile[((Integer) => Html)]("temporary.scala.html", "html.temporary") must have(
+          Symbol("line")(6),
+          Symbol("message")(fieldAlreadyDefinedAs("value")),
+          Symbol("point")(107)
+        )
+      }
+
+      "two def within if" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@(condition: Integer)
+            |@field = { bar1  }
+            |@if(condition == 1) {
+            |  @field
+            |  @field = { bar1 }
+            |  @field = { bar3 }
+            |  @field
+            |}
+            |@field""".stripMargin
+        )
+        val helper = newCompilerHelper
+        the[CompilationError] thrownBy helper.compile[(() => Html)]("temporary.scala.html", "html.temporary") must have(
+          Symbol("line")(6),
+          Symbol("message")(fieldAlreadyDefinedAsMethod("23:12")),
+          Symbol("point")(95)
+        )
+      }
+
+      "val and var within if" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@(condition: Integer)
+            |@var field = { bar1  }
+            |@if(condition == 1) {
+            |  @field
+            |  @val field = { bar1 }
+            |  @var field = { bar3 }
+            |  @field
+            |}
+            |@field""".stripMargin
+        )
+        val helper = newCompilerHelper
+        the[CompilationError] thrownBy helper
+          .compile[((Integer) => Html)]("temporary.scala.html", "html.temporary") must have(
+          Symbol("line")(6),
+          Symbol("message")(fieldAlreadyDefinedAs("value")),
+          Symbol("point")(107)
+        )
+      }
+
+      "var and val within if" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@(condition: Integer)
+            |@var field = { bar1  }
+            |@if(condition == 1) {
+            |  @field
+            |  @var field = { bar1 }
+            |  @val field = { bar3 }
+            |  @field
+            |}
+            |@field""".stripMargin
+        )
+        val helper = newCompilerHelper
+        the[CompilationError] thrownBy helper
+          .compile[((Integer) => Html)]("temporary.scala.html", "html.temporary") must have(
+          Symbol("line")(6),
+          Symbol("message")(fieldAlreadyDefinedAs("variable")),
+          Symbol("point")(107)
+        )
+      }
+
+      "def and var within if" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@(condition: Integer)
+            |@if(condition == 1) {
+            |  @field
+            |  @field = { bar1 }
+            |  @var field = { bar3 }
+            |  @field
+            |}
+            |@field""".stripMargin
+        )
+        val helper = newCompilerHelper
+        the[CompilationError] thrownBy helper
+          .compile[((Integer) => Html)]("temporary.scala.html", "html.temporary") must have(
+          Symbol("line")(5),
+          Symbol("message")(fieldAlreadyDefinedAsMethod("20:12", "variable")),
+          Symbol("point")(80)
+        )
+      }
+      "def and val within if" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@(condition: Integer)
+            |@if(condition == 1) {
+            |  @field
+            |  @field = { bar1 }
+            |  @val field = { bar3 }
+            |  @field
+            |}
+            |@field""".stripMargin
+        )
+        val helper = newCompilerHelper
+        the[CompilationError] thrownBy helper
+          .compile[((Integer) => Html)]("temporary.scala.html", "html.temporary") must have(
+          Symbol("line")(5),
+          Symbol("message")(fieldAlreadyDefinedAsMethod("20:12", "value")),
+          Symbol("point")(80)
+        )
+      }
+    }
+
     "fail compilation reassigning using pure code blocks" when {
 
       "val" in {
@@ -1023,6 +1603,58 @@ class CompilerSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach {
           Symbol("line")(2),
           Symbol("message")(fieldAlreadyDefinedAsMethod("18:12")),
           Symbol("point")(22)
+        )
+      }
+    }
+
+    "fail compilation reassigning using template code blocks" when {
+
+      "val" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@val field = { bar1 }
+            |@field = { bar2 }""".stripMargin
+        )
+        val helper = newCompilerHelper
+        the[CompilationError] thrownBy helper.compile[(() => Html)]("temporary.scala.html", "html.temporary") must have(
+          Symbol("line")(2),
+          Symbol("message")(fieldAlreadyDefinedAs("value")),
+          Symbol("point")(23)
+        )
+      }
+
+      "val within if" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@(condition: Integer)
+            |@field = { bar1  }
+            |@if(condition == 1) {
+            |  @field
+            |  @val field = { bar1 }
+            |  @field = { bar3 }
+            |  @field
+            |}
+            |@field""".stripMargin
+        )
+        val helper = newCompilerHelper
+        the[CompilationError] thrownBy helper.compile[(() => Html)]("temporary.scala.html", "html.temporary") must have(
+          Symbol("line")(6),
+          Symbol("message")(fieldAlreadyDefinedAs("value")),
+          Symbol("point")(99)
+        )
+      }
+
+      "reassigning def" in {
+        TwirlIO.writeStringToFile(
+          tmpTemplateFile,
+          """@field = { bar1 }
+            |@field = { bar2 }""".stripMargin
+        )
+        val helper = newCompilerHelper
+        the[CompilationError] thrownBy helper.compile[(() => Html)]("temporary.scala.html", "html.temporary") must have(
+          Symbol("line")(2),
+          Symbol("message")(fieldAlreadyDefinedAsMethod("18:12")),
+          Symbol("point")(19)
         )
       }
     }
