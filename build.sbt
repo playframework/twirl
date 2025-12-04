@@ -67,6 +67,8 @@ val mimaSettings = Seq(
     ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.parser.TwirlParser.mixed"),
     ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.parser.TwirlParser.template"),
     ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.parser.TwirlParser.templateContent"),
+    // Allow word 'format' to be used in template (we use `$twirl__format` in BaseScalaTemplate now to avoid clashes)
+    ProblemFilters.exclude[DirectMissingMethodProblem]("play.twirl.api.BaseScalaTemplate.format"),
   )
 )
 

@@ -487,8 +487,8 @@ object TwirlCompiler {
               // over 20000 characters. 20000 characters is a nice round number, use that.
               val grouped = StringGrouper(text, 20000)
               (if (previous.isEmpty) Nil else previous :+ ",") :+
-                "format.raw" :+ Source("(", p.pos) :+ quoteAndEscape(grouped.head) :+ ")" :+
-                grouped.tail.flatMap { t => Seq(",\nformat.raw(", quoteAndEscape(t), ")") }
+                "$twirl__format.raw" :+ Source("(", p.pos) :+ quoteAndEscape(grouped.head) :+ ")" :+
+                grouped.tail.flatMap { t => Seq(",\n$twirl__format.raw(", quoteAndEscape(t), ")") }
             case Comment(msg) => previous
             case Display(exp) =>
               (if (previous.isEmpty) Nil else previous :+ ",") :+ displayVisitedChildren(

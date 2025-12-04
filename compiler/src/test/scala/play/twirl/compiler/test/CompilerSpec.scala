@@ -996,6 +996,19 @@ class CompilerSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach {
       }
     }
 
+    "compile successfully when using 'format' as variable name" in {
+      TwirlIO.writeStringToFile(
+        tmpTemplateFile,
+        """@(format: String)
+          |@format
+          |
+          |""".stripMargin // keep this new lines so we trigger a .raw(..) call in the the compiled template!
+      )
+      val helper   = newCompilerHelper
+      val compiled = helper.compile[((String) => Html)]("temporary.scala.html", "html.temporary")
+      compiled.static("markdown").toString.trim must be("markdown")
+    }
+
     "fail val shadowing var and reassigning val in if" when {
 
       "using pure code blocks" in {
