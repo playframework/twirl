@@ -21,7 +21,7 @@ case class BaseScalaTemplate[T <: Appendable[T], F <: Format[T]]($twirl__format:
 
   def _display_(o: Any)(implicit m: ClassTag[T]): T = {
     o match {
-      case escaped if escaped != null && escaped.getClass == m.runtimeClass => escaped.asInstanceOf[T]
+      case escaped if escaped != null && m.runtimeClass.isInstance(escaped) => escaped.asInstanceOf[T]
       case ()                                                               => $twirl__format.empty
       case None                                                             => $twirl__format.empty
       case Some(v)                                                          => _display_(v)
