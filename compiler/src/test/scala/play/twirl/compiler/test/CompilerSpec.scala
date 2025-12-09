@@ -1009,6 +1009,18 @@ class CompilerSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach {
       compiled.static("markdown").toString.trim must be("markdown")
     }
 
+    "compile successfully (don't escape) when using sub class of Html (which is a subclass of Appendable)" in {
+      TwirlIO.writeStringToFile(
+        tmpTemplateFile,
+        """@{(new play.twirl.api.Html("<foo>")): play.twirl.api.HtmlFormat.Appendable}
+          |@{(new play.twirl.api.Html("<foo>") {}): play.twirl.api.HtmlFormat.Appendable}
+          |""".stripMargin
+      )
+      val helper   = newCompilerHelper
+      val compiled = helper.compile[(() => Html)]("temporary.scala.html", "html.temporary")
+      compiled.static().toString.trim.replaceAll(" ", "").replaceAll("\n", "") must be("<foo><foo>")
+    }
+
     "fail val shadowing var and reassigning val in if" when {
 
       "using pure code blocks" in {
