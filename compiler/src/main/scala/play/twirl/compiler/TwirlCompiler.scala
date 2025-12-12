@@ -71,22 +71,24 @@ sealed trait AbstractGeneratedSource {
     for {
       pos <- meta("MATRIX").split('|').toIndexedSeq
       c = pos.split("->")
-    } yield try {
-      Integer.parseInt(c(0)) -> Integer.parseInt(c(1))
-    } catch {
-      case _: Exception => (0, 0) // Skip if MATRIX meta is corrupted
-    }
+    } yield
+      try {
+        Integer.parseInt(c(0)) -> Integer.parseInt(c(1))
+      } catch {
+        case _: Exception => (0, 0) // Skip if MATRIX meta is corrupted
+      }
   }
 
   lazy val lines: Seq[(Int, Int)] = {
     for {
       pos <- meta("LINES").split('|').toIndexedSeq
       c = pos.split("->")
-    } yield try {
-      Integer.parseInt(c(0)) -> Integer.parseInt(c(1))
-    } catch {
-      case _: Exception => (0, 0) // Skip if LINES meta is corrupted
-    }
+    } yield
+      try {
+        Integer.parseInt(c(0)) -> Integer.parseInt(c(1))
+      } catch {
+        case _: Exception => (0, 0) // Skip if LINES meta is corrupted
+      }
   }
 
   def mapPosition(generatedPosition: Int): Int = {
