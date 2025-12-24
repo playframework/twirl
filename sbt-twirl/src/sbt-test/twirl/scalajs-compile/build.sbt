@@ -2,7 +2,8 @@
 
 logLevel := Level.Debug
 
-lazy val root = (project in file("."))
+lazy val root = project
+  .in(file("."))
   .enablePlugins(ScalaJSPlugin, SbtTwirl)
   .settings(
     scalaJSUseMainModuleInitializer := true,
