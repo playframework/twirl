@@ -36,8 +36,8 @@ object ScalaTemplatesSpec extends Specification {
   val customer = Customer("mr customer")
   val orders   = List(Order("foo"), Order("bar"))
 
-  "Scala templates" should {
-    "support an example template" in {
+  "Scala templates".should {
+    "support an example template".in {
 
       val c = Customer("mr customer")
       val o = List(Order("foo"), Order("bar"))
@@ -47,12 +47,12 @@ object ScalaTemplatesSpec extends Specification {
       // #invoke-template
 
       val body = content.body
-      body must contain("mr customer")
-      body must contain("foo")
-      body must contain("bar")
+      body.must(contain("mr customer"))
+      body.must(contain("foo"))
+      body.must(contain("bar"))
     }
 
-    "support string interpolation" in {
+    "support string interpolation".in {
       // #string-interpolation
       import play.twirl.api.StringInterpolation
 
@@ -60,47 +60,47 @@ object ScalaTemplatesSpec extends Specification {
       val p    = html"<p>Hello $name</p>"
       // #string-interpolation
 
-      p.body must_== "<p>Hello Martin</p>"
+      p.body.must_==("<p>Hello Martin</p>")
     }
 
-    "allow simple parameters" in {
+    "allow simple parameters".in {
       val body = html.simpleParameters(customer, orders).body
-      body must contain(customer.toString)
-      body must contain(orders(0).toString)
-      body must contain(orders(1).toString)
+      body.must(contain(customer.toString))
+      body.must(contain(orders(0).toString))
+      body.must(contain(orders(1).toString))
     }
 
-    "allow default parameters" in {
-      html.defaultParameters("foo").body must contain("foo")
-      html.defaultParameters().body must contain("Home")
+    "allow default parameters".in {
+      html.defaultParameters("foo").body.must(contain("foo"))
+      html.defaultParameters().body.must(contain("Home"))
     }
 
-    "allow curried parameters" in {
+    "allow curried parameters".in {
       val body = html.curriedParameters("foo")(Html("bar")).body
-      body must contain("foo")
-      body must contain("bar")
+      body.must(contain("foo"))
+      body.must(contain("bar"))
     }
 
-    "allow constructors" in {
+    "allow constructors".in {
       val body = new html.constructor(MyComponent())(customer, orders).body
-      body must contain("MyComponent")
-      body must contain(customer.toString)
-      body must contain(orders(0).toString)
-      body must contain(orders(1).toString)
+      body.must(contain("MyComponent"))
+      body.must(contain(customer.toString))
+      body.must(contain(orders(0).toString))
+      body.must(contain(orders(1).toString))
     }
 
-    "allow import statements" in {
-      html.importStatement(customer, orders).body must contain("import working")
+    "allow import statements".in {
+      html.importStatement(customer, orders).body.must(contain("import working"))
     }
 
-    "allow absolute import statements" in {
-      html.importStatement(customer, orders).body must contain("absolute import is working")
+    "allow absolute import statements".in {
+      html.importStatement(customer, orders).body.must(contain("absolute import is working"))
     }
 
-    "allow comments on the first line" in {
+    "allow comments on the first line".in {
       val body = html.firstLineComment("blah").body
-      body must contain("blah")
-      body must not contain "Home page"
+      body.must(contain("blah"))
+      body.must(not).contain("Home page")
     }
 
     {
@@ -113,54 +113,54 @@ object ScalaTemplatesSpec extends Specification {
           .mkString("\n")
       }
 
-      "allow escaping the @ character" in {
-        body must contain("bob@example.com")
+      "allow escaping the @ character".in {
+        body.must(contain("bob@example.com"))
       }
 
-      "allow iterating" in {
-        segment("for-loop") must contain("p1 ($1)")
-        segment("for-loop") must contain("p2 ($2)")
+      "allow iterating".in {
+        segment("for-loop").must(contain("p1 ($1)"))
+        segment("for-loop").must(contain("p2 ($2)"))
       }
 
-      "allow conditionals" in {
-        body must contain("2 items!")
+      "allow conditionals".in {
+        body.must(contain("2 items!"))
       }
 
-      "allow reusable code blocks" in {
-        segment("reusable") must contain("p1 ($1)")
-        segment("reusable") must contain("p2 ($2)")
+      "allow reusable code blocks".in {
+        segment("reusable").must(contain("p1 ($1)"))
+        segment("reusable").must(contain("p2 ($2)"))
       }
 
-      "allow pure scala reusable code blocks" in {
-        body must contain("Hello World")
+      "allow pure scala reusable code blocks".in {
+        body.must(contain("Hello World"))
       }
 
-      "allow declaring implicit variables" in {
-        body must contain("implicit working")
+      "allow declaring implicit variables".in {
+        body.must(contain("implicit working"))
       }
 
-      "allow defining variables" in {
-        body must contain("Hello John Doe")
+      "allow defining variables".in {
+        body.must(contain("Hello John Doe"))
       }
 
-      "allow comments" in {
-        body must not contain "This is a comment"
+      "allow comments".in {
+        body.must(not).contain("This is a comment")
       }
 
-      "allow intering raw HTML" in {
-        body must contain("<foo>")
+      "allow intering raw HTML".in {
+        body.must(contain("<foo>"))
       }
     }
 
-    "display Scala types" in {
+    "display Scala types".in {
       val body = html.displayScalaTypes().body
 
-      body must contain("User(Foo,Bar)")
-      body must contain("value inside option")
-      body must not contain "Option(value inside option)"
-      body must contain("firstlast")
-      body must not contain "List"
-      body must contain("helloUser(Foo,Bar)value inside optionfirstlast")
+      body.must(contain("User(Foo,Bar)"))
+      body.must(contain("value inside option"))
+      body.must(not).contain("Option(value inside option)")
+      body.must(contain("firstlast"))
+      body.must(not).contain("List")
+      body.must(contain("helloUser(Foo,Bar)value inside optionfirstlast"))
     }
   }
 }
