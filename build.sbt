@@ -180,13 +180,13 @@ lazy val plugin = project
     organization                            := "org.playframework.twirl",
     scalaVersion                            := Scala212,
     libraryDependencies += "org.scalatest" %%% "scalatest" % ScalaTestVersion % Test,
-    crossScalaVersions += "3.7.4",
+    crossScalaVersions += "3.8.1",
     pluginCrossBuild / sbtVersion := {
       scalaBinaryVersion.value match {
         case "2.12" =>
           sbtVersion.value
         case _ =>
-          "2.0.0-RC3"
+          "2.0.0-RC9"
       }
     },
     Compile / resourceGenerators += generateVersionFile.taskValue,
