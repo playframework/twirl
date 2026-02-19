@@ -96,7 +96,7 @@ lazy val twirl = project
         --- (baseDirectory.value / "docs" ** "*")).get ++
         (baseDirectory.value / "project" ** "*.scala" --- (baseDirectory.value ** "target" ** "*")).get
   )
-  .aggregate(apiJvm, apiJs, parser, compiler, plugin, mavenPlugin)
+  .aggregate(apiJvm, apiJs, apiNative, parser, compiler, plugin, mavenPlugin)
 
 lazy val nodeJs = {
   if (System.getProperty("NODE_PATH") != null)
@@ -105,7 +105,7 @@ lazy val nodeJs = {
     new NodeJSEnv()
 }
 
-lazy val api = crossProject(JVMPlatform, JSPlatform)
+lazy val api = crossProject(JVMPlatform, JSPlatform, NativePlatform)
   .in(file("api"))
   .enablePlugins(Common, Playdoc, Omnidoc)
   .configs(Docs)
@@ -126,9 +126,14 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
     libraryDependencies += "org.scala-lang.modules" %%% "scala-xml" % "2.4.0",
     libraryDependencies += "org.scalatest"          %%% "scalatest" % ScalaTestVersion % Test,
   )
+  .nativeSettings(
+    // Scala Native cannot run forked tests
+    Test / fork := false
+  )
 
-lazy val apiJvm = api.jvm
-lazy val apiJs  = api.js
+lazy val apiJvm    = api.jvm
+lazy val apiJs     = api.js
+lazy val apiNative = api.native
 
 lazy val parser = project
   .in(file("parser"))
