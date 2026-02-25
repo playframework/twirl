@@ -120,6 +120,7 @@ object Helper {
             // Some of Twirl's tests verify that the template cannot be compiled.
             // It would be confusing to the developer if a compile error message were displayed at that time.
           }
+          def echoMessage(msg: String): Unit = { }
         }
 
         given Context = rootCtx.fresh
