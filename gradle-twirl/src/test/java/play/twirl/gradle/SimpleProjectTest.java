@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.groovy.util.Maps;
+import org.gradle.api.JavaVersion;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.BuildTask;
 import org.gradle.testkit.runner.TaskOutcome;
@@ -34,7 +35,8 @@ public class SimpleProjectTest extends AbstractFunctionalTest {
     Map<String, Object> params =
         Maps.of(
             "scalaVersion", getScalaVersion(),
-            "twirlVersion", getTwirlVersion());
+            "twirlVersion", getTwirlVersion(),
+            "javaVersion", JavaVersion.current());
     return templateProcess("build.gradle.kts.ftlh", params);
   }
 

@@ -8,6 +8,12 @@ repositories {
   mavenLocal()
 }
 
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(${javaVersion}))
+  }
+}
+
 dependencies {
   implementation("org.playframework.twirl:twirl-api_${scalaVersion}:${twirlVersion}")
 }
