@@ -106,8 +106,11 @@ abstract class AbstractFunctionalTest {
   static Stream<String> gradleVersions() {
     String latest = GradleVersion.current().getVersion();
     // https://docs.gradle.org/current/userguide/compatibility.html
-    if (JavaVersion.current().compareTo(JavaVersion.VERSION_21) >= 0) { // Gradle 8.4+
+    if (JavaVersion.current().compareTo(JavaVersion.VERSION_25) >= 0) { // Gradle 9.1+
       return Stream.of(latest);
+    }
+    if (JavaVersion.current().compareTo(JavaVersion.VERSION_21) >= 0) { // Gradle 8.4+
+      return Stream.of("8.14.3", latest);
     }
     if (JavaVersion.current().compareTo(JavaVersion.VERSION_17) >= 0) { // Gradle 7.3+
       return Stream.of("7.6.6", "8.14.3", latest);

@@ -8,6 +8,11 @@ repositories {
   mavenLocal()
 }
 
+// WA for https://github.com/gradle/gradle/issues/36260
+tasks.compileScala {
+  scalaCompileOptions.additionalParameters?.add("-release:${javaVersion}")
+}
+
 dependencies {
   implementation("org.playframework.twirl:twirl-api_${scalaVersion}:${twirlVersion}")
 }
