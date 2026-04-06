@@ -23,6 +23,7 @@ object Import {
     )
     val sourceEncoding =
       TaskKey[String]("twirl-source-encoding", "Source encoding for template files and generated scala files")
+    @transient
     val compileTemplates =
       TaskKey[Seq[File]]("twirl-compile-templates", "Compile twirl templates into scala source files")
   }

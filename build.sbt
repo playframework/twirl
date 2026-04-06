@@ -186,7 +186,7 @@ lazy val plugin = project
         case "2.12" =>
           sbtVersion.value
         case _ =>
-          "2.0.0-RC9"
+          "2.0.0-RC10"
       }
     },
     Compile / resourceGenerators += generateVersionFile.taskValue,
