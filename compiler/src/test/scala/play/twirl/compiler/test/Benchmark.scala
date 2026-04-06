@@ -14,40 +14,42 @@ import play.twirl.parser.TwirlIO
  *
  * sbt "compiler/Test/runMain play.twirl.compiler.test.Benchmark"
  */
-object Benchmark extends App {
-  val sourceDir        = new File("src/test/resources")
-  val generatedDir     = new File("target/test/benchmark-templates")
-  val generatedClasses = new File("target/test/benchmark-classes")
+object Benchmark {
+  def main(args: Array[String]): Unit = {
+    val sourceDir        = new File("src/test/resources")
+    val generatedDir     = new File("target/test/benchmark-templates")
+    val generatedClasses = new File("target/test/benchmark-classes")
 
-  TwirlIO.deleteRecursively(generatedDir)
-  TwirlIO.deleteRecursively(generatedClasses)
-  generatedClasses.mkdirs()
+    TwirlIO.deleteRecursively(generatedDir)
+    TwirlIO.deleteRecursively(generatedClasses)
+    generatedClasses.mkdirs()
 
-  val helper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
+    val helper = new CompilerHelper(sourceDir, generatedDir, generatedClasses)
 
-  println("Compiling template...")
-  val template = helper.compile[((String, List[String]) => (Int) => Html)]("real.scala.html", "html.real").static
-  val input    = (1 to 100).map(_.toString).toList
+    println("Compiling template...")
+    val template = helper.compile[((String, List[String]) => (Int) => Html)]("real.scala.html", "html.real").static
+    val input    = (1 to 100).map(_.toString).toList
 
-  val text = "world " * 100
+    val text = "world " * 100
 
-  // warmup
-  println("Warming up...")
-  for (i <- 1 to 10000) {
-    template(text, input)(4).body
+    // warmup
+    println("Warming up...")
+    for (i <- 1 to 10000) {
+      template(text, input)(4).body
+    }
+
+    println("Starting first run...")
+    val start1 = System.currentTimeMillis()
+    for (i <- 1 to 100000) {
+      template(text, input)(4).body
+    }
+    println("First run: " + (System.currentTimeMillis() - start1) + "ms")
+
+    println("Starting second run...")
+    val start2 = System.currentTimeMillis()
+    for (i <- 1 to 100000) {
+      template(text, input)(4).body
+    }
+    println("Second run: " + (System.currentTimeMillis() - start2) + "ms")
   }
-
-  println("Starting first run...")
-  val start1 = System.currentTimeMillis()
-  for (i <- 1 to 100000) {
-    template(text, input)(4).body
-  }
-  println("First run: " + (System.currentTimeMillis() - start1) + "ms")
-
-  println("Starting second run...")
-  val start2 = System.currentTimeMillis()
-  for (i <- 1 to 100000) {
-    template(text, input)(4).body
-  }
-  println("Second run: " + (System.currentTimeMillis() - start2) + "ms")
 }
