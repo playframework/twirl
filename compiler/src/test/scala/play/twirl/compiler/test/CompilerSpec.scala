@@ -1789,7 +1789,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach {
       Some("2.12.18") -> ": _*",
       Some("2.13.12") -> ": _*",
       Some("3.3.1")   -> "*",
-      Some("3.8.2")   -> "*"
+      Some("3.8.3")   -> "*"
     )
 
     "produce correct varargs splice syntax" in {
