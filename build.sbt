@@ -9,7 +9,7 @@ import java.io.StringWriter
 
 import com.typesafe.tools.mima.core._
 
-val ScalaTestVersion = "3.2.19"
+val ScalaTestVersion = "3.2.20"
 
 def parserCombinators(scalaVersion: String) = "org.scala-lang.modules" %% "scala-parser-combinators" % {
   CrossVersion.partialVersion(scalaVersion) match {
