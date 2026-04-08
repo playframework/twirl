@@ -9,7 +9,7 @@ import java.io.StringWriter
 
 import com.typesafe.tools.mima.core._
 
-val ScalaTestVersion = "3.2.19"
+val ScalaTestVersion = "3.2.20"
 
 def parserCombinators(scalaVersion: String) = "org.scala-lang.modules" %% "scala-parser-combinators" % {
   CrossVersion.partialVersion(scalaVersion) match {
@@ -160,7 +160,7 @@ lazy val compiler = project
       }
     },
     libraryDependencies += parserCombinators(scalaVersion.value),
-    libraryDependencies += "org.scalameta" %% "parsers" % "4.14.2",
+    libraryDependencies += "org.scalameta" %% "parsers" % "4.14.7",
     run / fork                             := true,
     buildInfoKeys                          := Seq[BuildInfoKey](scalaVersion),
     buildInfoPackage                       := "play.twirl.compiler",
@@ -228,7 +228,7 @@ lazy val mavenPlugin = project
       .dependsOn(parser / publishM2)
       .dependsOn(apiJvm / publishM2)
       .value,
-    libraryDependencies += "org.codehaus.plexus" % "plexus-utils" % "4.0.2",
+    libraryDependencies += "org.codehaus.plexus" % "plexus-utils" % "4.0.3",
     Compile / headerSources ++= (baseDirectory.value / "src" / "maven-test" ** ("*.java" || "*.scala" || "*.scala.html") --- (baseDirectory.value ** "target" ** "*")).get,
     mimaFailOnNoPrevious := false,
   )
