@@ -3,13 +3,13 @@
 addSbtPlugin("com.github.sbt" % "sbt-ci-release" % "1.11.2")
 
 // For the Cross Build
-addSbtPlugin("org.scala-js"       % "sbt-scalajs"              % "1.20.1")
+addSbtPlugin("org.scala-js"       % "sbt-scalajs"              % "1.20.2")
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.3.2")
 
-addSbtPlugin("com.typesafe"   % "sbt-mima-plugin"    % "1.1.4")
+addSbtPlugin("com.typesafe"   % "sbt-mima-plugin"    % "1.1.5")
 addSbtPlugin("com.github.sbt" % "sbt-header"         % "5.11.0")
-addSbtPlugin("org.scalameta"  % "sbt-scalafmt"       % "2.5.5")
+addSbtPlugin("org.scalameta"  % "sbt-scalafmt"       % "2.5.6")
 addSbtPlugin("com.github.sbt" % "sbt-java-formatter" % "0.11.0")
-addSbtPlugin("ch.epfl.scala"  % "sbt-bloop"          % "2.0.17")
+addSbtPlugin("ch.epfl.scala"  % "sbt-bloop"          % "2.0.19")
 addSbtPlugin("com.eed3si9n"   % "sbt-buildinfo"      % "0.13.1")
 addSbtPlugin("com.github.sbt" % "sbt-maven-plugin"   % "0.0.4")
