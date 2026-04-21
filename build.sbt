@@ -82,6 +82,8 @@ Global / onLoad := (Global / onLoad).value.andThen { s =>
   s
 }
 
+ThisBuild / javafmtFormatterCompatibleJavaVersion := 17
+
 lazy val twirl = project
   .in(file("."))
   .disablePlugins(MimaPlugin)
