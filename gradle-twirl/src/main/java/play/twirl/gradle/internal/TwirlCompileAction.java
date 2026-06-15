@@ -4,7 +4,8 @@
 package play.twirl.gradle.internal;
 
 import java.io.File;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
@@ -68,7 +69,8 @@ public abstract class TwirlCompileAction implements WorkAction<TwirlCompileParam
       String formatterType = getParameters().getFormatterType().get();
       String extension = getParameters().getFormatExtension().get();
       getParameters().getTemplateImports().addAll(TwirlCompiler.DEFAULT_IMPORTS);
-      Collection<String> imports = getParameters().getTemplateImports().get();
+      List<String> imports = new ArrayList<>(getParameters().getTemplateImports().get());
+      Collections.sort(imports);
       List<String> constructorAnnotations = getParameters().getConstructorAnnotations().get();
       String sourceEncoding = getParameters().getSourceEncoding().get();
       if (LOGGER.isInfoEnabled()) {

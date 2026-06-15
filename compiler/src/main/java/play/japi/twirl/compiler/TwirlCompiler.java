@@ -8,6 +8,8 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -24,8 +26,10 @@ public class TwirlCompiler {
   static {
     String scalaVersion = play.twirl.compiler.BuildInfo$.MODULE$.scalaVersion();
     DEFAULT_IMPORTS =
-        Set.copyOf(
-            toJavaList(play.twirl.compiler.TwirlCompiler$.MODULE$.defaultImports(scalaVersion)));
+        Collections.unmodifiableSet(
+            new LinkedHashSet<>(
+                toJavaList(
+                    play.twirl.compiler.TwirlCompiler$.MODULE$.defaultImports(scalaVersion))));
   }
 
   public static Optional<File> compile(
