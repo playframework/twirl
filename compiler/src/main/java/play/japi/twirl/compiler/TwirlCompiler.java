@@ -9,7 +9,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -24,7 +24,7 @@ public class TwirlCompiler {
   public static final Set<String> DEFAULT_IMPORTS;
 
   static {
-    Set<String> imports = new HashSet<>();
+    Set<String> imports = new LinkedHashSet<>();
     String scalaVersion = play.twirl.compiler.BuildInfo$.MODULE$.scalaVersion();
     imports.addAll(
         JavaConverters$.MODULE$
