@@ -14,6 +14,6 @@ lazy val root = project
     SbtTwirl
   }
   .settings(
-    scalaVersion := "3.8.3",
+    scalaVersion := "3.8.4",
     scalacOptions ++= Seq("-source:future", "-feature")
   )
