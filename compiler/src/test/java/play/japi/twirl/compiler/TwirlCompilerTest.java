@@ -14,6 +14,8 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import org.junit.Test;
 
@@ -47,6 +49,28 @@ public class TwirlCompilerTest {
             TwirlCompiler.DEFAULT_IMPORTS,
             new ArrayList<String>());
     assertFalse(recompilationResult.isPresent());
+  }
+
+  @Test
+  public void defaultImportsHaveDeterministicOrder() {
+    String wildcard =
+        play.twirl.compiler.BuildInfo$.MODULE$.scalaVersion().startsWith("3.") ? "*" : "_";
+    List<String> expected =
+        new ArrayList<>(
+            Arrays.asList(
+                "_root_.play.twirl.api.TwirlFeatureImports." + wildcard,
+                "_root_.play.twirl.api.TwirlHelperImports." + wildcard));
+    if ("*".equals(wildcard)) {
+      expected.add("scala.language.adhocExtensions");
+    }
+    expected.addAll(
+        Arrays.asList(
+            "_root_.play.twirl.api.Html",
+            "_root_.play.twirl.api.JavaScript",
+            "_root_.play.twirl.api.Txt",
+            "_root_.play.twirl.api.Xml"));
+
+    assertEquals(expected, new ArrayList<>(TwirlCompiler.DEFAULT_IMPORTS));
   }
 
   private static void deleteRecursively(File directory) {
