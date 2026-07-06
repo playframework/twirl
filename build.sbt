@@ -95,8 +95,8 @@ lazy val twirl = project
         --- (baseDirectory.value ** "target" ** "*")
         --- (baseDirectory.value / "compiler" / "version.properties")
         --- (baseDirectory.value ** "gradle-twirl" ** "*") // Gradle Spotless plugin is used
-        --- (baseDirectory.value / "docs" ** "*")).get ++
-        (baseDirectory.value / "project" ** "*.scala" --- (baseDirectory.value ** "target" ** "*")).get
+        --- (baseDirectory.value / "docs" ** "*")).get() ++
+        (baseDirectory.value / "project" ** "*.scala" --- (baseDirectory.value ** "target" ** "*")).get()
   )
   .aggregate(apiJvm, apiJs, parser, compiler, plugin, mavenPlugin)
 
@@ -231,7 +231,8 @@ lazy val mavenPlugin = project
       .dependsOn(apiJvm / publishM2)
       .value,
     libraryDependencies += "org.codehaus.plexus" % "plexus-utils" % "4.0.3",
-    Compile / headerSources ++= (baseDirectory.value / "src" / "maven-test" ** ("*.java" || "*.scala" || "*.scala.html") --- (baseDirectory.value ** "target" ** "*")).get,
+    Compile / headerSources ++= (baseDirectory.value / "src" / "maven-test" ** ("*.java" || "*.scala" || "*.scala.html") --- (baseDirectory.value ** "target" ** "*"))
+      .get(),
     mimaFailOnNoPrevious := false,
   )
 
