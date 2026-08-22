@@ -1,6 +1,6 @@
 // Copyright (C) from 2022 The Play Framework Contributors <https://github.com/playframework>, 2011-2021 Lightbend Inc. <https://www.lightbend.com>
 
-addSbtPlugin("com.github.sbt" % "sbt-ci-release" % "1.12.0")
+addSbtPlugin("com.github.sbt" % "sbt-ci-release" % "1.12.1")
 
 // For the Cross Build
 addSbtPlugin("org.scala-js"       % "sbt-scalajs"              % "1.20.2")
@@ -10,5 +10,5 @@ addSbtPlugin("com.typesafe"   % "sbt-mima-plugin"    % "1.1.6")
 addSbtPlugin("com.github.sbt" % "sbt-header"         % "5.11.0")
 addSbtPlugin("org.scalameta"  % "sbt-scalafmt"       % "2.6.2")
 addSbtPlugin("com.github.sbt" % "sbt-java-formatter" % "0.13.1")
-addSbtPlugin("ch.epfl.scala"  % "sbt-bloop"          % "2.1.1")
+addSbtPlugin("ch.epfl.scala"  % "sbt-bloop"          % "2.1.2")
 addSbtPlugin("com.eed3si9n"   % "sbt-buildinfo"      % "0.13.1")
