@@ -10,13 +10,13 @@ lazy val docs = project
   .enablePlugins(PlayDocsPlugin)
   .configs(Configuration.of("Docs", "docs"))
   .settings(
-    scalaVersion := "2.13.18",
+    scalaVersion := "3.8.4",
     // use special snapshot play version for now
     resolvers ++= DefaultOptions.resolvers(snapshot = true),
     libraryDependencies += component("play-test")   % "test",
     libraryDependencies += component("play-specs2") % "test",
-    PlayDocsKeys.javaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "javaGuide" ** "code").get,
-    PlayDocsKeys.scalaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "scalaGuide" ** "code").get,
+    PlayDocsKeys.javaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "javaGuide" ** "code").get(),
+    PlayDocsKeys.scalaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "scalaGuide" ** "code").get(),
     headerLicense := {
       Some(
         HeaderLicense.Custom(
@@ -29,10 +29,11 @@ lazy val docs = project
       FileType("properties") -> HeaderCommentStyle.hashLineComment,
       FileType("md") -> CommentStyle(new LineCommentCreator("<!---", "-->"), commentBetween("<!---", "*", "-->")),
     ),
-    (Compile / headerSources) ++=
-      ((baseDirectory.value ** ("*.properties" || "*.sbt" || "*.md" || "*.scala")) --- (baseDirectory.value ** "target" ** "*")).get
+    (Compile / headerSources) ++= Def.uncached(
+      ((baseDirectory.value ** ("*.properties" || "*.sbt" || "*.md" || "*.scala")) --- (baseDirectory.value ** "target" ** "*")).get()
+    )
   )
-  .settings(overrideTwirlSettings: _*)
+  .settings(overrideTwirlSettings)
   .dependsOn(twirlApi)
 
 // The changes in Twirl imports cause a problem with the PlayDocsPlugin, which defines its own twirl compile tasks

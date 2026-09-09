@@ -90,13 +90,31 @@ lazy val twirl = project
   .settings(
     crossScalaVersions := Nil, // workaround so + uses project-defined variants
     publish / skip     := true,
-    (Compile / headerSources) ++=
+    (Compile / headerSources) ++= Def.uncached(
       ((baseDirectory.value ** ("*.properties" || "*.md" || "*.sbt" || "*.scala.html"))
         --- (baseDirectory.value ** "target" ** "*")
         --- (baseDirectory.value / "compiler" / "version.properties")
         --- (baseDirectory.value ** "gradle-twirl" ** "*") // Gradle Spotless plugin is used
         --- (baseDirectory.value / "docs" ** "*")).get() ++
         (baseDirectory.value / "project" ** "*.scala" --- (baseDirectory.value ** "target" ** "*")).get()
+    ),
+    addCommandAlias(
+      "validateCode",
+      List(
+        "headerCheckAll",
+        "scalafmtSbtCheck",
+        "scalafmtCheckAll",
+        "javafmtCheckAll",
+      ).mkString(";")
+    ),
+    addCommandAlias(
+      "format",
+      List(
+        "scalafmtSbt",
+        "scalafmtAll",
+        "javafmtAll",
+      ).mkString(";")
+    ),
   )
   .aggregate(apiJvm, apiJs, parser, compiler, plugin, mavenPlugin)
 
@@ -112,11 +130,11 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
   .enablePlugins(Common, Playdoc, Omnidoc)
   .configs(Docs)
   .settings(
-    scalaVersion       := Scala212,
+    scalaVersion       := Scala3,
     crossScalaVersions := ScalaVersions,
     mimaSettings,
     name  := "twirl-api",
-    jsEnv := nodeJs,
+    jsEnv := Def.uncached(nodeJs),
     // hack for GraalVM, see: https://github.com/scala-js/scala-js/issues/3673
     // and https://github.com/playframework/twirl/pull/339
     testFrameworks := List(
@@ -125,8 +143,8 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
         "org.scalatest.tools.ScalaTestFramework"
       )
     ),
-    libraryDependencies += "org.scala-lang.modules" %%% "scala-xml" % "2.5.0",
-    libraryDependencies += "org.scalatest"          %%% "scalatest" % ScalaTestVersion % Test,
+    libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "2.5.0",
+    libraryDependencies += "org.scalatest"          %% "scalatest" % ScalaTestVersion % Test,
   )
 
 lazy val apiJvm = api.jvm
@@ -136,21 +154,24 @@ lazy val parser = project
   .in(file("parser"))
   .enablePlugins(Common, Omnidoc)
   .settings(
-    scalaVersion       := Scala212,
+    scalaVersion       := Scala3,
     crossScalaVersions := ScalaVersions,
     mimaSettings,
     name := "twirl-parser",
     libraryDependencies += parserCombinators(scalaVersion.value),
-    libraryDependencies += "com.github.sbt"  % "junit-interface" % "0.13.3"         % Test,
-    libraryDependencies += "org.scalatest" %%% "scalatest"       % ScalaTestVersion % Test,
+    libraryDependencies += "com.github.sbt" % "junit-interface" % "0.13.3"         % Test,
+    libraryDependencies += "org.scalatest" %% "scalatest"       % ScalaTestVersion % Test,
   )
 
 lazy val compiler = project
   .in(file("compiler"))
   .enablePlugins(Common, Omnidoc, BuildInfoPlugin)
   .settings(
-    scalaVersion       := Scala212,
-    crossScalaVersions := ScalaVersions,
+    scalaVersion         := Scala3,
+    crossScalaVersions   := ScalaVersions,
+    Test / fork          := true,
+    exportJars           := false,
+    Test / baseDirectory := (ThisBuild / baseDirectory).value,
     mimaSettings,
     name := "twirl-compiler",
     libraryDependencies ++= {
@@ -178,17 +199,17 @@ lazy val plugin = project
   .enablePlugins(SbtPlugin)
   .dependsOn(compiler)
   .settings(
-    name                                    := "sbt-twirl",
-    organization                            := "org.playframework.twirl",
-    scalaVersion                            := Scala212,
-    libraryDependencies += "org.scalatest" %%% "scalatest" % ScalaTestVersion % Test,
-    crossScalaVersions += "3.8.4",
+    name                                   := "sbt-twirl",
+    organization                           := "org.playframework.twirl",
+    scalaVersion                           := "3.8.4",
+    libraryDependencies += "org.scalatest" %% "scalatest" % ScalaTestVersion % Test,
+    crossScalaVersions += Scala212,
     pluginCrossBuild / sbtVersion := {
       scalaBinaryVersion.value match {
         case "2.12" =>
+          "1.13.0"
+        case "3" =>
           sbtVersion.value
-        case _ =>
-          "2.0.0-RC11"
       }
     },
     Compile / resourceGenerators += generateVersionFile.taskValue,
@@ -216,7 +237,7 @@ lazy val mavenPlugin = project
   .dependsOn(compiler)
   .settings(
     name                  := "twirl-maven-plugin",
-    scalaVersion          := Scala212,
+    scalaVersion          := Scala3,
     crossScalaVersions    := ScalaVersions,
     mavenPluginGoalPrefix := "twirl",
     mavenLaunchOpts ++= Seq(
@@ -231,8 +252,11 @@ lazy val mavenPlugin = project
       .dependsOn(apiJvm / publishM2)
       .value,
     libraryDependencies += "org.codehaus.plexus" % "plexus-utils" % "4.1.0",
-    Compile / headerSources ++= (baseDirectory.value / "src" / "maven-test" ** ("*.java" || "*.scala" || "*.scala.html") --- (baseDirectory.value ** "target" ** "*"))
-      .get(),
+    Compile / headerSources ++= Def
+      .uncached(
+        (baseDirectory.value / "src" / "maven-test" ** ("*.java" || "*.scala" || "*.scala.html") --- (baseDirectory.value ** "target" ** "*"))
+          .get()
+      ),
     mimaFailOnNoPrevious := false,
   )
 
@@ -256,22 +280,3 @@ def saveCompilerVersion =
     IO.write(file, writer.getBuffer.toString)
     Seq(file)
   }
-
-addCommandAlias(
-  "validateCode",
-  List(
-    "headerCheckAll",
-    "scalafmtSbtCheck",
-    "scalafmtCheckAll",
-    "javafmtCheckAll",
-  ).mkString(";")
-)
-
-addCommandAlias(
-  "format",
-  List(
-    "scalafmtSbt",
-    "scalafmtAll",
-    "javafmtAll",
-  ).mkString(";")
-)

@@ -14,7 +14,7 @@ jobs:
     with:
       gradle-build-root: gradle-twirl
       cmd: |
-        sbt +compiler/publishM2 ci-release
+        sbt "+compiler/publishM2 ; ci-release"
         cd gradle-twirl
         ./gradlew --no-daemon publishToSonatype -x test -PsonatypeUsername="$SONATYPE_USERNAME" -PsonatypePassword="$SONATYPE_PASSWORD"
     secrets: inherit
