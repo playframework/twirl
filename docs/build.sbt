@@ -10,7 +10,7 @@ lazy val docs = project
   .enablePlugins(PlayDocsPlugin)
   .configs(Configuration.of("Docs", "docs"))
   .settings(
-    scalaVersion := "2.13.18",
+    scalaVersion := "3.9.0",
     // use special snapshot play version for now
     resolvers ++= DefaultOptions.resolvers(snapshot = true),
     resolvers += Resolver.typesafeRepo("releases"),
