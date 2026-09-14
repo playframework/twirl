@@ -1254,8 +1254,8 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
    * Parse the template arguments, if they exist
    */
   private def maybeTemplateArgs(): Option[PosString] = {
-    if (check("@(")) {
-      input.regress(1)
+    val reset                          = input.offset()
+    def parseArgs(): Option[PosString] = {
       val p    = input.offset()
       val args = templateArgs()
       if (args != null) {
@@ -1264,6 +1264,30 @@ class TwirlParser(val shouldParseInclusiveDot: Boolean) {
         Some(result)
       } else {
         None
+      }
+    }
+    if (check("@(")) {
+      input.regress(1)
+      parseArgs()
+    } else if (check("@[")) {
+      input.regress(1)
+      Option(squareBrackets()) match {
+        case Some(value) if value.replaceAll("\\s", "") == "[]" =>
+          input.regressTo(reset)                             // don't consume @
+          error(s"identifier expected but ']' found", reset) // TODO: really reset hier?
+          None
+        case Some(types) =>
+          parseArgs() match {
+            case Some(value) => Some(position(PosString(types + value.str), reset))
+            case None        =>
+              val result = Some(position(PosString(types + "()"), reset))
+              check("\n")
+              result
+          }
+        case None =>
+          input.regressTo(reset)                      // don't consume @
+          error(s"Type parameter(s) expected", reset) // TODO: really reset hier?
+          None
       }
     } else None
   }
