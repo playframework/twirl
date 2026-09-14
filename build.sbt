@@ -201,7 +201,7 @@ lazy val plugin = project
   .settings(
     name                                   := "sbt-twirl",
     organization                           := "org.playframework.twirl",
-    scalaVersion                           := "3.8.4",
+    scalaVersion                           := "3.9.0",
     libraryDependencies += "org.scalatest" %% "scalatest" % ScalaTestVersion % Test,
     crossScalaVersions += Scala212,
     pluginCrossBuild / sbtVersion := {
