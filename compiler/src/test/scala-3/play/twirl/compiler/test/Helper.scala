@@ -26,6 +26,8 @@ import play.twirl.parser.TwirlIO
 object Helper {
   case class CompilationError(message: String, line: Int, point: Int) extends RuntimeException(message)
 
+  private val ansiEscape = "\u001b\\[[0-9;]*m".r
+
   class CompilerHelper(sourceDir: File, val generatedDir: File, generatedClasses: File) {
     import java.net.*
     import scala.collection.mutable
@@ -98,10 +100,12 @@ object Helper {
           errorsSortedAll.filterNot(e => mapper.mapLine(e.pos.line + 1) == 0 && mapper.mapPosition(e.pos.point) == 0)
         // We filter out any errors that are mapped to line 0 and column 0, because since Scalameta 4.14.1 it's likely
         // those are very general errors. However, fall back to all errors in case after filtering no errors are left.
-        val error   = (if errorsSortedWithoutZeroPos.isEmpty then errorsSortedAll else errorsSortedWithoutZeroPos).head
-        val message = error.msg
+        val error = (if errorsSortedWithoutZeroPos.isEmpty then errorsSortedAll else errorsSortedWithoutZeroPos).head
+        // Compiler versions use different colors for the same diagnostic. The styling is not
+        // semantically relevant, so compare the stable text of the message in the tests.
+        val message = ansiEscape.replaceAllIn(error.msg.toString, "")
         val pos     = error.pos
-        throw CompilationError(message.toString, mapper.mapLine(pos.line + 1), mapper.mapPosition(pos.point))
+        throw CompilationError(message, mapper.mapLine(pos.line + 1), mapper.mapPosition(pos.point))
       }
 
       new CompiledTemplate[T](className)

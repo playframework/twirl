@@ -11,3 +11,9 @@ lazy val root = project.in(file(".")).enablePlugins {
   // Add the twirl plugin
   SbtTwirl
 }
+
+scalaVersion := sys.props("scala.version")
+
+scalacOptions ++= {
+  if (scalaVersion.value.startsWith("3.3.")) Seq("-release:17", "-Yfuture-lazy-vals") else Seq.empty
+}

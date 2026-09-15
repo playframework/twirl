@@ -41,14 +41,14 @@ object Common extends AutoPlugin {
         scalacParameters ++ Seq(
           "-Xsource:3"
         )
-      case _ => scalacParameters
+      case _ => scalacParameters ++ (if (version.startsWith("3.3.")) Seq("-Yfuture-lazy-vals") else Seq.empty)
     }
   }
 
   override def projectSettings =
     Seq(
-      scalaVersion       := Scala212,
-      crossScalaVersions := ScalaVersions,
+      scalaVersion       := resolveScalaVersion(sys.props.getOrElse("scala.version", scala213Version)),
+      crossScalaVersions := publishedScalaVersions,
       scalacOptions ++= crossScalacOptions(scalaVersion.value),
       javacOptions ++= javacParameters
     )

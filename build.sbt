@@ -75,6 +75,10 @@ val mimaSettings = Seq(
 // Customise sbt-dynver's behaviour to make it work with tags which aren't v-prefixed
 ThisBuild / dynverVTagPrefix := false
 
+// CI publishes local artifacts in one sbt invocation and consumes them in later sbt/Gradle invocations.
+// Keep those invocations on one version even when a dirty dynver timestamp rolls over.
+ThisBuild / version ~= (detected => sys.props.getOrElse("project.version", detected))
+
 // Sanity-check: assert that version comes from a tag (e.g. not a too-shallow clone)
 // https://github.com/dwijnand/sbt-dynver/#sanity-checking-the-version
 Global / onLoad := (Global / onLoad).value.andThen { s =>
@@ -130,8 +134,8 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
   .enablePlugins(Common, Playdoc, Omnidoc)
   .configs(Docs)
   .settings(
-    scalaVersion       := Scala3,
-    crossScalaVersions := ScalaVersions,
+    scalaVersion       := resolveScalaVersion(sys.props.getOrElse("scala.version", scala33LTSVersion)),
+    crossScalaVersions := publishedScalaVersions,
     mimaSettings,
     name  := "twirl-api",
     jsEnv := Def.uncached(nodeJs),
@@ -154,8 +158,8 @@ lazy val parser = project
   .in(file("parser"))
   .enablePlugins(Common, Omnidoc)
   .settings(
-    scalaVersion       := Scala3,
-    crossScalaVersions := ScalaVersions,
+    scalaVersion       := resolveScalaVersion(sys.props.getOrElse("scala.version", scala33LTSVersion)),
+    crossScalaVersions := publishedScalaVersions,
     mimaSettings,
     name := "twirl-parser",
     libraryDependencies += parserCombinators(scalaVersion.value),
@@ -167,8 +171,8 @@ lazy val compiler = project
   .in(file("compiler"))
   .enablePlugins(Common, Omnidoc, BuildInfoPlugin)
   .settings(
-    scalaVersion         := Scala3,
-    crossScalaVersions   := ScalaVersions,
+    scalaVersion         := resolveScalaVersion(sys.props.getOrElse("scala.version", scala33LTSVersion)),
+    crossScalaVersions   := publishedScalaVersions,
     Test / fork          := true,
     exportJars           := false,
     Test / baseDirectory := (ThisBuild / baseDirectory).value,
@@ -199,11 +203,13 @@ lazy val plugin = project
   .enablePlugins(SbtPlugin)
   .dependsOn(compiler)
   .settings(
-    name                                   := "sbt-twirl",
-    organization                           := "org.playframework.twirl",
-    scalaVersion                           := "3.9.0",
+    name         := "sbt-twirl",
+    organization := "org.playframework.twirl",
+    scalaVersion := scala39LTSVersion,
+    // The plugin deliberately consumes the canonical Twirl compiler built with Scala 3.3.
+    allowMismatchScala                     := true,
     libraryDependencies += "org.scalatest" %% "scalatest" % ScalaTestVersion % Test,
-    crossScalaVersions += Scala212,
+    crossScalaVersions += scala212Version,
     pluginCrossBuild / sbtVersion := {
       scalaBinaryVersion.value match {
         case "2.12" =>
@@ -214,6 +220,12 @@ lazy val plugin = project
     },
     Compile / resourceGenerators += generateVersionFile.taskValue,
     scriptedLaunchOpts += version.apply { v => s"-Dproject.version=$v" }.value,
+    // Scripted tests run in separate JVMs. Forward both the selected application compiler and
+    // the canonical Scala 3 compiler used by Scala-3-only fixtures in the Scala 2 lanes.
+    scriptedLaunchOpts += s"-Dscala.version=${resolveScalaVersion(
+        sys.props.getOrElse("scripted.scala.version", scala33LTSVersion)
+      )}",
+    scriptedLaunchOpts += s"-Dscala3.version=$scala33LTSVersion",
     // both `locally`s are to work around sbt/sbt#6161
     scriptedDependencies := {
       locally { val _ = scriptedDependencies.value }
@@ -237,8 +249,8 @@ lazy val mavenPlugin = project
   .dependsOn(compiler)
   .settings(
     name                  := "twirl-maven-plugin",
-    scalaVersion          := Scala3,
-    crossScalaVersions    := ScalaVersions,
+    scalaVersion          := resolveScalaVersion(sys.props.getOrElse("scala.version", scala33LTSVersion)),
+    crossScalaVersions    := publishedScalaVersions,
     mavenPluginGoalPrefix := "twirl",
     mavenLaunchOpts ++= Seq(
       // Uncomment to debug plugin code while Maven scripted test is running

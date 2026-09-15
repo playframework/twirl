@@ -14,6 +14,13 @@ lazy val root = project
     SbtTwirl
   }
   .settings(
-    scalaVersion := "3.9.0",
-    scalacOptions ++= Seq("-source:future", "-feature")
+    scalaVersion := {
+      val testedVersion = sys.props("scala.version")
+      // This fixture deliberately verifies Scala-3-only behavior (including a template with
+      // more than 22 parameters), so retain the canonical Scala 3 baseline in the Scala 2 lane.
+      if (testedVersion.startsWith("2.")) sys.props("scala3.version") else testedVersion
+    },
+    scalacOptions ++= (if (scalaVersion.value.startsWith("2.")) Seq("-Xsource:3") else Seq("-source:future")) ++
+      Seq("-feature") ++
+      (if (scalaVersion.value.startsWith("3.3.")) Seq("-release:17", "-Yfuture-lazy-vals") else Seq.empty)
   )

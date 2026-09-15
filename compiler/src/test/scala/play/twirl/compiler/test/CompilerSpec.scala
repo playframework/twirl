@@ -25,10 +25,8 @@ class CompilerSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach {
 
   private val tmpTemplateFile = new File(sourceDir, "temporary.scala.html")
 
-  private val esc = "\u001b" // \e in bash: echo -e "\e[33mvalue\e[0m \e[35mfield\e[0m"
-
   private def fieldAlreadyDefinedAs(subject: String) = if (BuildInfo.scalaVersion.startsWith("3."))
-    s"""field is already defined as ${esc}[33m${subject}${esc}[0m ${esc}[32mfield${esc}[0m
+    s"""field is already defined as ${subject} field
        |
        |Note that overloaded methods must all be defined in the same group of toplevel definitions""".stripMargin
   else s"field is already defined as ${subject} field"
@@ -36,7 +34,7 @@ class CompilerSpec extends AnyWordSpec with Matchers with BeforeAndAfterEach {
   private def fieldAlreadyDefinedAsMethod(point: String, subject: String = "method") = if (
     BuildInfo.scalaVersion.startsWith("3.")
   )
-    s"""field is already defined as ${esc}[33mmethod${esc}[0m ${esc}[32mfield${esc}[0m
+    s"""field is already defined as method field
        |
        |Note that overloaded methods must all be defined in the same group of toplevel definitions""".stripMargin
   else s"""${subject} field is defined twice;

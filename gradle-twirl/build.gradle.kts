@@ -67,8 +67,10 @@ testing {
                     testTask.configure {
                         systemProperty("twirl.version", compilerVersion)
                         project.findProperty("scala.version")?.let { scalaVersion ->
-                            val ver = (scalaVersion as String).trimEnd { !it.isDigit() }
-                            systemProperty("scala.version", ver)
+                            val components = (scalaVersion as String).split('.')
+                            val binaryVersion =
+                                if (components.first() == "3") "3" else components.take(2).joinToString(".")
+                            systemProperty("scala.version", binaryVersion)
                         }
                         // Required to test configuration cache in tests when using withDebug()
                         // https://github.com/gradle/gradle/issues/22765#issuecomment-1339427241
