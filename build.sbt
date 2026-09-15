@@ -75,7 +75,8 @@ val mimaSettings = Seq(
 // Customise sbt-dynver's behaviour to make it work with tags which aren't v-prefixed
 ThisBuild / dynverVTagPrefix := false
 
-// Keep separate sbt/Gradle invocations on one version even when a dirty dynver timestamp rolls over.
+// CI publishes local artifacts in one sbt invocation and consumes them in later sbt/Gradle invocations.
+// Keep those invocations on one version even when a dirty dynver timestamp rolls over.
 ThisBuild / version ~= (detected => sys.props.getOrElse("project.version", detected))
 
 // Sanity-check: assert that version comes from a tag (e.g. not a too-shallow clone)
@@ -205,7 +206,7 @@ lazy val plugin = project
     name         := "sbt-twirl",
     organization := "org.playframework.twirl",
     scalaVersion := scala39LTSVersion,
-    // The build-tool plugin consumes the canonical Twirl compiler built with Scala 3.3.
+    // The plugin deliberately consumes the canonical Twirl compiler built with Scala 3.3.
     allowMismatchScala                     := true,
     libraryDependencies += "org.scalatest" %% "scalatest" % ScalaTestVersion % Test,
     crossScalaVersions += scala212Version,
@@ -219,9 +220,12 @@ lazy val plugin = project
     },
     Compile / resourceGenerators += generateVersionFile.taskValue,
     scriptedLaunchOpts += version.apply { v => s"-Dproject.version=$v" }.value,
+    // Scripted tests run in separate JVMs. Forward both the selected application compiler and
+    // the canonical Scala 3 compiler used by Scala-3-only fixtures in the Scala 2 lanes.
     scriptedLaunchOpts += s"-Dscala.version=${resolveScalaVersion(
         sys.props.getOrElse("scripted.scala.version", scala33LTSVersion)
       )}",
+    scriptedLaunchOpts += s"-Dscala3.version=$scala33LTSVersion",
     // both `locally`s are to work around sbt/sbt#6161
     scriptedDependencies := {
       locally { val _ = scriptedDependencies.value }
