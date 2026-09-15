@@ -35,13 +35,13 @@ object Common extends AutoPlugin {
     "utf8"
   )
 
-  def crossScalacOptions(version: String) = {
+  def baseScalacOptions(version: String) = {
     CrossVersion.partialVersion(version) match {
       case Some((2, 13)) =>
         scalacParameters ++ Seq(
           "-Xsource:3"
         )
-      case _ => scalacParameters ++ (if (version.startsWith("3.3.")) Seq("-Yfuture-lazy-vals") else Seq.empty)
+      case _ => scalacParameters
     }
   }
 
@@ -49,7 +49,7 @@ object Common extends AutoPlugin {
     Seq(
       scalaVersion       := resolveScalaVersion(sys.props.getOrElse("scala.version", scala213Version)),
       crossScalaVersions := publishedScalaVersions,
-      scalacOptions ++= crossScalacOptions(scalaVersion.value),
+      scalacOptions ++= baseScalacOptions(scalaVersion.value),
       javacOptions ++= javacParameters
     )
 

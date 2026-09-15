@@ -20,6 +20,10 @@ def parserCombinators(scalaVersion: String) = "org.scala-lang.modules" %% "scala
 
 val previousVersion: Option[String] = Some("2.0.1")
 
+val futureLazyValsJvmSettings = Seq(
+  scalacOptions ++= (if (scalaVersion.value.startsWith("3.3.")) Seq("-Yfuture-lazy-vals") else Seq.empty)
+)
+
 val mimaSettings = Seq(
   mimaPreviousArtifacts := previousVersion.map(organization.value %% moduleName.value % _).toSet,
   mimaBinaryIssueFilters ++= Seq(
@@ -150,6 +154,7 @@ lazy val api = crossProject(JVMPlatform, JSPlatform)
     libraryDependencies += "org.scala-lang.modules" %% "scala-xml" % "2.5.0",
     libraryDependencies += "org.scalatest"          %% "scalatest" % ScalaTestVersion % Test,
   )
+  .jvmSettings(futureLazyValsJvmSettings)
 
 lazy val apiJvm = api.jvm
 lazy val apiJs  = api.js
@@ -166,6 +171,7 @@ lazy val parser = project
     libraryDependencies += "com.github.sbt" % "junit-interface" % "0.13.3"         % Test,
     libraryDependencies += "org.scalatest" %% "scalatest"       % ScalaTestVersion % Test,
   )
+  .settings(futureLazyValsJvmSettings)
 
 lazy val compiler = project
   .in(file("compiler"))
@@ -195,6 +201,7 @@ lazy val compiler = project
     publish                                := publish.dependsOn(saveCompilerVersion).value,
     publishLocal                           := publishLocal.dependsOn(saveCompilerVersion).value
   )
+  .settings(futureLazyValsJvmSettings)
   .aggregate(parser)
   .dependsOn(apiJvm % Test, parser % "compile->compile;test->test")
 
