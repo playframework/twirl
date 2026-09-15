@@ -10,11 +10,15 @@ lazy val docs = project
   .enablePlugins(PlayDocsPlugin)
   .configs(Configuration.of("Docs", "docs"))
   .settings(
-    scalaVersion := "3.9.0",
+    scalaVersion := sys.props.getOrElse("scala.version", "3.3.8"),
+    scalacOptions ++= {
+      if (scalaVersion.value.startsWith("3.3.")) Seq("-release:17", "-Yfuture-lazy-vals") else Seq.empty
+    },
     // use special snapshot play version for now
     resolvers ++= DefaultOptions.resolvers(snapshot = true),
-    libraryDependencies += component("play-test")   % "test",
-    libraryDependencies += component("play-specs2") % "test",
+    // M4 is the newest Play 3.1 milestone whose Scala 3 artifacts were built with Scala 3.3.
+    libraryDependencies += "org.playframework" %% "play-test"   % "3.1.0-M4" % Test,
+    libraryDependencies += "org.playframework" %% "play-specs2" % "3.1.0-M4" % Test,
     PlayDocsKeys.javaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "javaGuide" ** "code").get(),
     PlayDocsKeys.scalaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "scalaGuide" ** "code").get(),
     headerLicense := {

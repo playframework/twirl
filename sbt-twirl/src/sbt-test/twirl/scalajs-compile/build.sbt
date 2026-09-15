@@ -6,6 +6,7 @@ lazy val root = project
   .in(file("."))
   .enablePlugins(ScalaJSPlugin, SbtTwirl)
   .settings(
+    scalaVersion                     := sys.props.getOrElse("scala.version", "3.3.8"),
     scalaJSUseMainModuleInitializer := true,
     mainClass                       := Some("Test")
   )
