@@ -20,7 +20,6 @@ lazy val docs = project
       if (scalaVersion.value.startsWith("3.3.")) Seq("-release:17", "-Yfuture-lazy-vals") else Seq.empty
     },
     // use special snapshot play version for now
-    resolvers ++= DefaultOptions.resolvers(snapshot = true),
     // M4 is the newest Play 3.1 milestone whose Scala 3 artifacts were built with Scala 3.3.
     // TODO: After Play 3.1.0-M10 is released with Scala 3.3, upgrade the docs plugin and
     // restore component("play-test") and component("play-specs2"), then remove this rewrite.
