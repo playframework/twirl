@@ -7,7 +7,7 @@ import sbtheader.LineCommentCreator
 
 // The docs are a separate sbt build and cannot reuse the root build's Dependencies object.
 val scala33LTSVersion  = "3.3.8"
-val playVersion        = "3.1.0-M4"
+val playVersion        = "3.1.0-M9"
 val currentPlayVersion = "3.1.0-M9"
 
 lazy val docs = project
@@ -28,13 +28,14 @@ lazy val docs = project
     // PlayDocsPlugin M9 injects Play M9 libraries even when the explicit test dependencies use M4.
     // Keep the sbt 2-compatible plugin, but make its application dependencies readable by Scala 3.3.
     libraryDependencies ~= (_.map {
-      case dependency
-          if dependency.organization == "org.playframework" && dependency.revision == currentPlayVersion =>
+      case dependency if dependency.organization == "org.playframework" && dependency.revision == currentPlayVersion =>
         dependency.withRevision(playVersion)
       case dependency => dependency
     }),
-    PlayDocsKeys.javaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "javaGuide" ** "code").get(),
-    PlayDocsKeys.scalaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "scalaGuide" ** "code").get(),
+    PlayDocsKeys.javaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "javaGuide" ** "code")
+      .get(),
+    PlayDocsKeys.scalaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "scalaGuide" ** "code")
+      .get(),
     headerLicense := {
       Some(
         HeaderLicense.Custom(
@@ -48,7 +49,8 @@ lazy val docs = project
       FileType("md") -> CommentStyle(new LineCommentCreator("<!---", "-->"), commentBetween("<!---", "*", "-->")),
     ),
     (Compile / headerSources) ++= Def.uncached(
-      ((baseDirectory.value ** ("*.properties" || "*.sbt" || "*.md" || "*.scala")) --- (baseDirectory.value ** "target" ** "*")).get()
+      ((baseDirectory.value ** ("*.properties" || "*.sbt" || "*.md" || "*.scala")) --- (baseDirectory.value ** "target" ** "*"))
+        .get()
     )
   )
   .settings(overrideTwirlSettings)
