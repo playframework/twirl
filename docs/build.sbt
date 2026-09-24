@@ -6,33 +6,20 @@ import sbtheader.FileType
 import sbtheader.LineCommentCreator
 
 // The docs are a separate sbt build and cannot reuse the root build's Dependencies object.
-val scala33LTSVersion  = "3.3.8"
-val playVersion        = "3.1.0-M4"
-val currentPlayVersion = "3.1.0-M9"
+val scala33LTSVersion = "3.3.8"
 
 lazy val docs = project
   .in(file("."))
   .enablePlugins(PlayDocsPlugin)
   .configs(Configuration.of("Docs", "docs"))
   .settings(
+    resolvers += Resolver.sonatypeCentralSnapshots,
     scalaVersion := sys.props.getOrElse("scala.version", scala33LTSVersion),
     scalacOptions ++= {
       if (scalaVersion.value.startsWith("3.3.")) Seq("-release:17", "-Yfuture-lazy-vals") else Seq.empty
     },
-    // use special snapshot play version for now
-    // M4 is the newest Play 3.1 milestone whose Scala 3 artifacts were built with Scala 3.3.
-    // TODO: After Play 3.1.0-M10 is released with Scala 3.3, upgrade the docs plugin and
-    // restore component("play-test") and component("play-specs2"), then remove this rewrite.
-    libraryDependencies += "org.playframework" %% "play-test"   % playVersion % Test,
-    libraryDependencies += "org.playframework" %% "play-specs2" % playVersion % Test,
-    // PlayDocsPlugin M9 injects Play M9 libraries even when the explicit test dependencies use M4.
-    // Keep the sbt 2-compatible plugin, but make its application dependencies readable by Scala 3.3.
-    libraryDependencies ~= (_.map {
-      case dependency
-          if dependency.organization == "org.playframework" && dependency.revision == currentPlayVersion =>
-        dependency.withRevision(playVersion)
-      case dependency => dependency
-    }),
+    libraryDependencies += component("play-test")   % Test,
+    libraryDependencies += component("play-specs2") % Test,
     PlayDocsKeys.javaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "javaGuide" ** "code").get(),
     PlayDocsKeys.scalaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "scalaGuide" ** "code").get(),
     headerLicense := {
