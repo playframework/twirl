@@ -64,11 +64,15 @@ public class TwirlPlugin implements Plugin<Project> {
     return System.getProperty("twirl.version", getClass().getPackage().getImplementationVersion());
   }
 
+  @SuppressWarnings("deprecation")
   private Configuration createDefaultTwirlConfiguration(
       Project project, TwirlExtension twirlExtension) {
     Configuration conf = project.getConfigurations().create("twirl");
     conf.setDescription("The Twirl compiler library.");
-    conf.setVisible(false);
+    // Visibility still affects Gradle 7 and 8, but is deprecated and ignored since Gradle 9.
+    if (isGradleVersionLessThan("9.0")) {
+      conf.setVisible(false);
+    }
     conf.setTransitive(true);
     conf.setCanBeConsumed(false);
     conf.defaultDependencies(

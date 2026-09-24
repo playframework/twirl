@@ -42,7 +42,6 @@ class TwirlPluginTest {
     Configuration conf = project.getConfigurations().findByName("twirl");
     assertThat(conf).isNotNull();
     assertThat(conf.isTransitive()).isTrue();
-    assertThat(conf.isVisible()).isFalse();
     ((DefaultConfiguration) conf).runDependencyActions();
     assertThat(conf.getDependencies())
         .anyMatch(

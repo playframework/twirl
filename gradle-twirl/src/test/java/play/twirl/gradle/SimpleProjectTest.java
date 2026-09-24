@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.Map;
 import org.apache.commons.io.FileUtils;
@@ -17,6 +18,7 @@ import org.gradle.api.JavaVersion;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.BuildTask;
 import org.gradle.testkit.runner.TaskOutcome;
+import org.gradle.util.GradleVersion;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -43,6 +45,25 @@ public class SimpleProjectTest extends AbstractFunctionalTest {
   @Override
   protected String getSettingsFileContent() {
     return templateProcess("settings.gradle.kts.ftlh", Collections.emptyMap());
+  }
+
+  @ParameterizedTest
+  @MethodSource("gradleVersions")
+  @DisplayName("Test Twirl configuration visibility across Gradle versions")
+  void testTwirlConfigurationVisibility(String gradleVersion) throws IOException {
+    boolean beforeGradle9 =
+        GradleVersion.version(gradleVersion).compareTo(GradleVersion.version("9.0")) < 0;
+    if (beforeGradle9) {
+      Files.writeString(
+          projectPath("build.gradle.kts"),
+          "\ncheck(!configurations.getByName(\"twirl\").isVisible)\n",
+          StandardOpenOption.APPEND);
+    }
+
+    BuildResult result = build(gradleVersion, "help", "--warning-mode=all");
+    if (!beforeGradle9) {
+      assertThat(result.getOutput()).doesNotContain("Configuration.visible");
+    }
   }
 
   @ParameterizedTest

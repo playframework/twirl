@@ -60,7 +60,7 @@ tasks.jar {
 @Suppress("UnstableApiUsage")
 testing {
     suites {
-        val test by getting(JvmTestSuite::class) {
+        getByName<JvmTestSuite>("test") {
             useJUnitJupiter()
             targets {
                 all {
@@ -116,7 +116,7 @@ nexusPublishing {
 gradlePlugin {
     website.set("https://www.playframework.com/documentation/latest/ScalaTemplates")
     vcsUrl.set("https://github.com/playframework/twirl")
-    val twirl by plugins.creating {
+    plugins.create("twirl") {
         id = "org.playframework.twirl"
         displayName = "Twirl Plugin"
         description = "A Gradle plugin to compile Twirl templates"
