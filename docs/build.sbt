@@ -6,7 +6,7 @@ import sbtheader.FileType
 import sbtheader.LineCommentCreator
 
 // The docs are a separate sbt build and cannot reuse the root build's Dependencies object.
-val scala33LTSVersion = "3.3.8"
+val scala33LTSVersion = "3.9.0"
 
 lazy val docs = project
   .in(file("."))
@@ -20,8 +20,10 @@ lazy val docs = project
     },
     libraryDependencies += component("play-test")   % Test,
     libraryDependencies += component("play-specs2") % Test,
-    PlayDocsKeys.javaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "javaGuide" ** "code").get(),
-    PlayDocsKeys.scalaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "scalaGuide" ** "code").get(),
+    PlayDocsKeys.javaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "javaGuide" ** "code")
+      .get(),
+    PlayDocsKeys.scalaManualSourceDirectories := (baseDirectory.value / "manual" / "working" / "scalaGuide" ** "code")
+      .get(),
     headerLicense := {
       Some(
         HeaderLicense.Custom(
@@ -35,7 +37,8 @@ lazy val docs = project
       FileType("md") -> CommentStyle(new LineCommentCreator("<!---", "-->"), commentBetween("<!---", "*", "-->")),
     ),
     (Compile / headerSources) ++= Def.uncached(
-      ((baseDirectory.value ** ("*.properties" || "*.sbt" || "*.md" || "*.scala")) --- (baseDirectory.value ** "target" ** "*")).get()
+      ((baseDirectory.value ** ("*.properties" || "*.sbt" || "*.md" || "*.scala")) --- (baseDirectory.value ** "target" ** "*"))
+        .get()
     )
   )
   .settings(overrideTwirlSettings)
