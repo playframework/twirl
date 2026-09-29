@@ -19,7 +19,6 @@ import dotty.tools.dotc.reporting.ConsoleReporter
 import dotty.tools.dotc.reporting.Reporter
 import dotty.tools.io.PlainDirectory
 import dotty.tools.io.Directory
-import dotty.tools.io.ClassPath
 import scala.jdk.CollectionConverters.*
 import play.twirl.parser.TwirlIO
 
