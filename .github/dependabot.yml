@@ -11,6 +11,12 @@ updates:
     target-branch: "2.0.x"
     commit-message:
       prefix: "[2.0.x] "
+    # Keep the Gradle build compatible with Java 11.
+    ignore:
+      - dependency-name: "gradle-wrapper"
+        versions: ["[9.0,)"]
+      - dependency-name: "com.gradle.plugin-publish"
+        versions: ["[2.2,)"]
   - package-ecosystem: "maven"
     directory: "maven-twirl"
     schedule:
