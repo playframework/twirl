@@ -122,7 +122,7 @@ object Helper {
           }
 
           def echoMessage(msg: String): Unit = {
-            // Scala 3.3.8 made this a separate abstract hook.
+            // Scala 3.3.9 made this a separate abstract hook.
           }
         }
 
