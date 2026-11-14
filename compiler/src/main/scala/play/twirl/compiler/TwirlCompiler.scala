@@ -732,21 +732,24 @@ package """ :+ packageName :+ """
       getFunctionMapping(signature, returnType, ScalaCompat(None))
 
     private[compiler] def getFunctionMapping(
-        signature: String,
+        signature: String, // can also contain type params like [A, B, C](...)
         returnType: String,
         sc: ScalaCompat
-    ): (String, String, String) = {
+    ): (String, String, String) = { // renderCall, f, templateType
 
-      val params: List[List[Term.Param]] =
+      val (tparams, params): (List[Type.Param], List[List[Term.Param]]) =
         try {
           val dialect = Dialect.current.withAllowGivenUsing(true)
           val input   = Input.String(s"object FT { def signature$signature }")
           val obj     = implicitly[Parse[Stat]].apply(input, dialect).get.asInstanceOf[Defn.Object]
           val templ   = obj.templ
           val defdef  = templ.body.stats.head.asInstanceOf[Decl.Def]
-          defdef.paramClauseGroups.headOption.map(_.paramClauses.map(_.values)).getOrElse(Nil)
+          (
+            defdef.paramClauseGroups.headOption.map(_.tparamClause.values).getOrElse(Nil),
+            defdef.paramClauseGroups.headOption.map(_.paramClauses.map(_.values)).getOrElse(Nil)
+          )
         } catch {
-          case e: ParseException => Nil
+          case e: ParseException => (Nil, Nil)
         }
 
       def filterType(p: Term.Param) =
@@ -784,7 +787,10 @@ package """ :+ packageName :+ """
         }.mkString
       }
 
-      val renderCall = "def render%s: %s = apply%s".format(
+      val typeParams = if (tparams.isEmpty) "" else tparams.mkString("[", ",", "]")
+
+      val renderCall = "def render%s%s: %s = apply%s%s".format(
+        typeParams,
         "(" + params.flatten
           .map {
             case p @ ByNameParam(_, paramType) => p.name.toString + ":" + paramType
@@ -792,28 +798,34 @@ package """ :+ packageName :+ """
           }
           .mkString(",") + ")",
         returnType,
+        typeParams,
         applyArgs
       )
 
-      val f = "def f:%s = %s => apply%s".format(
+      val f = "def f%s:%s = %s => apply%s%s".format(
+        typeParams,
         functionType,
         params.map(group => "(" + group.map(_.name.toString).mkString(",") + ")").mkString(" => "),
+        typeParams,
         applyArgs
       )
 
-      val templateType = sc.valueOrEmptyIfScala3Exceeding22Params(
-        params.flatten.size,
-        "_root_.play.twirl.api.Template%s[%s%s]".format(
-          params.flatten.size,
-          params.flatten
-            .map {
-              case ByNameParam(_, paramType) => paramType
-              case p                         => filterType(p)
-            }
-            .mkString(","),
-          (if (params.flatten.isEmpty) "" else ",") + returnType
-        )
-      )
+      val templateType =
+        if (tparams.isEmpty)
+          sc.valueOrEmptyIfScala3Exceeding22Params(
+            params.flatten.size,
+            "_root_.play.twirl.api.Template%s[%s%s]".format(
+              params.flatten.size,
+              params.flatten
+                .map {
+                  case ByNameParam(_, paramType) => paramType
+                  case p                         => filterType(p)
+                }
+                .mkString(","),
+              (if (params.flatten.isEmpty) "" else ",") + returnType
+            )
+          )
+        else "" // If type params -> no TemplateN trait. Too many possibilities. TODO: Generate TemplateN on the fly?
 
       (renderCall, f, templateType)
     }
