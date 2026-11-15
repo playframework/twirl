@@ -270,7 +270,7 @@ lazy val mavenPlugin = project
       .dependsOn(parser / publishM2)
       .dependsOn(apiJvm / publishM2)
       .value,
-    libraryDependencies += "org.codehaus.plexus" % "plexus-utils" % "4.1.0",
+    libraryDependencies += "org.codehaus.plexus" % "plexus-utils" % "4.2.0",
     Compile / headerSources ++= Def
       .uncached(
         (baseDirectory.value / "src" / "maven-test" ** ("*.java" || "*.scala" || "*.scala.html") --- (baseDirectory.value ** "target" ** "*"))
