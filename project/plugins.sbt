@@ -3,7 +3,7 @@
 addSbtPlugin("com.github.sbt" % "sbt-ci-release" % "1.12.1")
 
 // For the Cross Build
-addSbtPlugin("org.scala-js"       % "sbt-scalajs"              % "1.22.0")
+addSbtPlugin("org.scala-js"       % "sbt-scalajs"              % "1.23.0")
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.4.0")
 
 addSbtPlugin("com.typesafe"   % "sbt-mima-plugin"    % "1.2.1")
